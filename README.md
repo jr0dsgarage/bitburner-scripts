@@ -1,3 +1,9 @@
+# Fork Info
+
+This is a fork of the original https://github.com/bitburner-official/typescript-template 
+
+My personal script files are located in the `/src/` directory!
+
 # Typescript template for Bitburner's Remote File API
 
 The official template for synchronizing Typescript/Javascript from your computer to the game.
