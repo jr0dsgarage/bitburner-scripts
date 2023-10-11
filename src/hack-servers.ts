@@ -15,28 +15,34 @@ export async function main(ns: any) {
         "neo-net": 1,
         "silver-helix": 2,
         "phantasy": 2,
-        "omega-net": 2,
-        
+        "omega-net": 2,       
     };
 
     if (hackToApply) {
         ns.tprint(`INFO: loading hack ${hackToApply}`)
         
-        for (const [server,level] of Object.entries(servers)) {            
-            ns.tprint(`INFO: applying hack to server: ${server}; ports req'd: ${level}`)
-            ns.scp(hackToApply, server)
-            if (level > 0) {
+        for (const [hostname, portLevel] of Object.entries(servers)) {      
+            ns.tprint(`INFO: killing all scripts on server: ${hostname}`)
+            ns.killall(hostname)
+            ns.tprint(`INFO: applying hack to server: ${hostname}; ports req'd: ${portLevel}`)
+            ns.scp(hackToApply, hostname)
+            if (portLevel > 0) {
                 ns.tprint(`WARN: elevating...`)
-                ns.brutessh(server);
+                ns.brutessh(hostname);
             }
-            if (level > 1) {
-                ns.ftpcrack(server);
+            if (portLevel > 1) {
+                ns.ftpcrack(hostname);
             }
-            ns.nuke(server)
-            let threadsToUse = ns.getServerMaxRam(server) / ns.getScriptRam(hackToApply);
-            ns.exec(hackToApply, server, ~~threadsToUse)
+            ns.nuke(hostname)
+            let threadsToUse = ns.getServerMaxRam(hostname) / ns.getScriptRam(hackToApply);
+            ns.exec(hackToApply, hostname, ~~threadsToUse)
             ns.tprint(`INFO: hack enabled!`)
         };
+
+        ns.tprint("INFO: starting scripts on purchased servers")
+        ns.run("start-purchased-servers.js", 1, hackToApply);
+        ns.tprint("INFO:...hacking complete");
+
 
     }
     else {
