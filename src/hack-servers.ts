@@ -40,7 +40,7 @@ export async function main(ns: any) {
         }
 
         ns.tprint("INFO: starting scripts on purchased servers")
-        ns.run("start-purchased-servers.js", 1, hackToApply)
+        await ns.run("start-purchased-servers.js", 1, ns.getScriptRam(hackToApply))
         ns.tprint("INFO:...hacking complete")
     }
     else {
