@@ -1,9 +1,12 @@
 /** @param {NS} ns */
-export async function main(ns: any, hackToApply: string) {
+export async function main(ns: any) {
+    const hackToApply = ns.args[0];
     let i = 0;
     while (i < ns.getPurchasedServerLimit()) {
         let hostname = "pserv-".concat(i.toString());
         let threadsToUse = ns.getServerMaxRam(hostname) / ns.getScriptRam(hackToApply);
-        ns.exec("early-hack-template.js", hostname, threadsToUse);
+        ns.exec(hackToApply, hostname, ~~threadsToUse);
+        ns.tprint(`INFO: started hack on ${hostname} with ${~~threadsToUse} threads`);
+        ++i;
     }
 }
