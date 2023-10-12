@@ -1,6 +1,6 @@
 // created by j__r0d 10/11/23
 export async function main(ns: any) {
-    ns.tprint("...hacking servers")
+    ns.tprint("INFO:...attempting server hack")
     const hackToApply = ns.args[0];
     const servers = {
         "n00dles": 0,
@@ -36,11 +36,15 @@ export async function main(ns: any) {
             ns.nuke(hostname)
             let threadsToUse = ns.getServerMaxRam(hostname) / ns.getScriptRam(hackToApply);
             ns.exec(hackToApply, hostname, ~~threadsToUse)
-            ns.tprint(`INFO: hack enabled!`)
+            ns.tprint(`INFO: started hack on ${hostname} with ${~~threadsToUse} threads`)
         }
 
         ns.tprint("INFO: starting scripts on purchased servers")
         await ns.run("start-purchased-servers.js", 1, hackToApply)
+
+        if (ns.args.c)
+        ns.tprint("INFO: starting script on home server")
+        await ns.run("start-home-server.js", 1, hackToApply)
         ns.tprint("INFO:...hacking complete")
     }
     else {
