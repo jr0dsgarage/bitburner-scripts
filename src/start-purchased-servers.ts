@@ -1,4 +1,6 @@
 // created by j__r0d 10/11/23
+import { colors } from "./colors";
+
 /** @param {NS} ns */
 export async function main(ns: any) {
     ns.tprint("INFO: deploying hack on purchased servers...");
@@ -9,8 +11,8 @@ export async function main(ns: any) {
         ns.killall(hostname);
         let threadsToUse = ns.getServerMaxRam(hostname) / ns.getScriptRam(hackToApply);
         ns.exec(hackToApply, hostname, ~~threadsToUse);
-        ns.tprint(`INFO: ...hack deployed using ${~~threadsToUse} threads on ${hostname}`);
+        ns.tprint(`INFO: ...hack deployed using ${colors.magenta}${~~threadsToUse}${colors.reset} threads on ${colors.cyan}${hostname}${colors.reset}`);
         ++i;
     }
-    ns.tprint(`INFO:...hacks deployed on ${i} purchased servers`);
+    ns.tprint(`INFO:...hacks deployed on ${colors.green}${i}${colors.reset} purchased servers`);
 }
