@@ -4,6 +4,7 @@ export async function main(ns: any) {
     let i = 0;
     while (i < ns.getPurchasedServerLimit()) {
         let hostname = "pserv-".concat(i.toString());
+        ns.killall(hostname);
         let threadsToUse = ns.getServerMaxRam(hostname) / ns.getScriptRam(hackToApply);
         ns.exec(hackToApply, hostname, ~~threadsToUse);
         ns.tprint(`INFO: started hack on ${hostname} with ${~~threadsToUse} threads`);
