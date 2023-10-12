@@ -39,7 +39,7 @@ export async function main(ns: any) {
             ns.nuke(hostname);
             let threadsToUse = ns.getServerMaxRam(hostname) / ns.getScriptRam(hackToApply);
             ns.exec(hackToApply, hostname, ~~threadsToUse);
-            ns.tprint(`INFO: started hack on ${hostname} with ${~~threadsToUse} threads`);
+            ns.tprint(`INFO: started ${hackToApply} on ${hostname} with ${~~threadsToUse} threads`);
         };
 
         // TODO: add a check to find existing purchased servers
