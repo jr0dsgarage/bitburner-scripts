@@ -1,5 +1,5 @@
-/** @param {NS} ns */
 // created by j__r0d 10/11/23
+/** @param {NS} ns */
 export async function main(ns: any) {
     ns.tprint("INFO: ...attempting server hack");
 
