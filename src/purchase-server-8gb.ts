@@ -1,3 +1,5 @@
+// the contents of this script came from the Beginner's Guide in the game's documentation...
+
 /** @param {NS} ns */
 export async function main(ns: any) {
     // How much RAM each purchased server will have. In this case, it'll
@@ -5,7 +7,7 @@ export async function main(ns: any) {
     const ram = 8;
 
     // Iterator we'll use for our loop
-    let i = 0;
+    let i = 1; // changed to 1 by j__r0d because 1 is a better place to start than 0 for this counter
 
     // Continuously try to purchase servers until we've reached the maximum
     // amount of servers
