@@ -49,7 +49,7 @@ export async function main(ns: any) {
 
         if (ns.args[1] == "-h") {
             ns.tprint("INFO: starting script on home server");
-            await ns.run("start-home-server.js", 1, hackToApply);
+            await ns.run("start-home-server.js", 1, hackToApply, "-k");
         }
         else { 
             ns.tprint("INFO: skipping home server");
