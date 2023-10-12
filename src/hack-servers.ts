@@ -41,8 +41,6 @@ export async function main(ns: any) {
 
         ns.tprint("INFO: starting scripts on purchased servers")
         await ns.run("start-purchased-servers.js", 1, hackToApply)
-
-        if (ns.args.c)
         ns.tprint("INFO: starting script on home server")
         await ns.run("start-home-server.js", 1, hackToApply)
         ns.tprint("INFO:...hacking complete")
