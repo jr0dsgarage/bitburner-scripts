@@ -7,6 +7,7 @@ import {colors} from "./colors";
  * TODO: 2. find a way to run scan-analyze to find all the available servers and the number of open ports required to run NUKE.exe
  * TODO: 3. 
  */
+
 export async function main(ns: any) {
     const hackToApply = ns.args[0];
     
