@@ -11,8 +11,8 @@ export async function main(ns: any) {
         ns.killall(hostname);
         let threadsToUse = ns.getServerMaxRam(hostname) / ns.getScriptRam(hackToApply);
         ns.exec(hackToApply, hostname, ~~threadsToUse);
-        ns.tprint(`INFO: ...hack deployed using ${colors.magenta}${~~threadsToUse}${colors.reset} threads on ${colors.cyan}${hostname}${colors.reset}`);
+        ns.tprint(`INFO: ...hack deployed using ${colors.Magenta}${~~threadsToUse}${colors.Reset} threads on ${colors.Cyan}${hostname}${colors.Reset}`);
         ++i;
     }
-    ns.tprint(`INFO:...hacks deployed on ${colors.green}${i}${colors.reset} purchased servers`);
+    ns.tprint(`INFO:...hacks deployed on ${colors.Green}${i}${colors.Reset} purchased servers`);
 }

@@ -3,7 +3,7 @@ import { colors } from "./colors";
 
 /** @param {NS} ns */
 export async function main(ns: any) {
-    ns.tprint(`INFO: deploying hack on ${colors.cyan}home${colors.reset} server...`);
+    ns.tprint(`INFO: deploying hack on ${colors.Cyan}home${colors.Reset} server...`);
     const hackToApply = ns.args[0];
     let hostname = "home";
     let availableRAM = ns.getServerMaxRam(hostname) - ns.getServerUsedRam(hostname);
@@ -12,5 +12,5 @@ export async function main(ns: any) {
     }
     let threadsToUse = availableRAM / ns.getScriptRam(hackToApply);
     ns.run(hackToApply, ~~threadsToUse);
-    ns.tprint(`INFO: ...hack deployed using ${colors.magenta}${~~threadsToUse}${colors.reset} threads`);
+    ns.tprint(`INFO: ...hack deployed using ${colors.Magenta}${~~threadsToUse}${colors.Reset} threads`);
 }
