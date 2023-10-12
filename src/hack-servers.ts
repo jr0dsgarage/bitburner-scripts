@@ -1,5 +1,5 @@
 // created by j__r0d 10/11/23
-import {colors} from "./colors";
+import { colors } from "./colors";
 /** @param {NS} ns */
 
 /** 
@@ -10,7 +10,7 @@ import {colors} from "./colors";
 
 export async function main(ns: any) {
     const hackToApply = ns.args[0];
-    
+
     const servers = {
         "n00dles": 0,
         "sigma-cosmetics": 0,
@@ -30,27 +30,33 @@ export async function main(ns: any) {
     // ===== main logic =====
     ns.tprint("INFO: attempting server hack...");
     if (hackToApply) {
-        ns.tprint(`INFO: using hack ${colors.yellow}${hackToApply}${colors.reset}`);
+        ns.tprint(`INFO: using hack ${colors.Yellow}${hackToApply}${colors.Reset}`);
 
         for (const [hostname, portLevel] of Object.entries(servers)) {
-            ns.killall(hostname);
-            ns.tprint(`INFO: deploying hack to server: ${colors.cyan}${hostname}${colors.reset}...`);
-            ns.scp(hackToApply, hostname);
-            if (portLevel > 0) {
-                ns.tprint(`WARN: not enough open ports. elevating...`);
-                ns.brutessh(hostname);
+            ns.tprint(`INFO: deploying hack to server: ${colors.Cyan}${hostname}${colors.Reset}...`);
+            if (!ns.hasRootAccess(hostname)) {
+
+                ns.scp(hackToApply, hostname);
+                if (portLevel > 0) {
+                    ns.tprint(`WARN: not enough open ports. elevating...`);
+                    ns.brutessh(hostname);
+                }
+                if (portLevel > 1) {
+                    ns.ftpcrack(hostname);
+                }
+                ns.nuke(hostname);
             }
-            if (portLevel > 1) {
-                ns.ftpcrack(hostname);
+            else {
+
+                ns.tprint(`INFO: ${colors.Cyan}${hostname}${colors.Reset} already has root access. deploying hack...`);
             }
-            ns.nuke(hostname);
             let threadsToUse = ns.getServerMaxRam(hostname) / ns.getScriptRam(hackToApply);
             ns.exec(hackToApply, hostname, ~~threadsToUse);
-            ns.tprint(`INFO: ...hack deployed using ${colors.magenta}${~~threadsToUse}${colors.reset} threads`);
+            ns.tprint(`INFO: ...hack deployed using ${colors.Magenta}${~~threadsToUse}${colors.Reset} threads`);
+
         };
 
         // TODO: add a check to find existing purchased servers
-
 
         await ns.run("start-purchased-servers.js", 1, hackToApply)
 
