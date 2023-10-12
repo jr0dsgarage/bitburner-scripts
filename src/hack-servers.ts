@@ -1,7 +1,7 @@
 /** @param {NS} ns */
 // created by j__r0d 10/11/23
 export async function main(ns: any) {
-    ns.tprint("INFO:...attempting server hack");
+    ns.tprint("INFO: ...attempting server hack");
 
     const hackToApply = ns.args[0];
 
@@ -23,14 +23,14 @@ export async function main(ns: any) {
 
     // ===== main logic =====
     if (hackToApply) {
-        ns.tprint(`INFO: loading hack ${hackToApply}`);
+        ns.tprint(`INFO: using hack ${hackToApply}`);
 
         for (const [hostname, portLevel] of Object.entries(servers)) {
             ns.killall(hostname);
-            // ns.tprint(`INFO: applying hack to server: ${hostname}`);
+             ns.tprint(`INFO: deploying hack to server: ${hostname}...`);
             ns.scp(hackToApply, hostname);
             if (portLevel > 0) {
-                ns.tprint(`WARN: elevating...`);
+                ns.tprint(`WARN: not enough open ports. elevating...`);
                 ns.brutessh(hostname);
             }
             if (portLevel > 1) {
@@ -39,24 +39,23 @@ export async function main(ns: any) {
             ns.nuke(hostname);
             let threadsToUse = ns.getServerMaxRam(hostname) / ns.getScriptRam(hackToApply);
             ns.exec(hackToApply, hostname, ~~threadsToUse);
-            ns.tprint(`INFO: started ${hackToApply} on ${hostname} with ${~~threadsToUse} threads`);
+            ns.tprint(`INFO: ...hack deployed using ${~~threadsToUse} threads on ${hostname}`);
         };
 
         // TODO: add a check to find existing purchased servers
 
-        ns.tprint("INFO: starting scripts on purchased servers")
+        
         await ns.run("start-purchased-servers.js", 1, hackToApply)
 
         if (ns.args[1] == "-h") {
-            ns.tprint("INFO: starting script on home server");
             await ns.run("start-home-server.js", 1, hackToApply, "-k");
         }
         else { 
-            ns.tprint("INFO: skipping home server");
+            ns.tprint("INFO: skipping home server. use 2nd arg '-h' to include home server in hacktivities.");
         }
-        ns.tprint("INFO:...hacking complete");
+        // ns.tprint("INFO:...hacks deployed!");
     }
     else {
-        ns.tprint("ERROR: no hack to apply. include script name!");
+        ns.tprint("ERROR: no hack to deploy. include script name! use 2nd arg '-h' to include home server in hacktivities.");
     }
 }
