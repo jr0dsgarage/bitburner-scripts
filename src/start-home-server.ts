@@ -7,7 +7,6 @@ export async function main(ns: any) {
         ns.killall();
     }
     let threadsToUse = availableRAM / ns.getScriptRam(hackToApply);
-    
     ns.run(hackToApply, ~~threadsToUse);
     ns.tprint(`INFO: started ${hackToApply} on ${hostname} with ${~~threadsToUse} threads`);
 }
