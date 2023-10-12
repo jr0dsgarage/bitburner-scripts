@@ -3,9 +3,8 @@ import { colors } from "./colors";
 /** @param {NS} ns */
 
 /** 
- * TODO: 1. check to see if script is already running and exit() if so?
- * TODO: 2. find a way to run scan-analyze to find all the available servers and the number of open ports required to run NUKE.exe
- * TODO: 3. 
+ * TODO: find a way to run scan-analyze to find all the available servers and the number of open ports required to run NUKE.exe
+ * TODO:  
  */
 
 export async function main(ns: any) {
@@ -33,9 +32,9 @@ export async function main(ns: any) {
         ns.tprint(`INFO: using hack ${colors.Yellow}${hackToApply}${colors.Reset}`);
 
         for (const [hostname, portLevel] of Object.entries(servers)) {
-            ns.tprint(`INFO: deploying hack to server: ${colors.Cyan}${hostname}${colors.Reset}...`);
+            
             if (!ns.hasRootAccess(hostname)) {
-
+                ns.tprint(`INFO: ${colors.Cyan}${hostname}${colors.Reset} does not have root access. attempting root...`)
                 ns.scp(hackToApply, hostname);
                 if (portLevel > 0) {
                     ns.tprint(`WARN: not enough open ports. elevating...`);
@@ -45,15 +44,12 @@ export async function main(ns: any) {
                     ns.ftpcrack(hostname);
                 }
                 ns.nuke(hostname);
+                ns.tprint(`INFO: ...root access granted!`);
             }
-            else {
-
-                ns.tprint(`INFO: ${colors.Cyan}${hostname}${colors.Reset} already has root access. deploying hack...`);
-            }
+            ns.tprint(`INFO: deploying hack to server: ${colors.Cyan}${hostname}${colors.Reset}...`);
             let threadsToUse = ns.getServerMaxRam(hostname) / ns.getScriptRam(hackToApply);
             ns.exec(hackToApply, hostname, ~~threadsToUse);
             ns.tprint(`INFO: ...hack deployed using ${colors.Magenta}${~~threadsToUse}${colors.Reset} threads`);
-
         };
 
         // TODO: add a check to find existing purchased servers
@@ -66,7 +62,7 @@ export async function main(ns: any) {
         else {
             ns.tprint("INFO: skipping home server. use 2nd arg '-h' to include home server in hacktivities.");
         }
-        // ns.tprint("INFO:...hacks deployed!");
+        ns.toast("hacks deployed!");
     }
     else {
         ns.tprint("ERROR: no hack to deploy. include script name! use 2nd arg '-h' to include home server in hacktivities.");
