@@ -1,41 +1,25 @@
 // created by j__r0d 10/11/23
 import { colors } from "./colors";
+import { buildList } from "./scan-servers";
 /** @param {NS} ns */
 
 /** 
- * TODO: find a way to run scan-analyze to find all the available servers and the number of open ports required to run NUKE.exe
- * TODO:  
+ * TODO: firm up the code that checks for open ports so that it will bail if it can't open enough ports to run NUKE.exe
+ * TODO: add a check to find existing purchased servers, and then purchase them if they don't exist
+ * TODO: check for require hacking skill before attempting hack, also
  */
 
 export async function main(ns: any) {
     const hackToApply = ns.args[0];
-
-    const servers = {
-        "n00dles": 0,
-        "sigma-cosmetics": 0,
-        "joesguns": 0,
-        "hong-fang-tea": 0,
-        "harakiri-sushi": 0,
-        "nectar-net": 0,
-        "iron-gym": 1,
-        "zer0": 1,
-        "max-hardware": 1,
-        "neo-net": 1,
-        "silver-helix": 2,
-        "phantasy": 2,
-        "omega-net": 2,
-    } as { [hostname: string]: number }; //copilot suggested this last line
-
-    // ===== main logic =====
-    ns.tprint("INFO: attempting server hack...");
+    ns.tprint("INFO: attempting to hack all servers...");
     if (hackToApply) {
-        ns.tprint(`INFO: using hack ${colors.Yellow}${hackToApply}${colors.Reset}`);
-
-        for (const [hostname, portLevel] of Object.entries(servers)) {
-            
+        ns.tprint(`INFO: ...using hack ${colors.Yellow}${hackToApply}${colors.Reset}`);
+        let serverList = await buildList(ns);
+        serverList.forEach(hostname => {
             if (!ns.hasRootAccess(hostname)) {
                 ns.tprint(`INFO: ${colors.Cyan}${hostname}${colors.Reset} does not have root access. attempting root...`)
                 ns.scp(hackToApply, hostname);
+                let portLevel = ns.getServerNumPortsRequired(hostname);
                 if (portLevel > 0) {
                     ns.tprint(`WARN: not enough open ports. elevating...`);
                     ns.brutessh(hostname);
@@ -43,14 +27,29 @@ export async function main(ns: any) {
                 if (portLevel > 1) {
                     ns.ftpcrack(hostname);
                 }
-                ns.nuke(hostname);
-                ns.tprint(`INFO: ...root access granted!`);
+                if (portLevel > 2) {
+                    ns.relaysmtp(hostname);
+                }
+                try {
+                    ns.nuke(hostname);
+                    ns.tprint(`INFO: ...root access granted!`);
+                }
+                catch (e) {
+                    ns.tprint(`ERROR: ...root access denied! cannot hack ${colors.Cyan}${hostname}${colors.Reset}!`);
+
+                }
             }
-            ns.tprint(`INFO: deploying hack to server: ${colors.Cyan}${hostname}${colors.Reset}...`);
-            let threadsToUse = ns.getServerMaxRam(hostname) / ns.getScriptRam(hackToApply);
-            ns.exec(hackToApply, hostname, ~~threadsToUse);
-            ns.tprint(`INFO: ...hack deployed using ${colors.Magenta}${~~threadsToUse}${colors.Reset} threads`);
-        };
+            // at this point the server _should_ have root access,
+            // but still could have failed to deploy NUKE.exe
+            // so check for root access again before deploying hack
+            // and make sure hacking skill is high enough, no sense in hacking without the skill required!
+            if (ns.hasRootAccess(hostname) && ns.getServerRequiredHackingLevel(hostname)) {
+                ns.tprint(`INFO: deploying hack to server: ${colors.Cyan}${hostname}${colors.Reset}...`);
+                let threadsToUse = ns.getServerMaxRam(hostname) / ns.getScriptRam(hackToApply);
+                ns.exec(hackToApply, hostname, ~~threadsToUse);
+                ns.tprint(`INFO: ...hack deployed using ${colors.Magenta}${~~threadsToUse}${colors.Reset} threads`);
+            }
+        });
 
         // TODO: add a check to find existing purchased servers
 
@@ -64,7 +63,7 @@ export async function main(ns: any) {
         }
         ns.toast("hacks deployed!");
     }
-    else {
+    else { 
         ns.tprint("ERROR: no hack to deploy. include script name! use 2nd arg '-h' to include home server in hacktivities.");
-    }
+    };
 }

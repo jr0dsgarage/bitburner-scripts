@@ -1,22 +1,30 @@
 // created by j__r0d 10/12/23
-// tests to work out scanning servers via script
+// scans all servers and builds a list of servers to hack
 import { colors } from "./colors";
 
 /** @param {NS} ns */
 export async function main(ns: any) {
+    let serverList = await buildList(ns);
+    ns.tprintf(`found ${colors.Cyan}${serverList.length}${colors.Reset} servers`)
+    // ns.tprintf(`${colors.Cyan}${serverList}${colors.Reset}`);
+}
+/** @param {NS} ns */
+export async function buildList(ns: any) {
     const serverList: Array<string> = [];
     for (const hostname of await ns.scan()) {
         if (canAddServer(hostname, serverList)) {
-            ns.tprintf(`found new server: ${colors.Cyan}${hostname}${colors.Reset}`);
+            ns.tprintf(`server found: ${colors.Cyan}${hostname}${colors.Reset}`);
             serverList.push(hostname);
         }
 
         for (const neighborServer of await ns.scan(hostname)) {
             if (canAddServer(neighborServer, serverList)) {
+                ns.tprintf(`server found: ${colors.Cyan}${neighborServer}${colors.Reset}`);
                 serverList.push(neighborServer);
             }
         }
     }
+    return serverList;
 }
 
 /**
