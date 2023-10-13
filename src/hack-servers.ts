@@ -11,60 +11,66 @@ import { buildScannedServerList } from "./scan-servers";
  */
 
 export async function main(ns: any) {
-    const hackToApply: string = ns.args[0];
+    const hackToDeploy: string = ns.args[0];
+    const scanDepth = 5; // can we get this from ns. ?? scan-analyze depth
     ns.tprint("INFO: attempting to hack all servers...");
-    if (hackToApply) {
-        ns.tprint(`INFO: ...using hack ${colors.Yellow}${hackToApply}${colors.Reset}`);
-        let serverList = await buildScannedServerList(ns, 5);
+    if (hackToDeploy) {
+        ns.tprint(`INFO: ...using hack ${colors.Yellow}${hackToDeploy}${colors.Reset}`);
+        let serverList = await buildScannedServerList(ns, scanDepth);
+        ns.tprintf(`INFO: found ${colors.Cyan}${serverList.length}${colors.Reset} servers during scan of depth ${colors.Magenta}${scanDepth}${colors.Reset}...`)
         serverList.forEach(hostname => {
+            let portLevel = ns.getServerNumPortsRequired(hostname);
             if (!ns.hasRootAccess(hostname)) {
                 ns.tprint(`INFO: ${colors.Cyan}${hostname}${colors.Reset} does not have root access. attempting root...`)
-                ns.scp(hackToApply, hostname);
-                let portLevel = ns.getServerNumPortsRequired(hostname);
+                ns.scp(hackToDeploy, hostname);
                 if (portLevel > 0) {
-                    ns.tprint(`WARN: not enough open ports. elevating...`);
-                    ns.brutessh(hostname);
+                    ns.tprint(`WARN: not enough open ports...`)
+                    ns.tprint(`elevating...`);
+                    if (ns.fileExists("brutessh.exe")) ns.brutessh(hostname);
                 }
-                if (portLevel > 1) {
-                    ns.ftpcrack(hostname);
-                }
-                if (portLevel > 2) {
-                    ns.relaysmtp(hostname);
-                }
+            }
+            if (portLevel > 1 && ns.fileExists("ftpcrack.exe")) {
+                ns.ftpcrack(hostname);
+            }
+            if (portLevel > 2 && ns.fileExists("relaysmtp.exe")) {
+                ns.relaysmtp(hostname);
+            }
+            if (!ns.hasRootAccess(hostname)) {
                 try {
                     ns.nuke(hostname);
                     ns.tprint(`INFO: ...root access granted!`);
                 }
                 catch (e) {
                     ns.tprint(`ERROR: ...root access denied! cannot hack ${colors.Cyan}${hostname}${colors.Reset}!`);
-
                 }
             }
+            // install backdoor via script here?
+
             // at this point the server _should_ have root access,
             // but still could have failed to deploy NUKE.exe
             // so check for root access again before deploying hack
             // and make sure hacking skill is high enough, no sense in hacking without the skill required!
-            if (ns.hasRootAccess(hostname) && ns.getHackingLevel() < ns.getServerRequiredHackingLevel(hostname)) {
+            if (ns.hasRootAccess(hostname) && ns.getHackingLevel() >= ns.getServerRequiredHackingLevel(hostname)) {
                 ns.tprint(`INFO: deploying hack to server: ${colors.Cyan}${hostname}${colors.Reset}...`);
-                let threadsToUse = ns.getServerMaxRam(hostname) / ns.getScriptRam(hackToApply);
-                ns.exec(hackToApply, hostname, ~~threadsToUse);
+                let threadsToUse = ns.getServerMaxRam(hostname) / ns.getScriptRam(hackToDeploy);
+                ns.exec(hackToDeploy, hostname, ~~threadsToUse);
                 ns.tprint(`INFO: ...hack deployed using ${colors.Magenta}${~~threadsToUse}${colors.Reset} threads`);
             }
         });
 
-        // TODO: add a check to find existing purchased servers
+        // TODO: add a check to find existing purchased servers and then purchase them if they don't exist
 
-        await ns.run("start-purchased-servers.js", 1, hackToApply)
+        if (ns.scan().includes("pserv-")) await ns.run("start-purchased-servers.js", 1, hackToDeploy)
 
         if (ns.args[1] == "-h") {
-            await ns.run("start-home-server.js", 1, hackToApply, "-k");
+            await ns.run("start-home-server.js", 1, hackToDeploy, "-k");
         }
         else {
             ns.tprint("INFO: skipping home server. use 2nd arg '-h' to include home server in hacktivities.");
         }
         ns.toast("hacks deployed!");
     }
-    else { 
+    else {
         ns.tprint("ERROR: no hack to deploy. include script name! use 2nd arg '-h' to include home server in hacktivities.");
     };
 }

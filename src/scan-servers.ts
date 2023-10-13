@@ -3,7 +3,9 @@
 import { colors } from "./colors";
 
 /** @param {NS} ns */
-export async function main(ns: any, depth: number) {
+export async function main(ns: any) {
+    // for testing in bitburner Terminal
+    let depth = ns.args[0] || 1;
     let serverList = await buildScannedServerList(ns, depth);
     ns.tprintf(`found ${colors.Cyan}${serverList.length}${colors.Reset} servers`)
     ns.tprintf(`${colors.Cyan}${serverList}${colors.Reset}`);
@@ -17,7 +19,9 @@ export async function main(ns: any, depth: number) {
  * @returns 
  */
 export async function buildScannedServerList(ns: any, depth: number = 1, serverList: string[] = [], scannedServers: string[] = []) {
-    ns.tprintf(`scanning servers to depth ${colors.Magenta}${depth}${colors.Reset}`);
+    // ns.tprintf(`scanning servers to depth ${colors.Magenta}${depth}${colors.Reset}`);
+
+    // THIS IS CURRENTLY BROKEN and doesn't recurse as expected because the 'depth-1' only happens once
     if (depth <= 0) {
         return serverList;
     }
@@ -26,7 +30,7 @@ export async function buildScannedServerList(ns: any, depth: number = 1, serverL
 
     for (const server of serversToScan) {
         if (canAddServer(server, serverList)) {
-            ns.tprintf(`server found: ${colors.Cyan}${server}${colors.Reset}`);
+            ns.tprint(`INFO: server found: ${colors.Cyan}${server}${colors.Reset}`);
             serverList.push(server);
         }
     }
@@ -40,7 +44,6 @@ export async function buildScannedServerList(ns: any, depth: number = 1, serverL
             }
         }
     }
-
     return serverList;
 }
 
