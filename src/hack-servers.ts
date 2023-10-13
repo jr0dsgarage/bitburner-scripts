@@ -1,20 +1,21 @@
 // created by j__r0d 10/11/23
 import { colors } from "./colors";
-import { buildList } from "./scan-servers";
+import { buildScannedServerList } from "./scan-servers";
 /** @param {NS} ns */
 
 /** 
  * TODO: firm up the code that checks for open ports so that it will bail if it can't open enough ports to run NUKE.exe
  * TODO: add a check to find existing purchased servers, and then purchase them if they don't exist
  * TODO: check for require hacking skill before attempting hack, also
+ * TODO: 
  */
 
 export async function main(ns: any) {
-    const hackToApply = ns.args[0];
+    const hackToApply: string = ns.args[0];
     ns.tprint("INFO: attempting to hack all servers...");
     if (hackToApply) {
         ns.tprint(`INFO: ...using hack ${colors.Yellow}${hackToApply}${colors.Reset}`);
-        let serverList = await buildList(ns);
+        let serverList = await buildScannedServerList(ns, 5);
         serverList.forEach(hostname => {
             if (!ns.hasRootAccess(hostname)) {
                 ns.tprint(`INFO: ${colors.Cyan}${hostname}${colors.Reset} does not have root access. attempting root...`)
@@ -43,7 +44,7 @@ export async function main(ns: any) {
             // but still could have failed to deploy NUKE.exe
             // so check for root access again before deploying hack
             // and make sure hacking skill is high enough, no sense in hacking without the skill required!
-            if (ns.hasRootAccess(hostname) && ns.getServerRequiredHackingLevel(hostname)) {
+            if (ns.hasRootAccess(hostname) && ns.getHackingLevel() < ns.getServerRequiredHackingLevel(hostname)) {
                 ns.tprint(`INFO: deploying hack to server: ${colors.Cyan}${hostname}${colors.Reset}...`);
                 let threadsToUse = ns.getServerMaxRam(hostname) / ns.getScriptRam(hackToApply);
                 ns.exec(hackToApply, hostname, ~~threadsToUse);
