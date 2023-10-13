@@ -4,34 +4,34 @@ import { colors } from "./colors";
 
 /** @param {NS} ns */
 export async function main(ns: any) {
-    let serverList: Array<string> = [];
-    ns.tprintf(`${colors.Cyan}${serverList}${colors.Reset}`);
-    ns.scan().forEach((server: string) => {
-        if (canAddServer(server, serverList)) {
-            ns.tprintf(`found new server: ${colors.Cyan}${server}${colors.Reset}`)
-            serverList.push(server);           
+    const serverList: Array<string> = [];
+    for (const hostname of await ns.scan()) {
+        if (canAddServer(hostname, serverList)) {
+            ns.tprintf(`found new server: ${colors.Cyan}${hostname}${colors.Reset}`);
+            serverList.push(hostname);
         }
-        ns.scan(server).forEach((neighborServer: string) => {
+
+        for (const neighborServer of await ns.scan(hostname)) {
             if (canAddServer(neighborServer, serverList)) {
-                serverList.push(neighborServer)
-            };
-        })
-    });
+                serverList.push(neighborServer);
+            }
+        }
+    }
 }
 
 /**
  * 
- * @param serverName Name of server to check against forbidden servers and prefixes
+ * @param serverHostname Name of server to check against forbidden servers and prefixes
  * @param serverListName List of servers to check against for duplicates
  * @returns 
  */
-export function canAddServer(serverName: string, serverListName: string[]) {
+export function canAddServer(serverHostname: string, serverListName: string[]) {
     const forbiddenServers = ['home', 'darkweb'];
     const forbiddenServerPrefixes = ['pserv-'];
 
-    const isForbiddenServer = forbiddenServers.some(forbiddenServer => forbiddenServer === serverName);
-    const isForbiddenServerPrefix = forbiddenServerPrefixes.some(prefix => serverName.startsWith(prefix));
-    const isDuplicateServer = serverListName.includes(serverName);
+    const isForbiddenServer = forbiddenServers.some(forbiddenServer => forbiddenServer === serverHostname);
+    const isForbiddenServerPrefix = forbiddenServerPrefixes.some(prefix => serverHostname.startsWith(prefix));
+    const isDuplicateServer = serverListName.includes(serverHostname);
 
     return !isForbiddenServer && !isForbiddenServerPrefix && !isDuplicateServer;
 };
