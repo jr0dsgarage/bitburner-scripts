@@ -7,7 +7,7 @@ import { buildScannedServerList } from "./scan-servers";
  * TODO: firm up the code that checks for open ports so that it will bail if it can't open enough ports to run NUKE.exe
  * TODO: add a check to find existing purchased servers, and then purchase them if they don't exist
  * TODO: check for require hacking skill before attempting hack, also
- * TODO: 
+ * TODO: write a logger script that will log all the things
  */
 
 export async function main(ns: any) {
@@ -15,7 +15,7 @@ export async function main(ns: any) {
     const scanDepth = 5; // can we get this from ns. ?? scan-analyze depth
     ns.tprint("INFO: attempting to hack all servers...");
     if (hackToDeploy) {
-        ns.tprint(`INFO: ...using hack ${colors.Yellow}${hackToDeploy}${colors.Reset}`);
+        ns.tprint(`INFO: ...deploying hack ${colors.Yellow}${hackToDeploy}${colors.Reset}`);
         let serverList = await buildScannedServerList(ns, scanDepth);
         ns.tprintf(`INFO: found ${colors.Cyan}${serverList.length}${colors.Reset} servers during scan of depth ${colors.Magenta}${scanDepth}${colors.Reset}...`)
         serverList.forEach(hostname => {
@@ -29,21 +29,27 @@ export async function main(ns: any) {
                     if (ns.fileExists("brutessh.exe")) ns.brutessh(hostname);
                 }
             }
-            if (portLevel > 1 && ns.fileExists("ftpcrack.exe")) {
-                ns.ftpcrack(hostname);
+            try {
+                if (portLevel > 1 && ns.fileExists("ftpcrack.exe")) {
+                    ns.ftpcrack(hostname);
+                }
+                if (portLevel > 2 && ns.fileExists("relaysmtp.exe")) {
+                    ns.relaysmtp(hostname);
+                }
             }
-            if (portLevel > 2 && ns.fileExists("relaysmtp.exe")) {
-                ns.relaysmtp(hostname);
+            catch {
+                ns.tprint(`ERROR: cannot elevate ports on ${colors.Cyan}${hostname}${colors.Reset}! ...aborting`);
             }
             if (!ns.hasRootAccess(hostname)) {
                 try {
                     ns.nuke(hostname);
                     ns.tprint(`INFO: ...root access granted!`);
                 }
-                catch (e) {
+                catch {
                     ns.tprint(`ERROR: ...root access denied! cannot hack ${colors.Cyan}${hostname}${colors.Reset}!`);
                 }
             }
+
             // install backdoor via script here?
 
             // at this point the server _should_ have root access,
