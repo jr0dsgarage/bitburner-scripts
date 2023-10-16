@@ -55,19 +55,19 @@ export async function buildScannedServerList(ns: any, depth: number = 1, serverL
  */
 export function canAddServer(serverHostname: string, serverListName: string[]) {
     const forbiddenServers = ['home', 'darkweb'];
-    const forbiddenServerPrefixes = ['pserv-'];
+    //const forbiddenServerPrefixes = ['pserv-'];
 
     const isForbiddenServer = forbiddenServers.some(forbiddenServer => forbiddenServer === serverHostname);
-    const isForbiddenServerPrefix = forbiddenServerPrefixes.some(prefix => serverHostname.startsWith(prefix));
+    //const isForbiddenServerPrefix = forbiddenServerPrefixes.some(prefix => serverHostname.startsWith(prefix));
     const isDuplicateServer = serverListName.includes(serverHostname);
 
-    return !isForbiddenServer && !isForbiddenServerPrefix && !isDuplicateServer;
+    return !isForbiddenServer && !isDuplicateServer;//&& !isForbiddenServerPrefix;
 };
 
 /**
  * the above functions were created by Copilot after I asked a few questions about a better way to do this.
  * below was my attempt....clearly I wasn't thinking in the same direction at all,
- * however copilot did use this code to generate its own code.
+ * however copilot _did_ use this code to generate its own code.
 export function canAddServer(serverName: string, serverListName: string[]) {
     if (!(serverListName.includes(serverName)) || !(serverName == "home" || "darkweb") || !serverName.includes("pserv")) {
         return true;
