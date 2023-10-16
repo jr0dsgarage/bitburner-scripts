@@ -66,14 +66,11 @@ export async function main(ns: any) {
 
         // TODO: add a check to find existing purchased servers and then purchase them if they don't exist
 
-        if (ns.scan().includes("pserv-")) await ns.run("start-purchased-servers.js", 1, hackToDeploy)
+        if (serverList.includes("pserv-")) await ns.run("start-purchased-servers.js", 1, hackToDeploy);
 
-        if (ns.args[1] == "-h") {
-            await ns.run("start-home-server.js", 1, hackToDeploy, "-k");
-        }
-        else {
-            ns.tprint("INFO: skipping home server. use 2nd arg '-h' to include home server in hacktivities.");
-        }
+        if (ns.args[1] == "-h") await ns.run("start-home-server.js", 1, hackToDeploy, "-k");
+        else ns.tprint("INFO: skipping home server. use 2nd arg '-h' to include home server in hacktivities.");
+        
         ns.toast("hacks deployed!");
     }
     else {
