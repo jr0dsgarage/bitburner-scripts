@@ -9,12 +9,16 @@ import { buildScannedServerList } from "./scan-servers";
  * TODO: check for require hacking skill before attempting hack, also
  * TODO: write a logger script that will log all the things
  * TODO: abstract this mess of a script so that each snippet is its own, call-able script that can be used in other scripts
+ * TODO: error message for when the script is called without a hack to deploy
+ * TODO: check for different deepscan apps to probe to the appropriate depth
  */
 
 export async function main(ns: any) {
     const hackToDeploy: string = ns.args[0];
     const scanDepth = 5; // can we get this from ns. ?? scan-analyze depth
     ns.tprint("INFO: attempting to hack all servers...");
+    
+    
     if (hackToDeploy) {
         ns.tprint(`INFO: ...deploying hack ${colors.Yellow}${hackToDeploy}${colors.Reset}`);
         let serverList = await buildScannedServerList(ns, scanDepth);
