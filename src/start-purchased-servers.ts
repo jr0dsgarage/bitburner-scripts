@@ -8,9 +8,8 @@ export async function main(ns: any) {
     let i = 0;
     while (i < ns.getPurchasedServerLimit()) {
         let hostname = "pserv-".concat(i.toString());
-        let availableRAM = ns.getServerMaxRam(hostname) - ns.getServerUsedRam(hostname);
         ns.killall(hostname);
-        let threadsToUse = availableRAM / ns.getScriptRam(hackToApply);
+        let threadsToUse = ns.getServerMaxRam(hostname) - ns.getServerUsedRam(hostname) / ns.getScriptRam(hackToApply);
         ns.exec(hackToApply, hostname, ~~threadsToUse);
         ns.tprint(`INFO: ...hack deployed using ${colors.Magenta}${~~threadsToUse}${colors.Reset} threads on ${colors.Cyan}${hostname}${colors.Reset}`);
         ++i;
