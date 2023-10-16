@@ -1,4 +1,5 @@
 // created by j__r0d 10/11/23
+// colors found on reddit
 export const colors = {
     Black: '\u001b[30m',
     Red: '\u001b[31m',
