@@ -35,18 +35,19 @@ export async function main(ns: any) {
                 //abstract this to a new script
                 ns.tprint(`INFO: ${colors.Cyan}${hostname}${colors.Reset} does not have root access. attempting root...`)
                 ns.scp(hackToDeploy, hostname);
+            
+                // TODO: switch/case for elevating portLevel apps
                 if (portLevel > 0) {
 
                     ns.tprint(`WARN: not enough open ports...`)
                     ns.tprint(`elevating...`);
 
-                    // TODO: switch/case for elevating portLevel apps
+                    
 
                     if (ns.fileExists("brutessh.exe")) ns.brutessh(hostname);
                 }
             }
             try {
-                //TODO: abstract this to a new script
                 if (portLevel > 1 && ns.fileExists("ftpcrack.exe")) {
                     ns.ftpcrack(hostname);
                 }
