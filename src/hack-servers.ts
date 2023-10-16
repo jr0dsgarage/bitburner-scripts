@@ -11,6 +11,7 @@ import { buildScannedServerList } from "./scan-servers";
  * TODO: abstract this mess of a script so that each snippet is its own, call-able script that can be used in other scripts
  * TODO: error message for when the script is called without a hack to deploy
  * TODO: check for different deepscan apps to probe to the appropriate depth
+ * TODO: switch/case for elevating portLevel apps
  */
 
 export async function main(ns: any) {
@@ -23,18 +24,29 @@ export async function main(ns: any) {
         ns.tprint(`INFO: ...deploying hack ${colors.Yellow}${hackToDeploy}${colors.Reset}`);
         let serverList = await buildScannedServerList(ns, scanDepth);
         ns.tprintf(`INFO: found ${colors.Cyan}${serverList.length}${colors.Reset} servers during scan of depth ${colors.Magenta}${scanDepth}${colors.Reset}...`)
+        
+        
+        
         serverList.forEach(hostname => {
             let portLevel = ns.getServerNumPortsRequired(hostname);
+            
+            
             if (!ns.hasRootAccess(hostname)) {
+                //abstract this to a new script
                 ns.tprint(`INFO: ${colors.Cyan}${hostname}${colors.Reset} does not have root access. attempting root...`)
                 ns.scp(hackToDeploy, hostname);
                 if (portLevel > 0) {
+
                     ns.tprint(`WARN: not enough open ports...`)
                     ns.tprint(`elevating...`);
+
+                    // TODO: switch/case for elevating portLevel apps
+
                     if (ns.fileExists("brutessh.exe")) ns.brutessh(hostname);
                 }
             }
             try {
+                //TODO: abstract this to a new script
                 if (portLevel > 1 && ns.fileExists("ftpcrack.exe")) {
                     ns.ftpcrack(hostname);
                 }
@@ -45,7 +57,10 @@ export async function main(ns: any) {
             catch {
                 ns.tprint(`ERROR: cannot elevate ports on ${colors.Cyan}${hostname}${colors.Reset}! ...aborting`);
             }
+
+
             if (!ns.hasRootAccess(hostname)) {
+                //TODO: abstract this to a new script
                 try {
                     ns.nuke(hostname);
                     ns.tprint(`INFO: ...root access granted!`);
@@ -54,6 +69,8 @@ export async function main(ns: any) {
                     ns.tprint(`ERROR: ...root access denied! cannot hack ${colors.Cyan}${hostname}${colors.Reset}!`);
                 }
             }
+
+
 
             // install backdoor via script here?
 
