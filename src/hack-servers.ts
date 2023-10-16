@@ -8,6 +8,7 @@ import { buildScannedServerList } from "./scan-servers";
  * TODO: add a check to find existing purchased servers, and then purchase them if they don't exist
  * TODO: check for require hacking skill before attempting hack, also
  * TODO: write a logger script that will log all the things
+ * TODO: abstract this mess of a script so that each snippet is its own, call-able script that can be used in other scripts
  */
 
 export async function main(ns: any) {
