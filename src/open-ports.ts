@@ -1,11 +1,12 @@
 // created by j__r0d 10/16/23
+import { NS } from "@ns";
 import { colors } from "./colors";
 
 /** @param {NS} ns */
-export async function main(ns: any) {
-    let hostname = ns.args[0];
+export async function main(ns: NS) {
+    let hostname = ns.args[0]?.toString();
     let portsRequired = ns.args[1];
-    openPorts(ns, hostname, portsRequired);
+    openPorts(ns, hostname, ~~portsRequired);
 }
 
 export async function openPorts(ns: any, hostname: string, portsRequired: number) {

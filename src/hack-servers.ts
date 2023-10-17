@@ -2,6 +2,7 @@
 import { colors } from "./colors";
 import { buildScannedServerList } from "./scan-servers";
 import { openPorts } from "./open-ports";
+import { NS } from "@ns";
 /** @param {NS} ns */
 
 /** 
@@ -15,8 +16,8 @@ import { openPorts } from "./open-ports";
  * 
  */
 
-export async function main(ns: any) {
-    const hackToDeploy: string = ns.args[0];
+export async function main(ns: NS) {
+    const hackToDeploy: string = ns.args[0]?.toString();
     const scanDepth = 5; // can get this by scanning for known exe's 
     ns.tprint("INFO: attempting to hack all servers...");
 
@@ -26,7 +27,7 @@ export async function main(ns: any) {
         let serverList = await buildScannedServerList(ns, scanDepth);
         ns.tprintf(`INFO: found ${colors.Cyan}${serverList.length}${colors.Reset} servers during scan of depth ${colors.Magenta}${scanDepth}${colors.Reset}...`)
 
-        serverList.forEach(hostname => {
+        serverList.forEach((hostname: string) => {
             ns.scp(hackToDeploy, hostname);
             if (!ns.hasRootAccess(hostname)) {
                 ns.tprint(`WARN: ${colors.Cyan}${hostname}${colors.Reset} does not have root access. attempting root...`)
@@ -55,11 +56,9 @@ export async function main(ns: any) {
         });
 
         // TODO: add a check to find existing purchased servers and then purchase them if they don't exist
-        ns.tprint(ns.scan());
-        if (ns.scan().includes((hostname: string) => /^pserv-\d+$/.test(hostname))) {
-            ns.tprint("pservers!");
-            // await ns.run("start-purchased-servers.js", 1, hackToDeploy);
-        }
+
+        if (ns.scan().includes("pserv-1")) await ns.run("start-purchased-servers.js", 1, hackToDeploy);
+        else ns.tprint("INFO: no purchased servers, skipping...")
 
         if (ns.args[1] == "-h") await ns.run("start-home-server.js", 1, hackToDeploy, "-k");
         else ns.tprint("INFO: skipping home server. use 2nd arg '-h' to include home server in hacktivities.");

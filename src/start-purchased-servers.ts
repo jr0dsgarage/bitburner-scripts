@@ -1,11 +1,12 @@
 // created by j__r0d 10/11/23
+import { NS } from "@ns";
 import { colors } from "./colors";
 
 /** @param {NS} ns */
-export async function main(ns: any) {
+export async function main(ns: NS) {
     ns.tprint("INFO: deploying hack on purchased servers...");
-    const hackToDeploy = ns.args[0];
-    let i = 0;
+    const hackToDeploy = ns.args[0].toString();
+    let i = 1;
     while (i < ns.getPurchasedServerLimit()) {
         let hostname = "pserv-".concat(i.toString());
         ns.killall(hostname);
