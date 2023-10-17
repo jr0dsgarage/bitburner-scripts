@@ -6,11 +6,12 @@ import { colors } from "./colors";
 export async function main(ns: NS) {
     ns.tprint(`INFO: deploying hack on ${colors.Cyan}home${colors.Reset} server...`);
     const hackToDeploy = ns.args[0]?.toString(); 
+    const hackTarget = ns.args[1]?.toString();
     let hostname = "home";
     if (ns.args[1] == "-k") {
         ns.killall();
     }
     let threadsToUse = Math.max(1, (ns.getServerMaxRam(hostname) - ns.getServerUsedRam(hostname)) / ns.getScriptRam(hackToDeploy));
-    ns.run(hackToDeploy, ~~threadsToUse);
+    ns.run(hackToDeploy, ~~threadsToUse, hackTarget);
     ns.tprint(`INFO: ...hack deployed using ${colors.Magenta}${~~threadsToUse}${colors.Reset} threads`);
 }

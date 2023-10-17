@@ -17,7 +17,12 @@ import { NS } from "@ns";
 
 export async function main(ns: NS) {
     const hackToDeploy: string = ns.args[0]?.toString();
-    const scanDepth = 5; // can get this by scanning for known exe's 
+    
+    
+    let scanDepth = 3; // can get this by scanning for known exe's 
+    if (ns.fileExists("DeepscanV1.exe")) scanDepth = 5;
+    if (ns.fileExists("DeepscanV2.exe")) scanDepth = 10;
+    
     ns.tprint("INFO: hack initiated...");
 
 
@@ -25,7 +30,10 @@ export async function main(ns: NS) {
         ns.tprint(`INFO: ...deploying hack ${colors.Yellow}${hackToDeploy}${colors.Reset}`);
         let serverList = await buildScannedServerList(ns, scanDepth);
         ns.tprint(`INFO: found ${colors.Cyan}${serverList.length}${colors.Reset} servers during scan of depth ${colors.Magenta}${scanDepth}${colors.Reset}...`)
-        ns.tprint(`...attempting to hack servers...`)
+
+        const hackTarget = serverWithMostMoney(ns, serverList);
+
+        ns.tprint(`INFO:...attempting to hack servers...`)
         serverList.forEach((hostname: string) => {
             ns.scp(hackToDeploy, hostname);
             if (!ns.hasRootAccess(hostname)) {
@@ -47,10 +55,12 @@ export async function main(ns: NS) {
             // and make sure hacking skill is high enough, no sense in hacking without the skill required!
             if (ns.hasRootAccess(hostname)) { //&& ns.getHackingLevel() >= ns.getServerRequiredHackingLevel(hostname)) {
                 ns.killall(hostname);
-                let threadsToUse = 1 + Math.max(1, (ns.getServerMaxRam(hostname) - ns.getServerUsedRam(hostname)) / ns.getScriptRam(hackToDeploy));
+                let threadsToUse = Math.max(1, (ns.getServerMaxRam(hostname) - ns.getServerUsedRam(hostname)) / ns.getScriptRam(hackToDeploy));
                 //DEBUG: ns.tprintf(`${~~threadsToUse}`);
                 ns.tprint(`INFO: deploying hack to server: ${colors.Cyan}${hostname}${colors.Reset}...`);
-                ns.exec(hackToDeploy, hostname, ~~threadsToUse);
+                
+                ns.exec(hackToDeploy, hostname, ~~threadsToUse, hackTarget);
+                
                 ns.tprint(`INFO: ...hack deployed using ${colors.Magenta}${~~threadsToUse}${colors.Reset} threads`);
             }
         });
@@ -59,7 +69,7 @@ export async function main(ns: NS) {
         if (ns.scan().includes("pserv-1")) await ns.run("start-purchased-servers.js", 1, hackToDeploy);
         else ns.tprint("INFO: no purchased servers, skipping...")
 
-        if (ns.args[1] == "-h") await ns.run("start-home-server.js", 1, hackToDeploy, "-k");
+        if (ns.args[1] == "-h") await ns.run("start-home-server.js", 1, hackToDeploy, hackTarget, "-k");
         else ns.tprint("INFO: skipping home server. use 2nd arg '-h' to include home server in hacktivities.");
 
         ns.toast("hacks deployed!");
@@ -68,3 +78,12 @@ export async function main(ns: NS) {
         ns.tprint("ERROR: no hack to deploy. include script name! use 2nd arg '-h' to include home server in hacktivities.");
     };
 }
+
+const serverWithMostMoney = (ns: NS, serverList: any) => {
+    const servers = serverList.filter((server: string) => server !== "home" && !/pserv-\d/.test(server));
+    return servers.reduce((a: string, b: string) => {
+      return ns.getServerMoneyAvailable(b) > ns.getServerMoneyAvailable(a)
+        ? b
+        : a;
+    });
+  };
