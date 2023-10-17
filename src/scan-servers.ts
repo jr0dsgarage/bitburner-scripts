@@ -1,6 +1,6 @@
 // created by j__r0d 10/12/23
 // scans all servers and builds a list of servers to hack
-import { NS } from "@ns";
+import { NS } from '@ns';
 import { colors } from "./colors";
 
 /** @param {NS} ns */
@@ -12,14 +12,14 @@ export async function main(ns: NS) {
     ns.tprintf(`${colors.Cyan}${serverList}${colors.Reset}`);
 }
 /**
- * 
- * @param ns 
+ * @remarks This function is a recursive function that scans servers to a given depth and returns a list of servers to hack.
+ * @param {NS} ns 
  * @param depth scan depth; defaults to 1
  * @param serverList [Optional] running list of servers (is returned at end of recursion)
  * @param scannedServers [Optional] list of servers already scanned
- * @returns 
+ * @returns Array of all servers found up to specified depth.  The server hostnames in the returned array are string values. 
  */
-export async function buildScannedServerList(ns: any, depth: number = 1, serverList: string[] = [], scannedServers: string[] = []) {
+export async function buildScannedServerList(ns: NS, depth: number = 1, serverList: string[] = [], scannedServers: string[] = []) {
     // ns.tprintf(`scanning servers to depth ${colors.Magenta}${depth}${colors.Reset}`);
 
     // THIS IS CURRENTLY BROKEN and doesn't recurse as expected because the 'depth-1' only happens once
