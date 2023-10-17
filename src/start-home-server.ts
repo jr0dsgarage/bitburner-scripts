@@ -9,7 +9,7 @@ export async function main(ns: any) {
     if (ns.args[1] == "-k") {
         ns.killall();
     }
-    let threadsToUse = ns.getServerMaxRam(hostname) - ns.getServerUsedRam(hostname) / ns.getScriptRam(hackToApply);
+    let threadsToUse = (ns.getServerMaxRam(hostname) - ns.getServerUsedRam(hostname)) / ns.getScriptRam(hackToApply);
     ns.run(hackToApply, ~~threadsToUse);
     ns.tprint(`INFO: ...hack deployed using ${colors.Magenta}${~~threadsToUse}${colors.Reset} threads`);
 }
