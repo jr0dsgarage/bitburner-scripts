@@ -1,12 +1,13 @@
 // created by j__r0d 10/12/23
 // scans all servers and builds a list of servers to hack
+import { NS } from "@ns";
 import { colors } from "./colors";
 
 /** @param {NS} ns */
-export async function main(ns: any) {
+export async function main(ns: NS) {
     // for testing in bitburner Terminal
-    let depth = ns.args[0] || 1;
-    let serverList = await buildScannedServerList(ns, depth);
+    let depth = ns.args[0].toString() || 1;
+    let serverList = await buildScannedServerList(ns, ~~depth);
     ns.tprintf(`found ${colors.Cyan}${serverList.length}${colors.Reset} servers`)
     ns.tprintf(`${colors.Cyan}${serverList}${colors.Reset}`);
 }
@@ -55,13 +56,13 @@ export async function buildScannedServerList(ns: any, depth: number = 1, serverL
  */
 export function canAddServer(serverHostname: string, serverListName: string[]) {
     const forbiddenServers = ['home', 'darkweb'];
-    //const forbiddenServerPrefixes = ['pserv-'];
+    const forbiddenServerPrefixes = ['pserv-'];
 
     const isForbiddenServer = forbiddenServers.some(forbiddenServer => forbiddenServer === serverHostname);
-    //const isForbiddenServerPrefix = forbiddenServerPrefixes.some(prefix => serverHostname.startsWith(prefix));
+    const isForbiddenServerPrefix = forbiddenServerPrefixes.some(prefix => serverHostname.startsWith(prefix));
     const isDuplicateServer = serverListName.includes(serverHostname);
 
-    return !isForbiddenServer && !isDuplicateServer;//&& !isForbiddenServerPrefix;
+    return !isForbiddenServer && !isDuplicateServer && !isForbiddenServerPrefix;
 };
 
 /**

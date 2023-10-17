@@ -10,7 +10,6 @@ import { NS } from "@ns";
  * TODO: add a check to find existing purchased servers, and then purchase them if they don't exist
  * TODO: abstract this mess of a script so that each snippet is its own, call-able script that can be used in other scripts
  * TODO: check for different deepscan exe's to probe to the appropriate depth
- * TODO: go back to using another script to start purchased servers
  * TODO: hack target??  from Documentation/beginner's guide: 
  *      "your hacking target should be the  with highest max money that's required hacking level is under 1/2 of your hacking level."
  * 
@@ -56,7 +55,6 @@ export async function main(ns: NS) {
         });
 
         // TODO: add a check to find existing purchased servers and then purchase them if they don't exist
-
         if (ns.scan().includes("pserv-1")) await ns.run("start-purchased-servers.js", 1, hackToDeploy);
         else ns.tprint("INFO: no purchased servers, skipping...")
 
