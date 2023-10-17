@@ -18,14 +18,14 @@ import { NS } from "@ns";
 export async function main(ns: NS) {
     const hackToDeploy: string = ns.args[0]?.toString();
     const scanDepth = 5; // can get this by scanning for known exe's 
-    ns.tprint("INFO: attempting to hack all servers...");
+    ns.tprint("INFO: hack initiated...");
 
 
     if (hackToDeploy) {
         ns.tprint(`INFO: ...deploying hack ${colors.Yellow}${hackToDeploy}${colors.Reset}`);
         let serverList = await buildScannedServerList(ns, scanDepth);
-        ns.tprintf(`INFO: found ${colors.Cyan}${serverList.length}${colors.Reset} servers during scan of depth ${colors.Magenta}${scanDepth}${colors.Reset}...`)
-
+        ns.tprint(`INFO: found ${colors.Cyan}${serverList.length}${colors.Reset} servers during scan of depth ${colors.Magenta}${scanDepth}${colors.Reset}...`)
+        ns.tprint(`...attempting to hack servers...`)
         serverList.forEach((hostname: string) => {
             ns.scp(hackToDeploy, hostname);
             if (!ns.hasRootAccess(hostname)) {
