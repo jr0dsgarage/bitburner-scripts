@@ -47,7 +47,8 @@ export async function main(ns: NS) {
             // and make sure hacking skill is high enough, no sense in hacking without the skill required!
             if (ns.hasRootAccess(hostname)) { //&& ns.getHackingLevel() >= ns.getServerRequiredHackingLevel(hostname)) {
                 ns.killall(hostname);
-                let threadsToUse = Math.max(1, (ns.getServerMaxRam(hostname) - ns.getServerUsedRam(hostname)) / ns.getScriptRam(hackToDeploy));
+                let threadsToUse = 1 + Math.max(1, (ns.getServerMaxRam(hostname) - ns.getServerUsedRam(hostname)) / ns.getScriptRam(hackToDeploy));
+                //DEBUG: ns.tprintf(`${~~threadsToUse}`);
                 ns.tprint(`INFO: deploying hack to server: ${colors.Cyan}${hostname}${colors.Reset}...`);
                 ns.exec(hackToDeploy, hostname, ~~threadsToUse);
                 ns.tprint(`INFO: ...hack deployed using ${colors.Magenta}${~~threadsToUse}${colors.Reset} threads`);
