@@ -9,7 +9,14 @@ export async function main(ns: NS) {
     openPorts(ns, hostname, ~~portsRequired);
 }
 
-export async function openPorts(ns: any, hostname: string, portsRequired: number) {
+/**
+ * 
+ * @param ns 
+ * @param hostname server's hostname
+ * @param portsRequired number of ports to open
+ * @returns 
+ */
+export async function openPorts(ns: NS, hostname: string, portsRequired: number) {
     const programs = ["brutessh.exe", "ftpcrack.exe", "relaysmtp.exe"];
     const maxPorts = programs.length;
     ns.tprint(`INFO: ... attempting to open ports on ${colors.Cyan}${hostname}${colors.Reset}...`);
