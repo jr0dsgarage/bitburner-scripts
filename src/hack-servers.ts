@@ -10,7 +10,9 @@ import { openPorts } from "./open-ports";
  * TODO: abstract this mess of a script so that each snippet is its own, call-able script that can be used in other scripts
  * TODO: check for different deepscan exe's to probe to the appropriate depth
  * TODO: go back to using another script to start purchased servers
- * TODO: hack multiple targets??  need to figure out why the hack has a target
+ * TODO: hack target??  from Documentation/beginner's guide: 
+ *      "your hacking target should be the  with highest max money that's required hacking level is under 1/2 of your hacking level."
+ * 
  */
 
 export async function main(ns: any) {
@@ -39,16 +41,13 @@ export async function main(ns: any) {
                 }
             }
 
-
-            // install backdoor via script here?
-
             // at this point the server _should_ have root access,
             // but still could have failed to deploy NUKE.exe
             // so check for root access again before deploying hack
             // and make sure hacking skill is high enough, no sense in hacking without the skill required!
             if (ns.hasRootAccess(hostname)) { //&& ns.getHackingLevel() >= ns.getServerRequiredHackingLevel(hostname)) {
                 ns.killall(hostname);
-                let threadsToUse = (ns.getServerMaxRam(hostname) - ns.getServerUsedRam(hostname)) / ns.getScriptRam(hackToDeploy);
+                let threadsToUse = Math.max(1, (ns.getServerMaxRam(hostname) - ns.getServerUsedRam(hostname)) / ns.getScriptRam(hackToDeploy));
                 ns.tprint(`INFO: deploying hack to server: ${colors.Cyan}${hostname}${colors.Reset}...`);
                 ns.exec(hackToDeploy, hostname, ~~threadsToUse);
                 ns.tprint(`INFO: ...hack deployed using ${colors.Magenta}${~~threadsToUse}${colors.Reset} threads`);
@@ -56,8 +55,11 @@ export async function main(ns: any) {
         });
 
         // TODO: add a check to find existing purchased servers and then purchase them if they don't exist
-
-        if (serverList.includes("pserv-")) await ns.run("start-purchased-servers.js", 1, hackToDeploy);
+        ns.tprint(ns.scan());
+        if (ns.scan().includes((hostname: string) => /^pserv-\d+$/.test(hostname))) {
+            ns.tprint("pservers!");
+            // await ns.run("start-purchased-servers.js", 1, hackToDeploy);
+        }
 
         if (ns.args[1] == "-h") await ns.run("start-home-server.js", 1, hackToDeploy, "-k");
         else ns.tprint("INFO: skipping home server. use 2nd arg '-h' to include home server in hacktivities.");
