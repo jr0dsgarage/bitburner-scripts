@@ -11,9 +11,8 @@ export async function main(ns: NS) {
     let i = 1;
     while (i < ns.getPurchasedServerLimit()) {
         let hostname = "pserv-".concat(i.toString());
-        let threadsToUse = Math.max(1, (ns.getServerMaxRam(hostname) - ns.getServerUsedRam(hostname)) / ns.getScriptRam(hackToDeploy));
-        
         ns.killall(hostname);
+        let threadsToUse = Math.max(1, (ns.getServerMaxRam(hostname) - ns.getServerUsedRam(hostname)) / ns.getScriptRam(hackToDeploy));
         ns.scp(hackToDeploy, hostname);  
         ns.exec(hackToDeploy, hostname, ~~threadsToUse, hackTarget)
         if (ns.scriptRunning(hackToDeploy, hostname)) {
