@@ -17,7 +17,7 @@ export async function main(ns: NS) {
  * @returns 
  */
 export async function openPorts(ns: NS, hostname: string, portsRequired: number) {
-    const programs = ["brutessh.exe", "ftpcrack.exe", "relaysmtp.exe","sqlinject.exe"];
+    const programs = ["brutessh.exe", "ftpcrack.exe", "relaysmtp.exe","httpworm.exe","sqlinject.exe"];
     const maxPorts = programs.length;
     ns.tprint(`INFO: ... attempting to open ports on ${colors.Cyan}${hostname}${colors.Reset}...`);
     for (let i = 0; i < portsRequired && i < maxPorts; i++) {
@@ -35,6 +35,9 @@ export async function openPorts(ns: NS, hostname: string, portsRequired: number)
                         ns.relaysmtp(hostname);
                         break;
                     case 3:
+                        ns.httpworm(hostname);
+                        break;
+                    case 4:
                         ns.sqlinject(hostname);
                         break;
                 }
