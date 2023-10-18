@@ -43,7 +43,7 @@ export async function openPorts(ns: NS, hostname: string, portsRequired: number)
                 return;
             }
         } catch {
-            ns.tprint(`ERROR: Failed to open port ${i} ...aborting`);
+            ns.tprint(`ERROR: Failed to open port ${i+1} ...aborting`);
             return;
         }
     }
