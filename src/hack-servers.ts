@@ -3,7 +3,9 @@ import { colors } from "./colors";
 import { buildScannedServerList } from "./scan-servers";
 import { openPorts } from "./open-ports";
 import { NS } from "@ns";
-/** @param {NS} ns */
+/** 
+ * @param {NS} ns Netscript namespace
+ */
 
 /** 
  * TODO: write a logger script that will log all the things - might be unnecessary?  i'm only after a better way to format the terminal output
@@ -17,21 +19,19 @@ import { NS } from "@ns";
 
 export async function main(ns: NS) {
     const hackToDeploy: string = ns.args[0]?.toString();
-    
-    
-    let scanDepth = 3; // can get this by scanning for known exe's 
+    const includeHome = (ns.args[1]?.toString() === "-h");
+    let scanDepth = 3; 
     if (ns.fileExists("DeepscanV1.exe")) scanDepth = 5;
     if (ns.fileExists("DeepscanV2.exe")) scanDepth = 10;
     
     ns.tprint("INFO: hack initiated...");
-
-
     if (hackToDeploy) {
         ns.tprint(`INFO: ...deploying hack ${colors.Yellow}${hackToDeploy}${colors.Reset}`);
         let serverList = await buildScannedServerList(ns, scanDepth);
         ns.tprint(`INFO: found ${colors.Cyan}${serverList.length}${colors.Reset} servers during scan of depth ${colors.Magenta}${scanDepth}${colors.Reset}...`)
 
         const hackTarget = serverWithMostMoney(ns, serverList);
+        ns.tprint(`INFO: ...${colors.Green}${hackTarget}${colors.Reset} server selected as hack target 🎯`);
 
         ns.tprint(`INFO:...attempting to hack servers...`)
         serverList.forEach((hostname: string) => {
@@ -60,16 +60,15 @@ export async function main(ns: NS) {
                 ns.tprint(`INFO: deploying hack to server: ${colors.Cyan}${hostname}${colors.Reset}...`);
                 
                 ns.exec(hackToDeploy, hostname, ~~threadsToUse, hackTarget);
-                
-                ns.tprint(`INFO: ...hack deployed using ${colors.Magenta}${~~threadsToUse}${colors.Reset} threads`);
+                if (ns.scriptRunning(hackToDeploy, hostname)) ns.tprint(`INFO: ...hack deployed using ${colors.Magenta}${~~threadsToUse}${colors.Reset} threads`);
             }
         });
 
         // TODO: add a check to find existing purchased servers and then purchase them if they don't exist
-        if (ns.scan().includes("pserv-1")) await ns.run("start-purchased-servers.js", 1, hackToDeploy);
+        if (ns.scan().includes(`pserv-1`)) ns.run("start-purchased-servers.js", 1, hackToDeploy, hackTarget);
         else ns.tprint("INFO: no purchased servers, skipping...")
 
-        if (ns.args[1] == "-h") await ns.run("start-home-server.js", 1, hackToDeploy, hackTarget, "-k");
+        if (includeHome) ns.run("start-home-server.js", 1, hackToDeploy, hackTarget, "-k");
         else ns.tprint("INFO: skipping home server. use 2nd arg '-h' to include home server in hacktivities.");
 
         ns.toast("hacks deployed!");
@@ -79,11 +78,19 @@ export async function main(ns: NS) {
     };
 }
 
+/**
+ * @remarks If the money available on the current server is greater than the money available on the accumulator server, 
+ * @remarks the callback function returns the name of the current server (b), otherwise it returns the name of the accumulator server (a). 
+ * @remarks This process continues until all servers in the array have been compared, at which point the name of the server with the highest amount of money available is returned.
+ * @param ns Netscript namespace
+ * @param serverList List of scanned servers
+ * @returns The server hostname that has the most money available, the server hostname will be a string.
+ */
 const serverWithMostMoney = (ns: NS, serverList: any) => {
     const servers = serverList.filter((server: string) => server !== "home" && !/pserv-\d/.test(server));
-    return servers.reduce((a: string, b: string) => {
-      return ns.getServerMoneyAvailable(b) > ns.getServerMoneyAvailable(a)
-        ? b
-        : a;
+    return servers.reduce((accumulator: string, currentValue: string) => {
+      return ns.getServerMoneyAvailable(currentValue) > ns.getServerMoneyAvailable(accumulator)
+        ? currentValue
+        : accumulator;
     });
   };
