@@ -7,6 +7,8 @@ import { NS } from "@ns";
 
 /** @param {NS} ns */
 export async function main(ns: NS) {
+  //DEBUG: ns.tprintf(`${ns.getHostname()} reporting in...`)
+  
   // Defines the "target server", which is the server
   // that we're going to hack. 
   const target: any = ns.args[0];
