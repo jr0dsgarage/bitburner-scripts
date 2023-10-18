@@ -19,7 +19,6 @@ export async function main(ns: NS) {
 export async function openPorts(ns: NS, hostname: string, portsRequired: number) {
     const programs = ["brutessh.exe", "ftpcrack.exe", "relaysmtp.exe","httpworm.exe","sqlinject.exe"];
     const maxPorts = programs.length;
-    ns.tprint(`INFO: ... attempting to open ports on ${colors.Cyan}${hostname}${colors.Reset}...`);
     for (let i = 0; i < portsRequired && i < maxPorts; i++) {
         ns.tprint(`INFO: ...opening port ${colors.Magenta}${i+1}${colors.Reset}`); // i+1 because ports are 1-indexed
         try {
