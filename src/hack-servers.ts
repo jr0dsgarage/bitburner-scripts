@@ -30,7 +30,7 @@ export async function main(ns: NS) {
         let serverList = await buildScannedServerList(ns, scanDepth);
         ns.tprint(`INFO: found ${colors.Cyan}${serverList.length}${colors.Reset} servers during scan of depth ${colors.Magenta}${scanDepth}${colors.Reset}...`)
 
-        const hackTarget = serverWithMostMoney(ns, serverList);
+        const hackTarget = `joesguns`; //serverWithMostMoney(ns, serverList);
         ns.tprint(`INFO: ...${colors.Green}${hackTarget}${colors.Reset} server selected as hack target 🎯`);
 
         ns.tprint(`INFO:...attempting to hack servers...`)
