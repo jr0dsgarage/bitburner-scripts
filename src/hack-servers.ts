@@ -26,18 +26,17 @@ export async function main(ns: NS) {
     
     ns.tprint("INFO: hack initiated...");
     if (hackToDeploy) {
-        ns.tprint(`INFO: ...deploying hack ${colors.Yellow}${hackToDeploy}${colors.Reset}`);
         let serverList = await buildScannedServerList(ns, scanDepth);
-        ns.tprint(`INFO: found ${colors.Cyan}${serverList.length}${colors.Reset} servers during scan of depth ${colors.Magenta}${scanDepth}${colors.Reset}...`)
+        ns.tprint(`INFO: found ${colors.Cyan}${serverList.length}${colors.Reset} servers during scan of depth ${colors.Magenta}${scanDepth}${colors.Reset}...`);
 
         const hackTarget = `joesguns`; //serverWithMostMoney(ns, serverList);
         ns.tprint(`INFO: 🎯${colors.Green}${hackTarget}${colors.Reset} `);
 
-        ns.tprint(`INFO: ...attempting to hack servers...`)
+        ns.tprint(`INFO: ...attempting to hack servers...`);
         serverList.forEach((hostname: string) => {
             ns.scp(hackToDeploy, hostname);
             if (!ns.hasRootAccess(hostname)) {
-                ns.tprint(`WARN: ${colors.Cyan}${hostname}${colors.Reset} does not have root access. attempting root...`)
+                ns.tprint(`WARN: ${colors.Cyan}${hostname}${colors.Reset} does not have root access. attempting root...`);
                 openPorts(ns, hostname);
                 try {
                     ns.nuke(hostname);
@@ -55,17 +54,16 @@ export async function main(ns: NS) {
             if (ns.hasRootAccess(hostname)) { //&& ns.getHackingLevel() >= ns.getServerRequiredHackingLevel(hostname)) {
                 ns.killall(hostname);
                 let threadsToUse = Math.max(1, (ns.getServerMaxRam(hostname) - ns.getServerUsedRam(hostname)) / ns.getScriptRam(hackToDeploy));
-                //DEBUG: ns.tprintf(`${~~threadsToUse}`);
                 ns.tprint(`INFO: deploying hack to server: ${colors.Cyan}${hostname}${colors.Reset}`);
                 
                 ns.exec(hackToDeploy, hostname, ~~threadsToUse, hackTarget);
-                if (ns.scriptRunning(hackToDeploy, hostname)) ns.tprint(`INFO: ...hack deployed using ${colors.Magenta}${~~threadsToUse}${colors.Reset} threads`);
+                if (ns.scriptRunning(hackToDeploy, hostname)) ns.tprint(`INFO: ...hack deployed using ${colors.Magenta}${~~threadsToUse}${colors.Reset} threads!`);
             }
         });
 
         // TODO: add a check to find existing purchased servers and then purchase them if they don't exist
         if (ns.scan().includes(`pserv-1`)) ns.run("start-purchased-servers.js", 1, hackToDeploy, hackTarget);
-        else ns.tprint("INFO: no purchased servers, skipping...")
+        else ns.tprint("INFO: no purchased servers, skipping...");
 
         if (includeHome) ns.run("start-home-server.js", 1, hackToDeploy, hackTarget, "-k");
         else ns.tprint("INFO: skipping home server. use 2nd arg '-h' to include home server in hacktivities.");
