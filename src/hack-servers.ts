@@ -31,15 +31,14 @@ export async function main(ns: NS) {
         ns.tprint(`INFO: found ${colors.Cyan}${serverList.length}${colors.Reset} servers during scan of depth ${colors.Magenta}${scanDepth}${colors.Reset}...`)
 
         const hackTarget = `joesguns`; //serverWithMostMoney(ns, serverList);
-        ns.tprint(`INFO: ...${colors.Green}${hackTarget}${colors.Reset} server selected as hack target 🎯`);
+        ns.tprint(`INFO: 🎯${colors.Green}${hackTarget}${colors.Reset} `);
 
-        ns.tprint(`INFO:...attempting to hack servers...`)
+        ns.tprint(`INFO: ...attempting to hack servers...`)
         serverList.forEach((hostname: string) => {
             ns.scp(hackToDeploy, hostname);
             if (!ns.hasRootAccess(hostname)) {
                 ns.tprint(`WARN: ${colors.Cyan}${hostname}${colors.Reset} does not have root access. attempting root...`)
-                openPorts(ns, hostname, ns.getServerNumPortsRequired(hostname));
-
+                openPorts(ns, hostname);
                 try {
                     ns.nuke(hostname);
                     ns.tprint(`INFO: ...root access granted!`);
@@ -57,7 +56,7 @@ export async function main(ns: NS) {
                 ns.killall(hostname);
                 let threadsToUse = Math.max(1, (ns.getServerMaxRam(hostname) - ns.getServerUsedRam(hostname)) / ns.getScriptRam(hackToDeploy));
                 //DEBUG: ns.tprintf(`${~~threadsToUse}`);
-                ns.tprint(`INFO: deploying hack to server: ${colors.Cyan}${hostname}${colors.Reset}...`);
+                ns.tprint(`INFO: deploying hack to server: ${colors.Cyan}${hostname}${colors.Reset}`);
                 
                 ns.exec(hackToDeploy, hostname, ~~threadsToUse, hackTarget);
                 if (ns.scriptRunning(hackToDeploy, hostname)) ns.tprint(`INFO: ...hack deployed using ${colors.Magenta}${~~threadsToUse}${colors.Reset} threads`);

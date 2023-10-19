@@ -5,8 +5,7 @@ import { colors } from "./colors";
 /** @param {NS} ns */
 export async function main(ns: NS) {
     let hostname = ns.args[0]?.toString();
-    let portsRequired = ns.args[1];
-    openPorts(ns, hostname, ~~portsRequired);
+    openPorts(ns, hostname);
 }
 
 /**
@@ -16,11 +15,18 @@ export async function main(ns: NS) {
  * @param portsRequired number of ports to open
  * @returns 
  */
-export async function openPorts(ns: NS, hostname: string, portsRequired: number) {
-    const programs = ["brutessh.exe", "ftpcrack.exe", "relaysmtp.exe","httpworm.exe","sqlinject.exe"];
+export async function openPorts(ns: NS, hostname: string) {
+    const programs = [
+        `brutessh.exe`,
+        `ftpcrack.exe`,
+        `relaysmtp.exe`,
+        `httpworm.exe`,
+        `sqlinject.exe`
+    ];
     const maxPorts = programs.length;
+    const portsRequired = ns.getServerNumPortsRequired(hostname);
     for (let i = 0; i < portsRequired && i < maxPorts; i++) {
-        ns.tprint(`INFO: ...opening port ${colors.Magenta}${i+1}${colors.Reset}`); // i+1 because ports are 1-indexed
+        //ns.tprint(`INFO: ...opening port ${colors.Magenta}${i+1}${colors.Reset}...`); // i+1 because ports are 1-indexed
         try {
             if (ns.fileExists(programs[i])) {
                 switch (i) {
@@ -41,11 +47,10 @@ export async function openPorts(ns: NS, hostname: string, portsRequired: number)
                         break;
                 }
             } else {
-                ns.tprint(`ERROR: ${programs[i]} unavailable ...aborting`);
-                return;
+                throw (`${colors.Yellow}${programs[i]}${colors.Reset} unavailable, cannot open port ${colors.Magenta}${i+1}${colors.Reset}`);
             }
-        } catch {
-            ns.tprint(`ERROR: Failed to open port ${i+1} ...aborting`);
+        } catch(err) {
+            ns.tprint(`ERROR: ${err} ...aborting`);
             return;
         }
     }
