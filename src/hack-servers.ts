@@ -45,12 +45,12 @@ export async function main(ns: NS) {
                     ns.tprint(`INFO: ...💣 successful. root access granted!`);
                 }
                 catch {
-                    ns.tprint(`ERROR: ...root access denied! cannot hack ${colors.Cyan}${hostname}${colors.Reset}!`);
+                    ns.tprint(`ERROR: ...root access denied! ❌ cannot hack ${colors.Cyan}${hostname}${colors.Reset}!`);
                 }
             }
             else {
                 ns.scp(hackToDeploy, hostname); // always over-write the existing script with the latest version
-                deployHack(hostname, hackToDeploy, hackTarget);
+                deployHack(ns, hostname, hackToDeploy, hackTarget);
             }
         });
 

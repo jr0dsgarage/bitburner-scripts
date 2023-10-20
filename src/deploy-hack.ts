@@ -7,7 +7,7 @@ import { colors } from "./colors";
  * @param {string} hackToDeploy
  * @param {string} hackTarget
  *  */
-export async function main(ns: NS, hostname: string, hackToDeploy: string, hackTarget: string = `joesguns`) {
+export async function deployHack(ns: NS, hostname: string, hackToDeploy: string, hackTarget: string = `joesguns`) {
     ns.killall(hostname);
     let threadsToUse = Math.max(1, (ns.getServerMaxRam(hostname) - ns.getServerUsedRam(hostname)) / ns.getScriptRam(hackToDeploy));
     ns.tprint(`INFO: deploying hack to server: ${colors.Cyan}${hostname}${colors.Reset}`);
