@@ -36,7 +36,6 @@ export async function main(ns: NS) {
 
         ns.tprint(`INFO: attempting to hack servers...`);
         serverList.forEach((hostname: string) => {
-            ns.tprintf(`${colors.Cyan}${hostname}${colors.Reset}`)
             if (!ns.hasRootAccess(hostname)) {
                 ns.tprint(`WARN: ${colors.Cyan}${hostname}${colors.Reset} does not have root access. attempting root...`);
                 openPorts(ns, hostname);
