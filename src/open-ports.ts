@@ -12,7 +12,6 @@ export async function main(ns: NS) {
  * @remarks This function opens a specified number of ports on a server. 
  * @param ns 
  * @param hostname server's hostname
- * @param portsRequired number of ports to open
  * @returns 
  */
 export async function openPorts(ns: NS, hostname: string) {
