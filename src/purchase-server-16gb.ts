@@ -1,7 +1,7 @@
 // the contents of this script came from the Beginner's Guide in the game's documentation...
-
+import { NS } from "@ns";
 /** @param {NS} ns */
-export async function main(ns: any) {
+export async function main(ns: NS) {
     // How much RAM each purchased server will have. In this case, it'll
     // be 8GB.
     const ram = 16;
