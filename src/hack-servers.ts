@@ -15,7 +15,7 @@ import { NS } from "@ns";
  * TODO: hack target??  from Documentation/beginner's guide: 
  *      `your hacking target should be the  with highest max money that's required hacking level is under 1/2 of your hacking level.`
  *      `Keep security level low. Security level affects everything when hacking. Two important Netscript functions for this are getServerSecurityLevel() and getServerMinSecurityLevel()`
- * 
+ * TODO: instead of a bunch of helper scripts, make a Library of helper functions (ie: hackLib.openPorts(ns, hostname))
  */
 
 export async function main(ns: NS) {
@@ -48,7 +48,6 @@ export async function main(ns: NS) {
                 }
             }
             else {
-                ns.scp(hackToDeploy, hostname); // always over-write the existing script with the latest version
                 deployHack(ns, hostname, hackToDeploy, hackTarget);
             }
         });
