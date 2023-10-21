@@ -1,5 +1,6 @@
 // the contents of this script came from the Beginner's Guide in the game's documentation...
-import { NS } from "@ns";
+import { NS } from '@ns';
+import { deployHack } from './deploy-hack';
 /** @param {NS} ns */
 
 /**
@@ -8,7 +9,7 @@ import { NS } from "@ns";
  * @param {NS} ns 
  */
 
-export async function main(ns: NS) {
+export async function main(ns: NS, hackToDeploy: string, hackTarget: string) {
     // How much RAM each purchased server will have. In this case, it'll
     // be 8GB.
     const ram = 16;
@@ -27,8 +28,7 @@ export async function main(ns: NS) {
             //  3. Run our hacking script on the newly-purchased server with 3 threads
             //  4. Increment our iterator to indicate that we've bought a new server
             let hostname = ns.purchaseServer(`pserv-` + i, ram);
-            ns.scp(`early-hack-template.js`, hostname);
-            ns.exec(`early-hack-template.js`, hostname, 3);
+            deployHack(ns, hostname, hackToDeploy, hackTarget);
             ++i;
         }
         //Make the script wait for a second before looping again.
