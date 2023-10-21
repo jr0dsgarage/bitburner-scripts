@@ -3,9 +3,9 @@ import { colors } from "./colors";
 
 /** 
  * @param {NS} ns
- * @param {string} hostname
- * @param {string} hackToDeploy
- * @param {string} hackTarget
+ * @param {string} hostname     target server's hostname     
+ * @param {string} hackToDeploy script to deploy
+ * @param {string} hackTarget   hack target server's hostname
  *  */
 export async function deployHack(ns: NS, hostname: string, hackToDeploy: string, hackTarget: string = `joesguns`) {
     ns.tprint(`INFO: deploying hack to server: ${colors.Cyan}${hostname}${colors.Reset}`);
