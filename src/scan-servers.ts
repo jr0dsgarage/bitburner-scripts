@@ -1,7 +1,7 @@
 // created by j__r0d 10/12/23
 // scans all servers and builds a list of servers to hack
 import { NS } from '@ns';
-import { colors } from "./colors";
+import { colors } from './colors';
 
 /** @param {NS} ns Netscript namespace */
 export async function main(ns: NS) {
@@ -68,7 +68,7 @@ export async function buildScannedServerList(ns: NS, depth: number, serverList: 
  * below was my attempt....clearly I wasn't thinking in the same direction at all,
  * however copilot _did_ use this code to generate its own code.
 export function canAddServer(serverName: string, serverListName: string[]) {
-    if (!(serverListName.includes(serverName)) || !(serverName == "home" || "darkweb") || !serverName.includes("pserv")) {
+    if (!(serverListName.includes(serverName)) || !(serverName == 'home' || 'darkweb') || !serverName.includes('pserv')) {
         return true;
     }
     else {

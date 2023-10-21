@@ -1,5 +1,5 @@
-import { NS } from "@ns";
-import { colors } from "./colors";
+import { NS } from '@ns';
+import { colors } from './colors';
 
 /** 
  * @param {NS} ns

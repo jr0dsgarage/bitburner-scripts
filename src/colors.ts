@@ -17,5 +17,5 @@ export const colors = {
     BrightMagenta: '\u001b[35;1m',
     BrightCyan: '\u001b[36;1m',
     BrightWhite: '\u001b[37;1m',
-    Reset: "\u001b[0m",
+    Reset: '\u001b[0m',
 }

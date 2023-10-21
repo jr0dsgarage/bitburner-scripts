@@ -3,13 +3,13 @@
 
 // TODO: figure out the ns.args[0].toString() causing an error, which is forcing me to use : any instead of a string
 
-import { NS } from "@ns";
+import { NS } from '@ns';
 
 /** @param {NS} ns */
 export async function main(ns: NS) {
   //DEBUG: ns.tprintf(`${ns.getHostname()} reporting in...`)
   
-  // Defines the "target server", which is the server
+  // Defines the 'target server', which is the server
   // that we're going to hack. 
   const target: any = ns.args[0];
   // Defines how much money a server should have before we hack it

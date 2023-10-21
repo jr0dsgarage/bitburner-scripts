@@ -1,9 +1,9 @@
 // created by j__r0d 10/11/23
-import { colors } from "./colors";
-import { buildScannedServerList } from "./scan-servers";
-import { openPorts } from "./open-ports";
-import { deployHack } from "./deploy-hack";
-import { NS } from "@ns";
+import { colors } from './colors';
+import { buildScannedServerList } from './scan-servers';
+import { openPorts } from './open-ports';
+import { deployHack } from './deploy-hack';
+import { NS } from '@ns';
 /** 
  * @param {NS} ns Netscript namespace
  */
@@ -21,6 +21,7 @@ import { NS } from "@ns";
 export async function main(ns: NS) {
     const hackToDeploy: string = ns.args[0]?.toString();
     const includeHome = (ns.args[1]?.toString() === `-h`);
+
     let scanDepth = 3;
     if (ns.fileExists(`DeepscanV1.exe`)) scanDepth = 5;
     if (ns.fileExists(`DeepscanV2.exe`)) scanDepth = 10;
@@ -54,16 +55,19 @@ export async function main(ns: NS) {
 
         // check for existing purchased servers and start them, or purchase them if they don't exist and there's enough money
         ns.tprint(`INFO: checking for purchased servers...`)
-        if (ns.getPurchasedServers().length > 0) {
-            ns.tprint(`INFO: ...found purchased servers; deploying hack...`);
+        if (ns.getPurchasedServers().length === 0) {
+            ns.tprint(`INFO: ...no purchased servers found. checking for available monies...`)
+            if (ns.getServerMoneyAvailable(`home`) > (ns.getPurchasedServerCost(16) * ns.getPurchasedServerLimit())) {
+                ns.tprint(`INFO: enough monies secured; attempting to purchase servers...`)
+                
+                // TODO: allow for the passing of the RAM value
+                ns.run(`purchase-server-16gb.js`, 1, hackToDeploy, hackTarget);
+            }
+        }else {
+            ns.tprint(`INFO: found purchased servers; deploying hack...`)
             ns.run(`start-purchased-servers.js`, 1, hackToDeploy, hackTarget);
         }
-        else if (ns.getServerMoneyAvailable(`home`) > (ns.getPurchasedServerCost(16) * ns.getPurchasedServerLimit())) {
-            // TODO: fix the purchase server script to properly deploy the hack instead of a hardcoded script name
-            ns.tprint(`INFO: enough monies secured; purchasing servers...`)
-            ns.run(`purchase-server-16gb.js`, 1, hackToDeploy, hackTarget);
-        }
-        else ns.tprint(`INFO: ...no purchased servers; ...skipping`);
+
 
         if (includeHome) ns.run(`start-home-server.js`, 1, hackToDeploy, hackTarget, `-k`);
         else ns.tprint(`INFO: skipping home server. use 2nd arg '-h' to include home server in hacktivities.`);
@@ -74,6 +78,7 @@ export async function main(ns: NS) {
         ns.tprint(`ERROR: no hack to deploy. include script name! use 2nd arg '-h' to include home server in hacktivities.`);
     };
 }
+
 
 /**
  * @remarks If the money available on the current server is greater than the money available on the accumulator server, 
