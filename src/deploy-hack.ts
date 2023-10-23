@@ -14,5 +14,6 @@ export async function main(ns: NS) {
     }
     else {
         ns.tprint(`ERROR: no hostname provided! aborting deployment...`);
+        ns.tprint(`ERROR: usage: \`run deploy-hack.js <hostname> ?<hackToDeploy> ?<hackTarget>\``)
     }
 }
