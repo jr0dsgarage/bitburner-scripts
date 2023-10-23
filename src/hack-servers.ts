@@ -20,8 +20,10 @@ import { colors } from './colors';
 
 export async function main(ns: NS) {
     const hackToDeploy: string = ns.args[0]?.toString();
+    const doFetch = ns.args.includes('-f') || ns.args.includes('-fetch') ? true : false;
 
     // buy a tor router and then all of the executables as money becomes available
+    // this doesn't work yet, waiting for the API to unlock? I think?
     if (ns.hasTorRouter()) {
         ns.tprint(`TOR router found...`);
         //eventually i should be able to do this through script, but for now here is a command that will buy all the executables, skipping those that are not yet affordable
@@ -39,6 +41,11 @@ export async function main(ns: NS) {
         ns.tprint(`INFO: selecting best 🎯 server...`)
         const hackTarget = `joesguns`; //serverWithMostMoney(ns, serverList); --need to account for hacking level, and choose the best server that has high money but low hacking level
         ns.tprint(`INFO: ...${colors.Green}${hackTarget}${colors.Reset} selected!`);
+
+        if (doFetch) {
+            ns.tprint(`INFO: fetching files from servers...`);
+            ns.run(`sniff-servers.js`, 1, scanDepth, serverList.join(','), `-fetch`)
+        }
 
         ns.tprint(`INFO: attempting to hack servers...`);
         serverList.forEach((hostname: string) => {
