@@ -1,8 +1,7 @@
 // created by j__r0d 10/12/23
 // scans all servers and builds a list of servers to hack
 import { NS } from '@ns';
-import { buildScannedServerList } from './hackLib';
-import { colors } from './colors';
+import { buildScannedServerList, colors } from './hackLib';
 
 /** @param {NS} ns Netscript namespace */
 export async function main(ns: NS) {

@@ -3,7 +3,6 @@
 
 import { NS } from '@ns';
 
-
 export const defaultHackToDeploy = `my-first-hack.js`;
 export const defaultHackTargetHostname = `joesguns`;
 export const colors = {

@@ -1,7 +1,6 @@
 // the contents of this script came from the Beginner's Guide in the game's documentation...
 import { NS } from '@ns';
-import { colors } from './colors';
-import { deployHack, purchaseServer, upgradeServer} from './hackLib';
+import { deployHack, purchaseServer, upgradeServer, colors} from './hackLib';
 /** @param {NS} ns */
 
 /**
