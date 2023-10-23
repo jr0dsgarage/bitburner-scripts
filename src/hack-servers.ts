@@ -20,7 +20,7 @@ import { colors } from './colors';
 
 export async function main(ns: NS) {
     const hackToDeploy: string = ns.args[0]?.toString();
-    const doFetch = ns.args.includes('-f') || ns.args.includes('-fetch') ? true : false;
+    const doFetch = (ns.args.includes('-f') || ns.args.includes('-fetch')) ? true : false;
 
     // buy a tor router and then all of the executables as money becomes available
     // this doesn't work yet, waiting for the API to unlock? I think?
@@ -41,11 +41,6 @@ export async function main(ns: NS) {
         ns.tprint(`INFO: selecting best 🎯 server...`)
         const hackTarget = `joesguns`; //serverWithMostMoney(ns, serverList); --need to account for hacking level, and choose the best server that has high money but low hacking level
         ns.tprint(`INFO: ...${colors.Green}${hackTarget}${colors.Reset} selected!`);
-
-        if (doFetch) {
-            ns.tprint(`INFO: fetching files from servers...`);
-            ns.run(`sniff-servers.js`, 1, scanDepth, serverList.join(','), `-fetch`)
-        }
 
         ns.tprint(`INFO: attempting to hack servers...`);
         serverList.forEach((hostname: string) => {
@@ -87,6 +82,12 @@ export async function main(ns: NS) {
         ns.tprint(`ERROR: no hack script to deploy. include script name! use 2nd arg '-h' to include home server in hacktivities.`);
         ns.toast(`no hacks deployed!`, 'error')
     };
+
+    if (doFetch) {
+        ns.tprint(`INFO: fetching files from servers...`);
+        const pid = ns.run(`sniff-servers.js`, 1, scanDepth, `-fetch`)
+        while (ns.isRunning(pid)) { await ns.sleep(100)};
+    }
 }
 
 
