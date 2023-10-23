@@ -1,19 +1,12 @@
 import { NS } from '@ns';
-import { colors } from './colors';
+import { deployHack, nukeServer } from './hackLib';
 
-/** 
- * @param {NS} ns
- * @param {string} hostname     target server's hostname     
- * @param {string} hackToDeploy script to deploy
- * @param {string} hackTarget   hack target server's hostname
- *  */
-export async function deployHack(ns: NS, hostname: string, hackToDeploy: string, hackTarget: string = `joesguns`) {
-    ns.tprint(`INFO: deploying hack to server: ${colors.Cyan}${hostname}${colors.Reset}`);
+/**  @param {NS} ns  */
 
-    ns.killall(hostname); // free up RAM
-    ns.scp(hackToDeploy, hostname); // always over-write the existing script with the latest version
-    let threadsToUse = Math.max(1, (ns.getServerMaxRam(hostname) - ns.getServerUsedRam(hostname)) / ns.getScriptRam(hackToDeploy));
-    ns.exec(hackToDeploy, hostname, ~~threadsToUse, hackTarget);
-    
-    if (ns.scriptRunning(hackToDeploy, hostname)) ns.tprint(`INFO: ...hack deployed using ${colors.Magenta}${~~threadsToUse}${colors.Reset} threads!`);
+export async function main(ns: NS) {
+    const hostname: string = ns.args[0].toString();
+    const hackToDeploy: string = ns.args[1]?.toString();
+    const hackTarget: string = ns.args[2]?.toString();
+    await nukeServer(ns, hostname);
+    await deployHack(ns, hostname, hackToDeploy, hackTarget);
 }

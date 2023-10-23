@@ -12,7 +12,7 @@ export async function main(ns: NS) {
 
     
     // TODO: ack okay this could be easier using ns.getPurchasedServers() ...
-    while (i < ns.getPurchasedServerLimit()) {
+    while (i < ns.getPurchasedServerLimit()+1) {
         let hostname = `pserv-`.concat(i.toString());
         ns.killall(hostname);
         let threadsToUse = Math.max(1, (ns.getServerMaxRam(hostname) - ns.getServerUsedRam(hostname)) / ns.getScriptRam(hackToDeploy));
