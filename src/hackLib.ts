@@ -50,10 +50,10 @@ export async function buildScannedServerList(ns: NS, depth: number, serverList: 
 }
 
 /**
- * @remarks This function checks a server hostname against a list of forbidden servers and prefixes, and a list of servers already in the server list.
- * @param serverHostname Name of server to check against forbidden servers and prefixes
- * @param serverListName List of servers to check against for duplicates
- * @returns A boolean value indicating whether the server can be added to the server list
+ * @remarks checks a server hostname against a list of forbidden servers and prefixes, and a list of servers already in the server list.
+ * @param serverHostname hostname of server to check against forbidden servers and prefixes
+ * @param serverListName list of servers to check against for duplicates
+ * @returns boolean value indicating whether the server can be added to the server list
  * @remarks the code in this function was created by Copilot after I asked a few questions about a better way to do this.
  * below was my attempt....clearly I wasn't thinking in the same direction at all, however copilot _did_ use this code to generate its own code.
  * ```js
@@ -78,6 +78,13 @@ export function canAddServer(serverHostname: string, serverListName: string[]) {
     return !isForbiddenServer && !isDuplicateServer && !isForbiddenServerPrefix;
 };
 
+/**
+ * @remarks deploys a hack script to a server and starts it running, using the maximum number of threads available.
+ * @param ns Netscript namespace
+ * @param hostname server's hostname
+ * @param hackToDeploy hack script to deploy
+ * @param hackTarget target server for the deployed hack
+ */
 export async function deployHack(ns: NS, hostname: string, hackToDeploy: string = "my-first-hack.js", hackTarget: string = `joesguns`) {
     ns.tprint(`INFO: deploying hack to server: ${colors.Cyan}${hostname}${colors.Reset}`);
 
@@ -89,6 +96,12 @@ export async function deployHack(ns: NS, hostname: string, hackToDeploy: string 
     if (ns.scriptRunning(hackToDeploy, hostname)) ns.tprint(`INFO: ...hack deployed using ${colors.Magenta}${~~threadsToUse}${colors.Reset} threads!`);
 }
 
+/**
+ * @remarks fetches all fetch-able files from a server that are not already in the home directory.
+ * @param ns Netscript namespace
+ * @param hostname hostname of server from which to fetch files
+ * @param homefilelist the list of files in the home directory
+ */
 export async function fileFetch(ns: NS, hostname: string, homefilelist: string[] = []) {   
     ns.ls(hostname).forEach((file: string) => {
         if (!homefilelist.includes(file))
@@ -100,13 +113,23 @@ export async function fileFetch(ns: NS, hostname: string, homefilelist: string[]
     });
 }
 
+/**
+ * @remarks determines whether DeepscanV1.exe and/or DeepscanV2.exe are available, and provides the maximum scan depth possible depending on the outcome.
+ * @param ns Netscript namespace
+ * @returns maximum scan depth based on the executables available, returns a number
+ */
 export async function getScanDepth(ns: NS) {
-    let scanDepth = 3;
+    let scanDepth: number = 3;
     if (ns.fileExists(`DeepscanV1.exe`)) scanDepth = 5;
     if (ns.fileExists(`DeepscanV2.exe`)) scanDepth = 10;
     return scanDepth;
 }
 
+/**
+ * @remarks attempts to nuke a server, and outputs results to the terminal.
+ * @param ns Netscript namespace
+ * @param hostname hostname of server to nuke
+ */
 export async function nukeServer(ns: NS, hostname: string) {
         try {
             ns.nuke(hostname);
@@ -119,9 +142,8 @@ export async function nukeServer(ns: NS, hostname: string) {
 
 /**
  * @remarks This function opens a specified number of ports on a server. 
- * @param ns 
- * @param hostname server's hostname
- * @returns 
+ * @param ns Netscript namespace
+ * @param hostname hostname of server on which to open ports
  */
 export async function openPorts(ns: NS, hostname: string) {
     const programs = [
@@ -159,11 +181,18 @@ export async function openPorts(ns: NS, hostname: string) {
             }
         } catch(err) {
             ns.tprint(`ERROR: ${err} ...aborting`);
-            return;
+            break;
         }
     }
 }
 
+/**
+ * @remarks purchases a server with the specified hostname and RAM, and returns the hostname of the purchased server.
+ * @param ns Netscript namespace
+ * @param hostname name of the server to purchase
+ * @param ram amount of RAM to purchase
+ * @returns the hostname of the purchased server, as a string
+ */
 export async function purchaseServer(ns: NS, hostname: string, ram: number) {
     ns.purchaseServer(hostname, ram);
     return hostname;
@@ -183,7 +212,7 @@ export async function upgradeServer(ns: NS, hostname: string, ram: number) {
  * @remarks the callback function returns the name of the current server (b), otherwise it returns the name of the accumulator server (a). 
  * @remarks This process continues until all servers in the array have been compared, at which point the name of the server with the highest amount of money available is returned.
  * @param ns Netscript namespace
- * @param serverList List of scanned servers
+ * @param serverList list of servers to compare
  * @returns The server hostname that has the most money available, the server hostname will be a string.
  */
 const serverWithMostMoney = (ns: NS, serverList: any) => {
