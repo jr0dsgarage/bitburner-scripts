@@ -4,6 +4,10 @@
 import { NS } from '@ns';
 import { colors } from './colors';
 
+
+export const defaultHackToDeploy = `my-first-hack.js`;
+export const defaultHackTargetHostname = `joesguns`;
+
 /**
  * @remarks This function is a recursive function that scans servers to a given tree depth and returns a list of all servers to hack.
  * @param {NS} ns 
