@@ -89,6 +89,17 @@ export async function deployHack(ns: NS, hostname: string, hackToDeploy: string 
     if (ns.scriptRunning(hackToDeploy, hostname)) ns.tprint(`INFO: ...hack deployed using ${colors.Magenta}${~~threadsToUse}${colors.Reset} threads!`);
 }
 
+export async function fileFetch(ns: NS, hostname: string, homefilelist: string[] = []) {   
+    ns.ls(hostname).forEach((file: string) => {
+        if (!homefilelist.includes(file))
+            try {
+                ns.scp(file, `home`, hostname);
+                ns.tprint(`INFO: ...${file} fetched from ${hostname}`);
+            }
+            catch { ns.tprint(`ERROR: ...can't fetch ${file} from ${hostname}!`); }
+    });
+}
+
 export async function getScanDepth(ns: NS) {
     let scanDepth = 3;
     if (ns.fileExists(`DeepscanV1.exe`)) scanDepth = 5;
