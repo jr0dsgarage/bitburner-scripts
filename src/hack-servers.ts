@@ -43,7 +43,7 @@ export async function main(ns: NS) {
         ns.tprint(`INFO: ...${colors.Green}${hackTarget}${colors.Reset} selected!`);
 
         ns.tprint(`INFO: attempting to hack servers...`);
-        serverList.forEach((hostname: string) => {
+        await ( (async () => serverList.forEach((hostname: string) => {
             if (!ns.hasRootAccess(hostname)) {
                 ns.tprint(`WARN: ${colors.Cyan}${hostname}${colors.Reset} does not have root access. attempting root...`);
                 hl.openPorts(ns, hostname);
@@ -52,7 +52,7 @@ export async function main(ns: NS) {
             else {
                 hl.deployHack(ns, hostname, hackToDeploy, hackTarget);
             }
-        });
+        }))() );
 
         // check for existing purchased servers and start them, or purchase them if they don't exist and there's enough money
         ns.tprint(`INFO: checking for purchased servers...`)
