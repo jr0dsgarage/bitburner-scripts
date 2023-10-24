@@ -20,23 +20,28 @@ import { colors } from './hackLib';
 
 export async function main(ns: NS) {
     const hackToDeploy: string = ns.args[0]?.toString();
+    const includeHome = (ns.args.includes('-h') || ns.args.includes('-home')) ? true : false;
     const doFetch = (ns.args.includes('-f') || ns.args.includes('-fetch')) ? true : false;
 
+ 
     // buy a tor router and then all of the executables as money becomes available
     // this doesn't work yet, waiting for the API to unlock? I think?
     if (ns.hasTorRouter()) {
-        ns.tprint(`TOR router found...`);
+        ns.tprint(`INFO: TOR router found...`);
         //eventually i should be able to do this through script, but for now here is a command that will buy all the executables, skipping those that are not yet affordable
         //connect darkweb; buy FTPCrack.exe; buy relaySMTP.exe; buy HTTPWorm.exe; buy SQLInject.exe; buy DeepscanV1.exe; buy DeepscanV2.exe;  buy serverProfiler.exe ; buy Autolink.exe; home;
     }
     else {
+        //buy one
     }
     
     ns.tprint(`INFO: hack initiated...`);
-    const scanDepth = await hl.getScanDepth(ns); 
-    await ( async () => {
+    const scanDepth = await hl.getScanDepth(ns);
+    const serverList = await hl.buildScannedServerList(ns, scanDepth);
+
+    await (async () => {
         if (hackToDeploy) {
-            const serverList = await hl.buildScannedServerList(ns, scanDepth);
+        
             ns.tprint(`INFO: found ${colors.Cyan}${serverList.length}${colors.Reset} servers during scan of depth ${colors.Magenta}${scanDepth}${colors.Reset}...`);
 
             ns.tprint(`INFO: selecting best 🎯 server...`)
@@ -68,14 +73,16 @@ export async function main(ns: NS) {
                 else {
                     ns.tprint(`ERROR: not enough monies to purchase servers! keep hacking...`);
                 }
-            } else {
+            }
+            else {
                 ns.tprint(`INFO: found purchased servers; deploying hack...`)
                 ns.run(`start-purchased-servers.js`, 1, hackToDeploy, hackTarget);
             }
 
-
-            if (ns.args.includes(`-h`)) ns.run(`start-home-server.js`, 1, hackToDeploy, hackTarget, `-k`);
-            else ns.tprint(`INFO: skipping home server. use 2nd arg '-h' to include home server in hacktivities.`);
+            if (includeHome)
+                ns.run(`start-home-server.js`, 1, hackToDeploy, hackTarget, `-k`);
+            else
+                ns.tprint(`INFO: skipping home server. use 2nd arg '-h' to include home server in hacktivities.`);
 
             ns.toast(`hacks deployed!`);
         }
@@ -83,13 +90,13 @@ export async function main(ns: NS) {
             ns.tprint(`ERROR: no hack script to deploy. include script name! use 2nd arg '-h' to include home server in hacktivities.`);
             ns.toast(`no hacks deployed!`, 'error')
         };
-    })();
+    })();    
 
     if (doFetch) {
         ns.tprint(`INFO: fetching files from servers...`);
-        const pid = ns.run(`sniff-servers.js`, 1, scanDepth, `-fetch`)
-        while (ns.isRunning(pid)) { await ns.sleep(100)};
-    }
+        const pid = ns.run(`sniff-servers.js`, 1, scanDepth, serverList.join(','), `-fetch`)
+        while (ns.isRunning(pid)) { await ns.sleep(100) };
+    }; 
 }
 
 
