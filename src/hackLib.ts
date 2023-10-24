@@ -88,7 +88,7 @@ export async function buildScannedServerList(ns: NS, depth: number, serverList: 
  *     }; 
  * ```
  */
-export async function canAddServer(serverHostname: string, serverListName: string[]) {
+export function canAddServer(serverHostname: string, serverListName: string[]) {
     const forbiddenServers = ['home', 'darkweb'];
     const forbiddenServerPrefixes = ['pserv-'];
 
