@@ -7,7 +7,7 @@ export async function main(ns: NS) {
     ns.tprint(`INFO: deploying hack on ${colors.Cyan}home${colors.Reset} server...`);
     const hackToDeploy = ns.args[0]?.toString(); 
     const hackTarget = ns.args[1]?.toString();
-    const killallFlag = ns.args[2]?.toString() === '-k';
+    const killallFlag = ns.args.includes('-k');
     let hostname = 'home';
     if (killallFlag) ns.killall();
     let threadsToUse = Math.max(1, (ns.getServerMaxRam(hostname) - ns.getServerUsedRam(hostname)) / ns.getScriptRam(hackToDeploy));
