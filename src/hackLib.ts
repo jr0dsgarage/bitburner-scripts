@@ -89,7 +89,7 @@ export function calculateMaxRAM(ns: NS) {
 /**
  * @remarks checks a server hostname against a list of forbidden servers and prefixes, and a list of servers already in the server list.
  * @param serverHostname hostname of server to check against forbidden servers and prefixes
- * @param serverListName list of servers to check against for duplicates
+ * @param serverList list of servers to check against for duplicates
  * @returns boolean value indicating whether the server can be added to the server list
  * @remarks the code in this function was created by Copilot after I asked a few questions about a better way to do this.
  * below was my attempt....clearly I wasn't thinking in the same direction at all, however copilot _did_ use this code to generate its own code.
@@ -104,13 +104,13 @@ export function calculateMaxRAM(ns: NS) {
  *     }; 
  * ```
  */
-export function canAddServer(serverHostname: string, serverListName: string[]) {
+export function canAddServer(serverHostname: string, serverList: string[]) {
     const forbiddenServers = ['home', 'darkweb'];
     const forbiddenServerPrefixes = ['pserv-'];
 
     const isForbiddenServer = forbiddenServers.some(forbiddenServer => forbiddenServer === serverHostname);
     const isForbiddenServerPrefix = forbiddenServerPrefixes.some(prefix => serverHostname.startsWith(prefix));
-    const isDuplicateServer = serverListName.includes(serverHostname);
+    const isDuplicateServer = serverList.includes(serverHostname);
 
     return !isForbiddenServer && !isDuplicateServer && !isForbiddenServerPrefix;
 };
