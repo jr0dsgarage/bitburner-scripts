@@ -58,13 +58,14 @@ export async function main(ns: NS) {
 
         // check for existing purchased servers and start them, or purchase them if they don't exist and there's enough money
         ns.tprint(`INFO: checking for purchased servers...`)
-        const ramToPurchase = 1024;
+        const ramToPurchase = hl.calculateMaxRAM(ns);
         if (ns.getPurchasedServers().length === 0) {
             ns.tprint(`INFO: ...no purchased servers found. checking for available monies...`)
             if (ns.getServerMoneyAvailable(`home`) > (ns.getPurchasedServerCost(ramToPurchase) * ns.getPurchasedServerLimit())) {
                 ns.tprint(`INFO: enough monies secured; attempting to purchase servers...`)
+                
+                // This needs to be run on the n00dles server so it doesn't get killed when the home server is included in the hack deployment
                 await (async () => ns.run(`purchase-server.js`, 1, hackToDeploy, hackTarget, ramToPurchase))();
-                //while (ns.isRunning(pid)) { await ns.sleep(100) };
             }
             else {
                 ns.tprint(`ERROR: not enough monies to purchase servers! keep hacking...`);
@@ -76,7 +77,7 @@ export async function main(ns: NS) {
         }
 
         if (includeHome)
-            await (async() => ns.run(`start-home-server.js`, 1, hackToDeploy, hackTarget, `-k`))();
+            await (async() => ns.run(`start-home-server.js`, 1, hackToDeploy, hackTarget))();
         else
             ns.tprint(`INFO: skipping home server. use 2nd arg '-h' to include home server in hacktivities.`);
 
@@ -93,5 +94,3 @@ export async function main(ns: NS) {
         while (ns.isRunning(pid)) { await ns.sleep(100) };
     };
 }
-
-

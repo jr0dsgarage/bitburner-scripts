@@ -1,5 +1,5 @@
 // a library of functions used to hack servers and other fun things
-// created by j__r0d 2023-10-22
+// created by j__r0d 2023-10-22, but a lot of the code was pasted in from other scripts
 
 import { NS } from '@ns';
 
@@ -68,6 +68,22 @@ export async function buildScannedServerList(ns: NS, depth: number, serverList: 
     }
 
     return serverList;
+}
+
+/**
+ * @remarks calculates the maximum amount of RAM that can be purchased for a server; 
+ * @remarks  based on the amount of money currently available on the home server.
+ * @param ns Netscript namespace
+ * @returns the maximum amount of RAM that can be purchased for a server, as a 2^n number (8, 16, 32, 64, etc.)
+ */
+
+export function calculateMaxRAM(ns: NS) {
+    const moneyPerServer = ns.getServerMoneyAvailable(`home`) / ns.getPurchasedServerLimit();
+    let maxRAM = 8;
+    while ( ns.getPurchasedServerCost(maxRAM * 2) <  moneyPerServer) {
+        maxRAM *= 2;
+    }
+    return maxRAM;
 }
 
 /**
