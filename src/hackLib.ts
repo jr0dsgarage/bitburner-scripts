@@ -58,9 +58,9 @@ export async function buildScannedServerList(ns: NS, depth: number, serverList: 
 
         for (const server of serverList) {
             const neighborHostnames = await (async () => ns.scan(server))();
-            const newNeighbors = neighborHostnames.filter(serverHostname => canAddServer(serverHostname, serverList.concat(newServers)));
-            newServers.push(...newNeighbors);
-            scannedServers.push(...newNeighbors);
+            const newNeighborHostnames = neighborHostnames.filter(serverHostname => canAddServer(serverHostname, serverList.concat(newServers)));
+            newServers.push(...newNeighborHostnames);
+            scannedServers.push(...newNeighborHostnames);
         }
 
         serverList.push(...newServers);
