@@ -155,7 +155,7 @@ export async function fileFetch(ns: NS, hostname: string, homefilelist: string[]
  * @param ns Netscript namespace
  * @returns maximum scan depth based on the executables available, returns a number
  */
-export async function getScanDepth(ns: NS) {
+export async function getMaxPossibleScanDepth(ns: NS) {
     let scanDepth: number = 3;
     if (ns.fileExists(`DeepscanV1.exe`)) scanDepth = 5;
     if (ns.fileExists(`DeepscanV2.exe`)) scanDepth = 10;
