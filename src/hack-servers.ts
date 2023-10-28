@@ -35,7 +35,7 @@ export async function main(ns: NS) {
     }
 
     ns.tprint(`INFO: hack initiated...`);
-    const scanDepth = await hl.getScanDepth(ns);
+    const scanDepth = await hl.getMaxPossibleScanDepth(ns);
     const serverList = await hl.buildScannedServerList(ns, scanDepth);
     ns.tprint(`INFO: found ${colors.Cyan}${serverList.length}${colors.Reset} servers during scan of depth ${colors.Magenta}${scanDepth}${colors.Reset}...`);
 
