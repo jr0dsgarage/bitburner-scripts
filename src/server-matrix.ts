@@ -49,34 +49,3 @@ export class ServerMatrix {
     
     
 }
-
-
-// dunno if this is going to be useful...thought i could implement a server class that had an availableRAM property among others, but not sure its needed
-export class serverNode implements Server {
-    hostname!: string;
-    ip!: string;
-    sshPortOpen!: boolean;
-    ftpPortOpen!: boolean;
-    smtpPortOpen!: boolean;
-    httpPortOpen!: boolean;
-    sqlPortOpen!: boolean;
-    hasAdminRights!: boolean;
-    cpuCores!: number;
-    isConnectedTo!: boolean;
-    ramUsed!: number;
-    maxRam!: number;
-    organizationName!: string;
-    purchasedByPlayer!: boolean;
-    backdoorInstalled?: boolean | undefined;
-    baseDifficulty?: number | undefined;
-    hackDifficulty?: number | undefined;
-    minDifficulty?: number | undefined;
-    moneyAvailable?: number | undefined;
-    moneyMax?: number | undefined;
-    numOpenPortsRequired?: number | undefined;
-    openPortCount?: number | undefined;
-    requiredHackingSkill?: number | undefined;
-    serverGrowth?: number | undefined;
-  
-
-}
