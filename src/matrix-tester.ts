@@ -3,10 +3,21 @@ import  {ServerMatrix} from './server-matrix';
 
 export async function main(ns: NS) {
     const myserverMatrix = new ServerMatrix(ns, 10);
-    ns.tprint(`Scanned Server List: ` + myserverMatrix.fullServerList.map(server => server.hostname).join(`, `));
+    await myserverMatrix.initialize();
+    //ns.tprint(`Scanned Server List: ` + myserverMatrix.fullScannedServerList.map(server => server.hostname).join(`, `));
     
-    const hackableServerList = myserverMatrix.getHackableServers();
-    ns.tprint(`Hackable Server List: ` + hackableServerList.map(server => server.hostname).join(`, `));
+    //const hackableServerList = myserverMatrix.getHackableServers();
+    //ns.tprint(`Hackable Server List: ` + hackableServerList.map(server => server.hostname).join(`, `));
 
-    myserverMatrix.fetchFilesFromServers();
+    //myserverMatrix.fetchFilesFromServers();
+
+    while (true) {
+        await ns.sleep(100000);
+        ns.tprint(`checking for new hack target...`)
+        if (myserverMatrix.hackTarget !== await myserverMatrix.findBestHackTarget()){
+            ns.tprint(`WARN: hack target changed!!!`);
+            ns.run(`hack-servers-2.ts`, 1, myserverMatrix.hackTarget.hostname);
+        }
+        
+    }
 }

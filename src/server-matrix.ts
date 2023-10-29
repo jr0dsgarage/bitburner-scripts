@@ -1,21 +1,34 @@
 import { NS, Server } from '@ns';
+import { colors } from './hackLib';
 
 /**
  * Represents a server matrix that contains a list of all servers up to a certain depth.
  */
 export class ServerMatrix {
-    public fullServerList: Server[] = [];
     private ns: NS;
-    private scannedDepth: number; // scannedDepth because it holds the depth value to which constructor builds the serverList
-    
+    public fullScannedServerList: Server[] = [];
+    public scannedDepth: number;
+    public hackTarget!: Server;
+
     constructor(ns: NS, scanDepth: number = NaN) {
         this.ns = ns;
-        ns.tprint(`INFO: serverMatrix initialized...`);
-        if (isNaN(scanDepth)) scanDepth = this.getMaxPossibleScanDepth(); 
+        if (isNaN(scanDepth)) scanDepth = this.getMaxPossibleScanDepth();
         this.scannedDepth = scanDepth;
+        
+    }
 
-        ns.tprint(`INFO: ...building list of all servers to depth of ${this.scannedDepth}...`);
-        this.buildScannedServerList();
+    public async initialize(ns: NS = this.ns): Promise<void> {
+        ns.tprint(`INFO: serverMatrix initializing...`);
+        ns.tprint(`INFO: ➡️📃 building list of all servers to depth of ${colors.Green}${this.scannedDepth}${colors.Reset}...`);
+        await this.buildScannedServerList();
+        
+        ns.tprint(`INFO: ...found ${colors.Cyan}${this.fullScannedServerList.length}${colors.Reset} servers!`);
+        ns.tprint(`INFO: ➡️🥇🎯 selecting best target server...`)
+        await this.findBestHackTarget().then((hackTarget) => {
+            this.hackTarget = hackTarget;
+            ns.tprint(`INFO: ...${colors.Green}${this.hackTarget.hostname}${colors.Reset} selected!`);
+        });
+
     }
 
     /**
@@ -25,7 +38,7 @@ export class ServerMatrix {
      * @param serverList - The list of servers to start the search from
      * @returns A Promise that resolves to an array of Server objects
      */
-    private async buildScannedServerList(depth: number = NaN, serverList: Server[] = this.fullServerList) {
+    private async buildScannedServerList(depth: number = NaN, serverList: Server[] = this.fullScannedServerList) {
         let allowedServerNameList: string[] = []
 
         if (isNaN(depth)) depth = this.scannedDepth;
@@ -33,7 +46,7 @@ export class ServerMatrix {
         if (serverList.length === 0) {
             const scannedServerNames: string[] = this.ns.scan();
             allowedServerNameList = scannedServerNames.filter(server => this.canAddServer(this.ns.getServer(server)));
-            this.fullServerList.push(...allowedServerNameList.map(allowedHostname => this.ns.getServer(allowedHostname)));
+            this.fullScannedServerList.push(...allowedServerNameList.map(allowedHostname => this.ns.getServer(allowedHostname)));
             --depth;
         }
 
@@ -42,11 +55,11 @@ export class ServerMatrix {
 
             for (const server of serverList) {
                 const serverNeighborNames: string[] = this.ns.scan(server.hostname);
-                const allowedNeighborNames = serverNeighborNames.filter(server => this.canAddServer(this.ns.getServer(server), this.fullServerList.concat(newServers)));
+                const allowedNeighborNames = serverNeighborNames.filter(server => this.canAddServer(this.ns.getServer(server), this.fullScannedServerList.concat(newServers)));
                 newServers.push(...allowedNeighborNames.map(allowedHostname => this.ns.getServer(allowedHostname)));
                 allowedServerNameList.push(...allowedNeighborNames);
             }
-            this.fullServerList.push(...newServers);
+            this.fullScannedServerList.push(...newServers);
             --depth;
         }
     }
@@ -57,7 +70,7 @@ export class ServerMatrix {
      * @param serverListToCheckAgainst The server list to check against. Defaults to the current server list, but can be passed any array of Server objects
      * @returns True if the server can be added, false otherwise
      */
-    private canAddServer(serverToCheck: Server, serverListToCheckAgainst: Server[] = this.fullServerList): boolean {
+    private canAddServer(serverToCheck: Server, serverListToCheckAgainst: Server[] = this.fullScannedServerList): boolean {
         const forbiddenServerNames = ['home', 'darkweb'];
         const forbiddenServerPrefixes = ['pserv-'];
 
@@ -73,9 +86,9 @@ export class ServerMatrix {
      * - `scp` only works for scripts (.js or .script), text files (.txt), and literature files (.lit)
      * @param ns - Netscript namespace; defaults to this.ns
      */
-    public async fetchFilesFromServers(ns: NS = this.ns) { 
-        ns.tprint(`INFO: fetching files from servers:\n` + this.fullServerList.map(server => server.hostname).join(`, `));
-        this.fullServerList.forEach(async server => {
+    public async fetchFilesFromServers(ns: NS = this.ns) {
+        ns.tprint(`INFO: fetching files from servers:\n` + this.fullScannedServerList.map(server => server.hostname).join(`, `));
+        this.fullScannedServerList.forEach(async server => {
             await (async () => this.fileFetch(server))();
         });
     }
@@ -85,8 +98,8 @@ export class ServerMatrix {
      * @param server The server to fetch files from
      * @param ns Netscript namespace; defaults to this.ns
      */
-    private async fileFetch(server: Server, ns:NS = this.ns) {   
-        const homefilelist = await (async () =>  this.ns.ls('home'))();
+    private async fileFetch(server: Server, ns: NS = this.ns) {
+        const homefilelist = await (async () => this.ns.ls('home'))();
         ns.ls(server.hostname).forEach((file: string) => {
             if (!homefilelist.includes(file))
                 try {
@@ -101,8 +114,8 @@ export class ServerMatrix {
      * Returns an array of Server objects that are suitable for hacking, i.e. servers that have more than 0 RAM
      * @returns An array of Server object
      */
-    public getHackableServers(): Server[] {
-        return this.fullServerList.filter(server => server.maxRam > 0);
+    public async getHackableServers(): Promise<Server[]> {
+        return this.fullScannedServerList.filter(server => server.maxRam > 0);
     }
 
 
@@ -117,4 +130,55 @@ export class ServerMatrix {
         if (ns.fileExists(`DeepscanV2.exe`)) scanDepth = 10;
         return scanDepth;
     }
+
+    /**
+     * Finds the best server to hack based on the score calculated by `scoreServer`
+     * @param ns - Netscript namespace; defaults to this.ns
+     * @returns The best server to hack, or `undefined` if there are no servers to hack
+     */
+    public async findBestHackTarget(ns: NS = this.ns): Promise<Server> {
+        let currentBestTarget: Server | undefined = undefined;
+        let bestScore = -Infinity;
+        this.fullScannedServerList.forEach(server => {
+            const score = this.scoreServer(server);
+            if (score > bestScore) {
+                currentBestTarget = server;
+                bestScore = score;
+            }
+            //ns.tprint(`INFO: ...${colors.Cyan} ${server.hostname}${colors.Reset} scored ${colors.Green}${score}${colors.Reset}`)
+        });
+
+        if (currentBestTarget) return currentBestTarget;
+        else return ns.getServer(`joesguns`); //bail to default for now
+    }
+
+    public scoreServer = (server: Server, ns: NS = this.ns): number => {
+        //ns.tprint(`INFO: scoring ${colors.Cyan} ${server.hostname}${colors.Reset}...`);
+        const playerHackingLevel = ns.getHackingLevel();
+
+        const money = ns.getServerMoneyAvailable(server.hostname);
+        //ns.tprint(`money: ${money}`);
+
+        const maxMoney = ns.getServerMaxMoney(server.hostname);
+        //ns.tprint(`maxMoney: ${maxMoney}`);
+
+        const moneyFactor = money / maxMoney;
+        //ns.tprint(`moneyFactor: ${moneyFactor}`);
+
+        const security = ns.getServerSecurityLevel(server.hostname);
+        //ns.tprint(`security: ${security}`);
+
+        const hackLevel = ns.getServerRequiredHackingLevel(server.hostname);
+        //ns.tprint(`hackLevel: ${hackLevel}`);
+
+        const securityFactor = hackLevel > playerHackingLevel ? 0 : (security - hackLevel) / security;
+        //ns.tprint(`securityFactor: ${securityFactor}`);
+
+        const score = moneyFactor * securityFactor;
+        //ns.tprint(`score: ${score}`);
+
+        return score;
+    }
+
+
 }
