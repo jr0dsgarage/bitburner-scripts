@@ -153,30 +153,15 @@ export class ServerMatrix {
     }
 
     public scoreServer = (server: Server, ns: NS = this.ns): number => {
-        //ns.tprint(`INFO: scoring ${colors.Cyan} ${server.hostname}${colors.Reset}...`);
         const playerHackingLevel = ns.getHackingLevel();
-
         const money = ns.getServerMoneyAvailable(server.hostname);
-        //ns.tprint(`money: ${money}`);
-
         const maxMoney = ns.getServerMaxMoney(server.hostname);
-        //ns.tprint(`maxMoney: ${maxMoney}`);
-
         const moneyFactor = money / maxMoney;
-        //ns.tprint(`moneyFactor: ${moneyFactor}`);
-
         const security = ns.getServerSecurityLevel(server.hostname);
-        //ns.tprint(`security: ${security}`);
-
         const hackLevel = ns.getServerRequiredHackingLevel(server.hostname);
-        //ns.tprint(`hackLevel: ${hackLevel}`);
-
+        
         const securityFactor = hackLevel > playerHackingLevel ? 0 : (security - hackLevel) / security;
-        //ns.tprint(`securityFactor: ${securityFactor}`);
-
         const score = moneyFactor * securityFactor;
-        //ns.tprint(`score: ${score}`);
-
         return score;
     }
 
