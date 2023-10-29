@@ -4,13 +4,6 @@ import  {ServerMatrix} from './server-matrix';
 export async function main(ns: NS) {
     const myserverMatrix = new ServerMatrix(ns, 10);
     await myserverMatrix.initialize();
-    //ns.tprint(`Scanned Server List: ` + myserverMatrix.fullScannedServerList.map(server => server.hostname).join(`, `));
-    
-    //const hackableServerList = myserverMatrix.getHackableServers();
-    //ns.tprint(`Hackable Server List: ` + hackableServerList.map(server => server.hostname).join(`, `));
-
-    //myserverMatrix.fetchFilesFromServers();
-
     while (true) {
         await ns.sleep(100000);
         ns.tprint(`checking for new hack target...`)
