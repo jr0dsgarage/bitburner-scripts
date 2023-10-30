@@ -160,14 +160,29 @@ export class ServerMatrix {
      * @returns The score of the server as a number
      */
     public scoreServer = (server: Server, ns: NS = this.ns): number => {
+        //ns.tprint(`Calculating score for server ${server.hostname}...`);
+
         const playerHackingLevel = ns.getHackingLevel();
+        //ns.tprint(`Player hacking level: ${playerHackingLevel}`);
+
         const money = ns.getServerMoneyAvailable(server.hostname);
+        //ns.tprint(`Money available on ${server.hostname}: ${money}`);
+
         const maxMoney = ns.getServerMaxMoney(server.hostname);
-        const moneyFactor = money / maxMoney;
-        const security = ns.getServerSecurityLevel(server.hostname);
-        const hackLevel = ns.getServerRequiredHackingLevel(server.hostname);
-        
-        const securityFactor = hackLevel > playerHackingLevel ? 0 : (security - hackLevel) / security;
+        //ns.tprint(`Maximum money available on ${server.hostname}: ${maxMoney}`);
+
+        const moneyFactor = Math.pow(money / maxMoney, 2);
+        //ns.tprint(`Money factor: ${moneyFactor}`);
+
+        const securityLevel = ns.getServerSecurityLevel(server.hostname);
+        //ns.tprint(`Security level of ${server.hostname}: ${securityLevel}`);
+
+        const requiredHackLevel = ns.getServerRequiredHackingLevel(server.hostname);
+        //ns.tprint(`Hacking level required to hack ${server.hostname}: ${requiredHackLevel}`);
+
+        const securityFactor = requiredHackLevel > playerHackingLevel ? 0: (securityLevel - requiredHackLevel) / securityLevel;
+        //ns.tprint(`Security factor: ${securityFactor}`);
+
         const score = moneyFactor * securityFactor;
         return score;
     }
