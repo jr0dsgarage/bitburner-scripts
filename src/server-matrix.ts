@@ -1,4 +1,5 @@
-import { NS, Server } from '@ns';
+import { NS, Server as Server } from '@ns';
+//import { ServerNode as Server } from './server-node';
 import { colors } from './hackLib';
 
 /**
@@ -147,11 +148,17 @@ export class ServerMatrix {
             }
             //ns.tprint(`INFO: ...${colors.Cyan} ${server.hostname}${colors.Reset} scored ${colors.Green}${score}${colors.Reset}`)
         });
-
         if (currentBestTarget) return currentBestTarget;
-        else return ns.getServer(`joesguns`); //bail to default for now
+        else throw new Error(`ERROR: could not acquire hack target!`);
     }
 
+    /**
+     * Calculates the score of a server based on its money and security factors.
+     * @remarks this algo came from CoPilot 
+     * @param server - The server to calculate the score for.
+     * @param ns - Netscript namespace; defaults to this.ns
+     * @returns The score of the server as a number
+     */
     public scoreServer = (server: Server, ns: NS = this.ns): number => {
         const playerHackingLevel = ns.getHackingLevel();
         const money = ns.getServerMoneyAvailable(server.hostname);
@@ -164,6 +171,4 @@ export class ServerMatrix {
         const score = moneyFactor * securityFactor;
         return score;
     }
-
-
 }
