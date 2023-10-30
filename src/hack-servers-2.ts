@@ -28,11 +28,8 @@ export async function main(ns: NS) {
     if (hackToDeploy) {
         const matrix = new ServerMatrix(ns);
         await matrix.initialize();
-        
-        ns.tprint (matrix.hackTarget?.hostname);
-        let hackTarget = matrix.hackTarget
-        //await matrix.findBestHackTarget();
-
+        //let hackTarget = matrix.hackTarget
+        let hackTarget = ns.getServer(`joesguns`);
         /* future Tor Router functionality
         // buy a tor router and then all of the executables as money becomes available
         // this doesn't work yet, waiting for the API to unlock? I think?
@@ -51,14 +48,14 @@ export async function main(ns: NS) {
 
             ns.tprint(`INFO: attempting to deploy hack to all servers...`);
 
-            await ((async () => serverList.forEach((server: any) => {
+            await ((async () => serverList.forEach(async (server: any) => {
                 if (!ns.hasRootAccess(server.hostname)) {
                     ns.tprint(`WARN: ${colors.Cyan}${server.hostname}${colors.Reset} does not have root access. attempting root...`);
                     hl.openPorts(ns, server.hostname);
                     hl.nukeServer(ns, server.hostname);
                 }
                 else {
-                    hl.deployHack(ns, server.hostname, hackToDeploy, hackTarget.hostname);
+                    await hl.deployHack(ns, server.hostname, hackToDeploy, hackTarget.hostname);
                 }
             }))());
 
