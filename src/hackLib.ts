@@ -123,15 +123,30 @@ export function canAddServer(serverHostname: string, serverList: string[]) {
  * @param hackToDeploy hack script to deploy
  * @param hackTarget target server for the deployed hack
  */
-export async function deployHack(ns: NS, hostname: string, hackToDeploy: string = "my-first-hack.js", hackTarget: string = `joesguns`) {
-    ns.tprint(`INFO: deploying hack to server: ${colors.Cyan}${hostname}${colors.Reset}`);
+export async function deployHack(ns: NS, hostname: string, hackToDeploy: string = "my-first-hack.js", hackTarget: string = `joesguns`): Promise<void> {
+    //ns.tprint(`INFO: deploying hack to server: ${colors.Cyan}${hostname}${colors.Reset}`);
 
-    ns.killall(hostname); // free up RAM
-    ns.scp(hackToDeploy, hostname); // always over-write the existing script with the latest version
+    ns.kill(hackToDeploy,hostname); // free up RAM and overwrite any running script with the same name
+    try {
+        ns.rm(hackToDeploy, hostname);
+        ns.scp(hackToDeploy, hostname);
+        if (ns.fileExists(hackToDeploy, hostname))
+            ns.tprint(`INFO: ...${hackToDeploy} deployed to ${hostname}!`);
+    } // always over-write the existing script with the latest version
+    catch {
+        ns.tprint(`ERROR: ...can't scp ${hackToDeploy} to ${hostname}!`);
+    }
     let threadsToUse = Math.max(1, (ns.getServerMaxRam(hostname) - ns.getServerUsedRam(hostname)) / ns.getScriptRam(hackToDeploy));
-    ns.exec(hackToDeploy, hostname, ~~threadsToUse, hackTarget);
+    try {
+        ns.exec(hackToDeploy, hostname, ~~threadsToUse, hackTarget);
+        ns.tprint(`INFO: ...${hackToDeploy} started on ${hostname}!`);
+    }
+    catch {
+        ns.tprint(`ERROR: ...can't exec ${hackToDeploy} on ${hostname}!`);
+    }
     
     if (ns.scriptRunning(hackToDeploy, hostname)) ns.tprint(`INFO: ...hack deployed using ${colors.Magenta}${~~threadsToUse}${colors.Reset} threads!`);
+    else ns.tprint(`...hack deployment failed!`);
 }
 
 /**
