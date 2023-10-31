@@ -29,6 +29,7 @@ export async function main(ns: NS) {
         const matrix = new ServerMatrix(ns);
         await matrix.initialize();
         let hackTarget = matrix.hackTarget
+        
         /* future Tor Router functionality
         // buy a tor router and then all of the executables as money becomes available
         // this doesn't work yet, waiting for the API to unlock? I think?
@@ -60,14 +61,11 @@ export async function main(ns: NS) {
 
 
             // check for existing purchased servers and start them, or purchase them if they don't exist and there's enough money
-            ns.tprint(`INFO: checking for purchased servers...`)
             const ramToPurchase = hl.calculateMaxRAM(ns);
             if (ns.getPurchasedServers().length === 0) {
                 ns.tprint(`INFO: ...no purchased servers found. checking for available monies...`)
                 if (ns.getServerMoneyAvailable(`home`) > (ns.getPurchasedServerCost(ramToPurchase) * ns.getPurchasedServerLimit())) {
                     ns.tprint(`INFO: enough monies secured; attempting to purchase servers...`)
-
-                    // This needs to be run on the n00dles server so it doesn't get killed when the home server is included in the hack deployment
                     await (async () => ns.run(`purchase-server.js`, 1, hackToDeploy, hackTarget.hostname, ramToPurchase))();
                 }
                 else {
@@ -75,7 +73,6 @@ export async function main(ns: NS) {
                 }
             }
             else {
-                ns.tprint(`INFO: found purchased servers...`)
                 await (async () => ns.run(`start-purchased-servers.js`, 1, hackToDeploy, hackTarget.hostname))();
             }
 
