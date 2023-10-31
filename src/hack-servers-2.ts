@@ -29,7 +29,7 @@ export async function main(ns: NS) {
         const matrix = new ServerMatrix(ns);
         await matrix.initialize();
         let hackTarget = matrix.hackTarget
-        
+
         /* future Tor Router functionality
         // buy a tor router and then all of the executables as money becomes available
         // this doesn't work yet, waiting for the API to unlock? I think?
@@ -55,6 +55,7 @@ export async function main(ns: NS) {
                     hl.nukeServer(ns, hackableServer.hostname);
                 }
                 else {
+                    ns.killall(hackableServer.hostname);
                     await hl.deployHack(ns, hackableServer.hostname, hackToDeploy, hackTarget.hostname);
                 }
             }))());

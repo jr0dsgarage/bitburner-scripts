@@ -13,9 +13,9 @@ export async function main(ns: NS) {
 
     while (i < ns.getPurchasedServerLimit() + 1) {
         let hostname = `pserv-`.concat(i.toString());
-        hl.deployHack(ns, hostname, hackToDeploy, hackTarget);
+        ns.killall(hostname);
+        await hl.deployHack(ns, hostname, hackToDeploy, hackTarget);
         if (ns.scriptRunning(hackToDeploy, hostname)) {
-            //ns.tprint(`INFO: ...hack deployed using ${colors.Magenta}${~~threadsToUse}${colors.Reset} threads on ${colors.Cyan}${hostname}${colors.Reset}`)
             ++hackedCount;
         };
         ++i;
