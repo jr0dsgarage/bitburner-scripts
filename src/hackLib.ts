@@ -125,13 +125,9 @@ export function canAddServer(serverHostname: string, serverList: string[]) {
  */
 export async function deployHack(ns: NS, hostname: string, hackToDeploy: string = "my-first-hack.js", hackTarget: string = `joesguns`): Promise<void> {
     //ns.tprint(`INFO: deploying hack to server: ${colors.Cyan}${hostname}${colors.Reset}`);
-
-    ns.kill(hackToDeploy,hostname); // free up RAM and overwrite any running script with the same name
     try {
-        ns.rm(hackToDeploy, hostname);
         ns.scp(hackToDeploy, hostname);
-        if (ns.fileExists(hackToDeploy, hostname))
-    } // always over-write the existing script with the latest version
+    } 
     catch {
         ns.tprint(`ERROR: ...can't scp ${hackToDeploy} to ${hostname}!`);
     }
@@ -143,7 +139,7 @@ export async function deployHack(ns: NS, hostname: string, hackToDeploy: string 
         ns.tprint(`ERROR: ...can't exec ${hackToDeploy} on ${hostname}!`);
     }
     
-    if (ns.scriptRunning(hackToDeploy, hostname)) ns.tprint(`INFO: ...hack deployed on ${colors.Magenta}${hostname}${colors.Reset} using ${colors.Magenta}${~~threadsToUse}${colors.Reset} threads!`);
+    if (ns.scriptRunning(hackToDeploy, hostname)) ns.tprint(`INFO: ...hack deployed on ${colors.Cyan}${hostname}${colors.Reset} using ${colors.Magenta}${~~threadsToUse}${colors.Reset} threads!`);
     else ns.tprint(`...hack deployment failed!`);
 }
 
