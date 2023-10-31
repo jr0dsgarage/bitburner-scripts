@@ -10,7 +10,7 @@
  * TODO: instead of a bunch of helper scripts, make a Library of helper functions (ie: hackLib.openPorts(ns, hostname))
  */
 
-import { NS } from '@ns';
+import { NS, Server} from '@ns';
 import { ServerMatrix } from './server-matrix';
 import * as hl from './hackLib';
 import { colors } from './hackLib';
@@ -28,8 +28,7 @@ export async function main(ns: NS) {
     if (hackToDeploy) {
         const matrix = new ServerMatrix(ns);
         await matrix.initialize();
-        //let hackTarget = matrix.hackTarget
-        let hackTarget = ns.getServer(`joesguns`);
+        let hackTarget = matrix.hackTarget
         /* future Tor Router functionality
         // buy a tor router and then all of the executables as money becomes available
         // this doesn't work yet, waiting for the API to unlock? I think?
@@ -44,18 +43,18 @@ export async function main(ns: NS) {
      */
 
         if (hackTarget) {
-            const serverList = await matrix.getHackableServers()
+            const hackableServerList = await matrix.getHackableServers()
 
-            ns.tprint(`INFO: attempting to deploy hack to all servers...`);
+            ns.tprint(`INFO: attempting to deploy ${colors.Magenta}${hackToDeploy}${colors.Reset} to all servers; targeting ${colors.Green}${hackTarget.hostname}${colors.Reset} ...`);
 
-            await ((async () => serverList.forEach(async (server: any) => {
-                if (!ns.hasRootAccess(server.hostname)) {
-                    ns.tprint(`WARN: ${colors.Cyan}${server.hostname}${colors.Reset} does not have root access. attempting root...`);
-                    hl.openPorts(ns, server.hostname);
-                    hl.nukeServer(ns, server.hostname);
+            await ((async () => hackableServerList.forEach(async (hackableServer: Server) => {
+                if (!ns.hasRootAccess(hackableServer.hostname)) {
+                    ns.tprint(`WARN: ${colors.Cyan}${hackableServer.hostname}${colors.Reset} does not have root access. attempting root...`);
+                    hl.openPorts(ns, hackableServer.hostname);
+                    hl.nukeServer(ns, hackableServer.hostname);
                 }
                 else {
-                    await hl.deployHack(ns, server.hostname, hackToDeploy, hackTarget.hostname);
+                    await hl.deployHack(ns, hackableServer.hostname, hackToDeploy, hackTarget.hostname);
                 }
             }))());
 

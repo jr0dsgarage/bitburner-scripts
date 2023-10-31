@@ -131,7 +131,6 @@ export async function deployHack(ns: NS, hostname: string, hackToDeploy: string 
         ns.rm(hackToDeploy, hostname);
         ns.scp(hackToDeploy, hostname);
         if (ns.fileExists(hackToDeploy, hostname))
-            ns.tprint(`INFO: ...${hackToDeploy} deployed to ${hostname}!`);
     } // always over-write the existing script with the latest version
     catch {
         ns.tprint(`ERROR: ...can't scp ${hackToDeploy} to ${hostname}!`);
@@ -139,13 +138,12 @@ export async function deployHack(ns: NS, hostname: string, hackToDeploy: string 
     let threadsToUse = Math.max(1, (ns.getServerMaxRam(hostname) - ns.getServerUsedRam(hostname)) / ns.getScriptRam(hackToDeploy));
     try {
         ns.exec(hackToDeploy, hostname, ~~threadsToUse, hackTarget);
-        ns.tprint(`INFO: ...${hackToDeploy} started on ${hostname}!`);
     }
     catch {
         ns.tprint(`ERROR: ...can't exec ${hackToDeploy} on ${hostname}!`);
     }
     
-    if (ns.scriptRunning(hackToDeploy, hostname)) ns.tprint(`INFO: ...hack deployed using ${colors.Magenta}${~~threadsToUse}${colors.Reset} threads!`);
+    if (ns.scriptRunning(hackToDeploy, hostname)) ns.tprint(`INFO: ...hack deployed on ${colors.Magenta}${hostname}${colors.Reset} using ${colors.Magenta}${~~threadsToUse}${colors.Reset} threads!`);
     else ns.tprint(`...hack deployment failed!`);
 }
 

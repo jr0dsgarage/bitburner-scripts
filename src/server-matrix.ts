@@ -11,25 +11,17 @@ export class ServerMatrix {
     public scannedDepth: number;
     public hackTarget!: Server;
 
-    constructor(ns: NS, scanDepth: number = NaN) {
+    constructor(ns: NS, requestedScanDepth: number = NaN, requestedHackTarget: Server = ns.getServer(`joesguns`)) {
         this.ns = ns;
-        if (isNaN(scanDepth)) scanDepth = this.getMaxPossibleScanDepth();
-        this.scannedDepth = scanDepth;
-        
+        if (isNaN(requestedScanDepth)) requestedScanDepth = this.getMaxPossibleScanDepth();
+        this.scannedDepth = requestedScanDepth;
+        this.hackTarget = requestedHackTarget;
     }
 
     public async initialize(ns: NS = this.ns): Promise<void> {
         ns.tprint(`INFO: serverMatrix initializing...`);
         ns.tprint(`INFO: ➡️📃 building list of all servers to depth of ${colors.Green}${this.scannedDepth}${colors.Reset}...`);
         await this.buildScannedServerList();
-        
-        ns.tprint(`INFO: ...found ${colors.Cyan}${this.fullScannedServerList.length}${colors.Reset} servers!`);
-        ns.tprint(`INFO: ➡️🥇🎯 selecting best target server...`)
-        await this.findBestHackTarget().then((hackTarget) => {
-            this.hackTarget = hackTarget;
-            ns.tprint(`INFO: ...${colors.Green}${this.hackTarget.hostname}${colors.Reset} selected!`);
-        });
-
     }
 
     /**
@@ -137,7 +129,7 @@ export class ServerMatrix {
      * @param ns - Netscript namespace; defaults to this.ns
      * @returns The best server to hack, or `undefined` if there are no servers to hack
      */
-    public async findBestHackTarget(ns: NS = this.ns): Promise<Server> {
+/*     public async findBestHackTarget(ns: NS = this.ns): Promise<Server> {
         let currentBestTarget: Server | undefined = undefined;
         let bestScore = -Infinity;
         this.fullScannedServerList.forEach(server => {
@@ -150,7 +142,7 @@ export class ServerMatrix {
         });
         if (currentBestTarget) return currentBestTarget;
         else throw new Error(`ERROR: could not acquire hack target!`);
-    }
+    } */
 
     /**
      * Calculates the score of a server based on its money and security factors.
@@ -159,7 +151,7 @@ export class ServerMatrix {
      * @param ns - Netscript namespace; defaults to this.ns
      * @returns The score of the server as a number
      */
-    public scoreServer = (server: Server, ns: NS = this.ns): number => {
+    /* public scoreServer = (server: Server, ns: NS = this.ns): number => {
         //ns.tprint(`Calculating score for server ${server.hostname}...`);
 
         const playerHackingLevel = ns.getHackingLevel();
@@ -185,5 +177,5 @@ export class ServerMatrix {
 
         const score = moneyFactor * securityFactor;
         return score;
-    }
+    } */
 }
