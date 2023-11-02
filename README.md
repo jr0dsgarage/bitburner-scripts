@@ -1,6 +1,6 @@
 # Fork Info
 
-This is a mirror of the original https://github.com/bitburner-official/typescript-template 
+This is a mirror 🪞 of the original https://github.com/bitburner-official/typescript-template 
 
 My personal script files are located in the `/src` directory!
 
