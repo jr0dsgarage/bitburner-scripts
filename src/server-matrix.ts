@@ -104,6 +104,16 @@ export class ServerMatrix {
     }
 
     /**
+     * Returns the amount of available RAM on a given server.
+     * @param server - The server for which to calculate available RAM.
+     * @param ns - Netscript namespace; defaults to this.ns
+     * @returns The amount of available RAM on the server as a number, in GB.
+     */
+    private getAvailableRam(server: Server, ns: NS = this.ns): number {
+        return ns.getServerMaxRam(server.hostname) - ns.getServerUsedRam(server.hostname);    
+    }
+
+    /**
      * Returns an array of Server objects that are suitable for hacking, i.e. servers that have more than 0 RAM
      * @returns An array of Server object
      */
