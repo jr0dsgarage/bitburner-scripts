@@ -11,8 +11,8 @@
  */
 
 import { NS } from '@ns';
-import * as hl from './hackLib';
-import { colors } from './hackLib';
+import * as hl from '../hackLib';
+import { colors } from '../hackLib';
 
 /** 
  * @param {NS} ns Netscript namespace
