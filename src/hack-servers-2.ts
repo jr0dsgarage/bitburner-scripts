@@ -22,13 +22,14 @@ import { colors } from './hackLib';
 export async function main(ns: NS) {
     ns.tprint(`INFO: hack initiated...`);
     const hackToDeploy: string = ns.args[0]?.toString();
+    let hackTarget: Server = ns.getServer(ns.args[1]?.toString());
     const includeHome = (ns.args.includes('-h') || ns.args.includes('-home')) ? true : false;
     const doFetch = (ns.args.includes('-f') || ns.args.includes('-fetch')) ? true : false;
 
     if (hackToDeploy) {
         const matrix = new ServerMatrix(ns);
         await matrix.initialize();
-        let hackTarget = matrix.hackTarget
+        if (!hackTarget) hackTarget = matrix.hackTarget;
 
         /* future Tor Router functionality
         // buy a tor router and then all of the executables as money becomes available
@@ -84,6 +85,7 @@ export async function main(ns: NS) {
 
             ns.toast(`hacks deployed!`);
         };
+        
         if (doFetch) {
             await (async () => matrix.fetchFilesFromServers())();
         };
