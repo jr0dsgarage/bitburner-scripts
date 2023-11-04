@@ -135,6 +135,16 @@ export class ServerMatrix {
     }
 
     /**
+     * Sorts the fullScannedServerList by money available
+     * @param ns Netscript namespace; defaults to this.ns
+     * @returns The hostname of the server with the most money available.
+     */
+    public getRichestServerHostname(ns: NS = this.ns): string { 
+        const sortedServerList = [... this.fullScannedServerList].sort((a, b) => ns.getServerMoneyAvailable(b.hostname) - ns.getServerMoneyAvailable(a.hostname));
+        return sortedServerList[0].hostname;
+    }
+
+    /**
      * Finds the best server to hack based on the score calculated by `scoreServer`
      * @param ns - Netscript namespace; defaults to this.ns
      * @returns The best server to hack, or `undefined` if there are no servers to hack
