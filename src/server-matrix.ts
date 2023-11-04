@@ -82,7 +82,7 @@ export class ServerMatrix {
     public async fetchFilesFromServers(ns: NS = this.ns) {
         ns.tprint(`INFO: fetching files from servers:\n` + this.fullScannedServerList.map(server => server.hostname).join(`, `));
         this.fullScannedServerList.forEach(async server => {
-            await (async () => this.fileFetch(server))();
+            await (async () => this.fetchAllFiles(server))();
         });
     }
 
@@ -91,7 +91,7 @@ export class ServerMatrix {
      * @param server The server to fetch files from
      * @param ns Netscript namespace; defaults to this.ns
      */
-    private async fileFetch(server: Server, ns: NS = this.ns) {
+    private async fetchAllFiles(server: Server, ns: NS = this.ns) {
         const homefilelist = await (async () => this.ns.ls('home'))();
         ns.ls(server.hostname).forEach((file: string) => {
             if (!homefilelist.includes(file))
