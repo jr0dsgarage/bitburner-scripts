@@ -10,7 +10,7 @@ export async function main(ns: NS) {
     const killallFlag = ns.args.includes('-k');
     let hostname = 'home';
     if (killallFlag) ns.killall();
-    let threadsToUse = Math.max(1, (ns.getServerMaxRam(hostname) - ns.getServerUsedRam(hostname)) / ns.getScriptRam(hackToDeploy)) - 2;
+    let threadsToUse = Math.max(1, (ns.getServerMaxRam(hostname) - ns.getServerUsedRam(hostname)) / ns.getScriptRam(hackToDeploy)) - 3;
     ns.run(hackToDeploy, ~~threadsToUse, hackTarget);
     if (ns.scriptRunning(hackToDeploy, 'home')) ns.tprint(`INFO: ...hack deployed using ${colors.Magenta}${~~threadsToUse}${colors.Reset} threads`);
 }
