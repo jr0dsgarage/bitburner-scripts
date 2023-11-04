@@ -6,8 +6,7 @@
  * TODO: write a logger script that will log all the things - might be unnecessary?  i'm only after a better way to format the terminal output
  * TODO: properly calculate hack target -- from Documentation/beginner's guide: 
  *      `your hacking target should be the server with highest max money that's required hacking level is under 1/2 of your hacking level.`
- *      `Keep security level low. Security level affects everything when hacking. Two important Netscript functions for this are getServerSecurityLevel() and getServerMinSecurityLevel()`
- * TODO: instead of a bunch of helper scripts, make a Library of helper functions (ie: hackLib.openPorts(ns, hostname))
+ *      `Keep security level low. Security level affects everything when hacking. Two important Netscript functions for this are getServerSecurityLevel() and getServerMinSecurityLevel()`x
  */
 
 import { NS, Server} from '@ns';
