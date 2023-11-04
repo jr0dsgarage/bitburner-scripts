@@ -7,7 +7,9 @@ import { colors } from './hackLib';
  */
 export class ServerMatrix {
     private ns: NS;
+    private totalThreads: number = 0;
     public fullScannedServerList: Server[] = [];
+    public purchasedServerList: Server[] = [];
     public scannedDepth: number;
     public hackTarget!: Server;
 
@@ -16,12 +18,25 @@ export class ServerMatrix {
         if (isNaN(requestedScanDepth)) requestedScanDepth = this.getMaxPossibleScanDepth();
         this.scannedDepth = requestedScanDepth;
         this.hackTarget = requestedHackTarget;
+        this.purchasedServerList = ns.getPurchasedServers().map((hostname: string) => ns.getServer(hostname));
     }
 
-    public async initialize(ns: NS = this.ns): Promise<void> {
+    /**
+     * Initializes the server matrix by building a list of scanned servers and a list of purchased servers.
+     * If no servers have been purchased, it will purchase servers before building the list.
+     * @param ns Netscript namespace; defaults to this.ns
+     */
+    public async initialize(ns: NS = this.ns): Promise<void>  {
         ns.tprint(`INFO: serverMatrix initializing...`);
-        ns.tprint(`INFO: ➡️📃 building list of all servers to depth of ${colors.Green}${this.scannedDepth}${colors.Reset}...`);
+        ns.tprint(`INFO: ➡️📃 building list of scanned servers to depth of ${colors.Green}${this.scannedDepth}${colors.Reset}...`);
         await this.buildScannedServerList();
+        ns.tprint(`INFO: ...found ${colors.Cyan}${this.fullScannedServerList.length}${colors.Reset} servers.`)
+        ns.tprint(`INFO: ➡️📃 building list of purchased servers...`);
+        ns.tprint(`INFO: ...found ${colors.Cyan}${this.purchasedServerList.length}${colors.Reset} purchased servers.`)
+        if (this.purchasedServerList.length === 0){
+            
+            await this.purchaseServers();
+        }
     }
 
     /**
@@ -110,7 +125,7 @@ export class ServerMatrix {
      * @returns The amount of available RAM on the server as a number, in GB.
      */
     private getAvailableRam(server: Server, ns: NS = this.ns): number {
-        return ns.getServerMaxRam(server.hostname) - ns.getServerUsedRam(server.hostname);    
+        return ns.getServerMaxRam(server.hostname) - ns.getServerUsedRam(server.hostname);
     }
 
     /**
@@ -120,7 +135,6 @@ export class ServerMatrix {
     public async getHackableServers(): Promise<Server[]> {
         return this.fullScannedServerList.filter(server => server.maxRam > 0);
     }
-
 
     /**
      * @remarks determines whether DeepscanV1.exe and/or DeepscanV2.exe are available, and provides the maximum scan depth possible depending on the outcome.
@@ -135,34 +149,75 @@ export class ServerMatrix {
     }
 
     /**
+    * calculates the maximum amount of RAM that can be purchased for a server
+    * @remarks based on the amount of money currently available on the home server; aka the Player's current available money
+    * @param ns Netscript namespace
+    * @returns the maximum amount of RAM that can be purchased for a server, as a 2^n number (8, 16, 32, 64, etc.)
+    */
+    private maxPurchaseableRAM(ns: NS = this.ns) {
+        const moneyPerServer = ns.getServerMoneyAvailable(`home`) / ns.getPurchasedServerLimit();
+        const maxPossibleRAM = ns.getPurchasedServerMaxRam();
+        let maxRAM = 8;
+        while (maxRAM * 2 <= maxPossibleRAM && ns.getPurchasedServerCost(maxRAM * 2) <= moneyPerServer) {
+            maxRAM *= 2;
+        }
+        return maxRAM;
+    }
+    /**
      * Sorts the fullScannedServerList by money available
      * @param ns Netscript namespace; defaults to this.ns
      * @returns The hostname of the server with the most money available.
      */
-    public getRichestServerHostname(ns: NS = this.ns): string { 
+    public getRichestServerHostname(ns: NS = this.ns): string {
         const sortedServerList = [... this.fullScannedServerList].sort((a, b) => ns.getServerMoneyAvailable(b.hostname) - ns.getServerMoneyAvailable(a.hostname));
         return sortedServerList[0].hostname;
     }
 
     /**
+     * Attempts to purchase servers up to the maximum limit, if there are enough funds available.
+     * @param ns - Netscript namespace; defaults to this.ns
+     */
+    public async purchaseServers(ns: NS = this.ns): Promise<void> {
+        ns.tprint(`INFO: ...no purchased servers found. checking for available monies...`)
+        if (ns.getServerMoneyAvailable(`home`) > (ns.getPurchasedServerCost(this.maxPurchaseableRAM()) * ns.getPurchasedServerLimit())) {
+            ns.tprint(`INFO: enough monies secured; attempting to purchase servers...`)
+            let i = 1;
+            while (i < ns.getPurchasedServerLimit() + 1) {
+
+                // TODO: implement an upgrade feature that will upgrade existing servers 
+                // if the purchased-server script is called with a higher RAM value than the existing RAM on the server
+
+                const hostname: string = ns.purchaseServer(`pserv-` + i, this.maxPurchaseableRAM());
+                ns.tprint(`INFO: purchased server ${colors.Cyan}${hostname}${colors.Reset} with ${colors.Green}${this.maxPurchaseableRAM()}GB${colors.Reset} RAM`);
+                ++i;
+                //Make the function wait for 100 milli-seconds before looping again.
+                //Removing this line will cause an infinite loop and crash the game.
+                await ns.sleep(100);
+            }
+        }
+        else {
+            ns.tprint(`ERROR: not enough monies to purchase servers! keep hacking...`);
+        }
+    }
+    /**
      * Finds the best server to hack based on the score calculated by `scoreServer`
      * @param ns - Netscript namespace; defaults to this.ns
      * @returns The best server to hack, or `undefined` if there are no servers to hack
      */
-/*     public async findBestHackTarget(ns: NS = this.ns): Promise<Server> {
-        let currentBestTarget: Server | undefined = undefined;
-        let bestScore = -Infinity;
-        this.fullScannedServerList.forEach(server => {
-            const score = this.scoreServer(server);
-            if (score > bestScore) {
-                currentBestTarget = server;
-                bestScore = score;
-            }
-            //ns.tprint(`INFO: ...${colors.Cyan} ${server.hostname}${colors.Reset} scored ${colors.Green}${score}${colors.Reset}`)
-        });
-        if (currentBestTarget) return currentBestTarget;
-        else throw new Error(`ERROR: could not acquire hack target!`);
-    } */
+    /*     public async findBestHackTarget(ns: NS = this.ns): Promise<Server> {
+            let currentBestTarget: Server | undefined = undefined;
+            let bestScore = -Infinity;
+            this.fullScannedServerList.forEach(server => {
+                const score = this.scoreServer(server);
+                if (score > bestScore) {
+                    currentBestTarget = server;
+                    bestScore = score;
+                }
+                //ns.tprint(`INFO: ...${colors.Cyan} ${server.hostname}${colors.Reset} scored ${colors.Green}${score}${colors.Reset}`)
+            });
+            if (currentBestTarget) return currentBestTarget;
+            else throw new Error(`ERROR: could not acquire hack target!`);
+        } */
 
     /**
      * Calculates the score of a server based on its money and security factors.
