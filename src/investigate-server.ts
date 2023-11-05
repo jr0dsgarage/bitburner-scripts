@@ -48,17 +48,25 @@ export async function main(ns: NS) {
         const weakenTime: number = ns.getWeakenTime(targetHostname);  
         const percentofMoneyStolenPerThread = ns.hackAnalyze(targetHostname) * 100;
         
-        //const securityIncrease = ns.hackAnalyzeSecurity(targetHostname);
-        //const threadsNeededforMoneyAmount = ns.hackAnalyzeThreads(targetHostname, desiredMoneyAmount);
+        
+        
+        
+        
         ns.tprintf(`Current ${colors.White}hack()/grow()/weaken()${colors.Reset} Analysis Values:`);
         ns.tprintf(`Hack time: ${statusColor}${ns.tFormat(~~hackTime)}${colors.Reset}`);
         ns.tprintf(`Grow time: ${statusColor}${ns.tFormat(~~growTime)}${colors.Reset}`);
         ns.tprintf(`Weaken time: ${statusColor}${ns.tFormat(~~weakenTime)}${colors.Reset}`);
         ns.tprintf(`Percent of Money hacked per Thread: ${statusColor}${ns.formatNumber(percentofMoneyStolenPerThread)}%%${colors.Reset}`); 
         
-        const growThreadsNeeded = ns.growthAnalyze(targetHostname, 50);
+        
+        const desiredMoneyAmount = maxMoney;
+        const threadsNeededforMoneyAmount = ns.hackAnalyzeThreads(targetHostname, desiredMoneyAmount);
+        const securityIncrease = ns.hackAnalyzeSecurity(threadsNeededforMoneyAmount, targetHostname);
+        const growThreadsNeeded = ns.growthAnalyze(targetHostname, 100);
         const securityIncreaseIfGrow = ns.growthAnalyzeSecurity(growThreadsNeeded, targetHostname);
-        ns.tprintf(`Threads needed for 50%% growth: ${statusColor}${ns.formatNumber(growThreadsNeeded)}${colors.Reset}`);
+        ns.tprintf(`Threads needed for $${colors.Green}${ns.formatNumber(desiredMoneyAmount)}${colors.Reset}: ${statusColor}${ns.formatNumber(threadsNeededforMoneyAmount)}${colors.Reset}`);
+        ns.tprintf(`Security increase for hack(): ${statusColor}${ns.formatNumber(securityIncrease)}${colors.Reset}`);
+        ns.tprintf(`Threads needed for 100%% growth: ${statusColor}${ns.formatNumber(growThreadsNeeded)}${colors.Reset}`);
         ns.tprintf(`Security increase for grow(): ${statusColor}${ns.formatNumber(securityIncreaseIfGrow)}${colors.Reset}`);        
 
         
