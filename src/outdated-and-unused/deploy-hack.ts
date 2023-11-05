@@ -1,5 +1,5 @@
 import { NS } from '@ns';
-import { defaultHackToDeploy, defaultHackTargetHostname, deployHack, nukeServer, openPorts } from './hackLib';
+import { defaultHackToDeploy, defaultHackTargetHostname, deployHack, nukeServer, openPorts } from '../hackLib';
 
 /**  @param {NS} ns  */
 

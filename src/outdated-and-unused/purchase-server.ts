@@ -1,6 +1,6 @@
 // the contents of this script came from the Beginner's Guide in the game's documentation...
 import { NS } from '@ns';
-import { deployHack, purchaseServer, upgradeServer, colors, defaultHackToDeploy, calculateMaxRAM} from './hackLib';
+import { deployHack, purchaseServer, upgradeServer, colors, defaultHackToDeploy, calculateMaxRAM} from '../hackLib';
 /** @param {NS} ns */
 
 /**
