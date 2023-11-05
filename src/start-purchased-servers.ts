@@ -1,6 +1,6 @@
 // created by j__r0d 10/11/23
 import { NS } from '@ns';
-import * as hl from './hackLib'
+import { deployHack } from './hackLib'
 import { colors } from './hackLib'
 
 /** @param {NS} ns */
@@ -14,7 +14,7 @@ export async function main(ns: NS) {
     while (i < ns.getPurchasedServerLimit() + 1) {
         let hostname = `pserv-`.concat(i.toString());
         ns.killall(hostname);
-        await hl.deployHack(ns, hostname, hackToDeploy, hackTarget);
+        await deployHack(ns, hostname, hackToDeploy, hackTarget);
         if (ns.scriptRunning(hackToDeploy, hostname)) {
             ++hackedCount;
         };
