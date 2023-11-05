@@ -50,6 +50,7 @@ export async function main(ns: NS) {
                 await (async () => ns.run(`start-home-server.js`, 1, hackToDeploy, hackTarget.hostname))();
             else
                 ns.tprint(`INFO: skipping home server. use 2nd arg '-h' to include home server in hacktivities.`);
+            
             await ((async () => hackableServerList.forEach(async (hackableServer: Server) => {
                 if (!ns.hasRootAccess(hackableServer.hostname)) {
                     ns.tprint(`WARN: ${colors.Cyan}${hackableServer.hostname}${colors.Reset} does not have root access. attempting root...`);
