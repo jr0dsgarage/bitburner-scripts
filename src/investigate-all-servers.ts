@@ -45,6 +45,6 @@ export async function main(ns: NS) {
 
             ns.tprintf(`${hostnameString.padEnd(30, `.`)}${moneyString.padEnd(30, `.`)}${securityString.padEnd(20, `.`)}${hackString.padEnd(20, `.`)}${growString.padEnd(20, `.`)}${weakenString.padEnd(20, `.`)}${targetString}`);
         });
-        await ns.sleep(10000);
+        await ns.sleep(500);
     }
 }
