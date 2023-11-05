@@ -15,7 +15,7 @@ export class ServerMatrix {
 
     constructor(ns: NS, requestedScanDepth: number = NaN, requestedHackTarget: Server = ns.getServer(`joesguns`)) {
         this.ns = ns;
-        if (isNaN(requestedScanDepth)) requestedScanDepth = this.getMaxPossibleScanDepth();
+        if (isNaN(requestedScanDepth)) requestedScanDepth = this.findMaxPossibleScanDepth();
         this.scannedDepth = requestedScanDepth;
         this.hackTarget = requestedHackTarget;
         this.purchasedServerList = ns.getPurchasedServers().map((hostname: string) => ns.getServer(hostname));
@@ -138,7 +138,7 @@ export class ServerMatrix {
      * @param ns Netscript namespace
      * @returns maximum scan depth based on the executables available, returns a number
      */
-    private getMaxPossibleScanDepth(ns: NS = this.ns): number {
+    private findMaxPossibleScanDepth(ns: NS = this.ns): number {
         let scanDepth: number = 3;
         if (ns.fileExists(`DeepscanV1.exe`)) scanDepth = 5;
         if (ns.fileExists(`DeepscanV2.exe`)) scanDepth = 10;
@@ -160,6 +160,7 @@ export class ServerMatrix {
         }
         return maxRAM;
     }
+    
     /**
      * Sorts the fullScannedServerList by money available
      * @param ns Netscript namespace; defaults to this.ns
