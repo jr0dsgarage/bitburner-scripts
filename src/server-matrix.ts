@@ -33,10 +33,7 @@ export class ServerMatrix {
         ns.tprint(`INFO: ...found ${colors.Cyan}${this.fullScannedServerList.length}${colors.Reset} servers.`)
         ns.tprint(`INFO: ➡️📃 building list of purchased servers...`);
         ns.tprint(`INFO: ...found ${colors.Cyan}${this.purchasedServerList.length}${colors.Reset} purchased servers.`)
-        if (this.purchasedServerList.length === 0){
-            
-            await this.purchaseServers();
-        }
+        if (this.purchasedServerList.length === 0) await this.purchaseServers();
     }
 
     /**
