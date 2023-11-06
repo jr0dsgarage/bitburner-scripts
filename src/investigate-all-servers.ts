@@ -34,7 +34,7 @@ export async function main(ns: NS) {
             const requiredHackingLevel: number = ns.getServerRequiredHackingLevel(targetHostname);
 
             
-            const hostnameString = `${colors.Green}${targetHostname}${colors.Reset}:${securityLevel > minSecurityLevel ? '👇' : moneyAvailable < maxMoney ? '👆' : '👉'}`;
+            const hostnameString = `${colors.Cyan}${targetHostname}${colors.Reset}:${securityLevel > minSecurityLevel ? '👇' : moneyAvailable < maxMoney ? '👆' : '👉'}`;
             const moneyString = `${colors.Magenta}$${ns.formatNumber(moneyAvailable).padEnd(8, ' ')}/$${ns.formatNumber(maxMoney)}${colors.Reset}`;
             const securityString = `S:${statusColor}${ns.formatNumber(securityLevel, 3)}${colors.Reset}`;
             const hackString = `H:${statusColor}${(~~hackTime)}${colors.Reset}`;
