@@ -302,7 +302,7 @@ export class ServerMatrix {
             }
         }
         else {
-            ns.tprint(`ERROR: not enough monies to purchase servers! keep hacking...`);
+            ns.tprint(`WARN: not enough monies to purchase servers! keep hacking...`);
         }
     }
     /**
