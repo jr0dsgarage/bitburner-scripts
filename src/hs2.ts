@@ -9,10 +9,9 @@
  *      `Keep security level low. Security level affects everything when hacking. Two important Netscript functions for this are getServerSecurityLevel() and getServerMinSecurityLevel()`x
  */
 
-import { NS, Server} from '@ns';
+import { NS, Server } from '@ns';
 import { ServerMatrix } from './server-matrix';
-import * as hl from './hackLib';
-import { colors } from './hackLib';
+import { colors } from './helperLib';
 
 /** 
  * @param {NS} ns Netscript namespace
@@ -24,11 +23,12 @@ export async function main(ns: NS) {
     let hackTarget: Server = ns.getServer(ns.args[1]?.toString());
     const includeHome = (ns.args.includes('-h') || ns.args.includes('-home')) ? true : false;
     const doFetch = (ns.args.includes('-f') || ns.args.includes('-fetch')) ? true : false;
+    const killAllFirst = (ns.args.includes('-k') || ns.args.includes('-kill')) ? true : false;
 
     if (hackToDeploy) {
         const matrix = new ServerMatrix(ns);
         await matrix.initialize();
-        if (!hackTarget) hackTarget = matrix.hackTarget;
+        if (!hackTarget) hackTarget = matrix.hackTarget;  // matrix.hackTarget has a default built-in, so use that if no target is specified
 
         /* future Tor Router functionality
         // buy a tor router and then all of the executables as money becomes available
@@ -44,39 +44,30 @@ export async function main(ns: NS) {
      */
 
         if (hackTarget) {
-            const hackableServerList = await matrix.getHackableServers()
             ns.tprint(`INFO: attempting to deploy ${colors.Magenta}${hackToDeploy}${colors.Reset} to all servers; targeting ${colors.Green}${hackTarget.hostname}${colors.Reset} ...`);
-            if (includeHome)
-                await (async () => ns.run(`start-home-server.js`, 1, hackToDeploy, hackTarget.hostname))();
-            else
+            await matrix.deployHackOnAllServers(hackToDeploy, killAllFirst);
+            await (async () => {
+                if (includeHome)
+                    ns.run(`start-home-server.js`, 1, hackToDeploy, hackTarget.hostname);
+                else
                 ns.tprint(`INFO: skipping home server. use 2nd arg '-h' to include home server in hacktivities.`);
-            
-            await ((async () => hackableServerList.forEach(async (hackableServer: Server) => {
-                if (!ns.hasRootAccess(hackableServer.hostname)) {
-                    ns.tprint(`WARN: ${colors.Cyan}${hackableServer.hostname}${colors.Reset} does not have root access. attempting root...`);
-                    hl.openPorts(ns, hackableServer.hostname);
-                    hl.nukeServer(ns, hackableServer.hostname);
+            })();
+            await (async () => {
+                if (matrix.purchasedServerList.length > 0) {
+                    ns.run(`start-purchased-servers.js`, 1, hackToDeploy, hackTarget.hostname);
                 }
                 else {
-                    ns.killall(hackableServer.hostname);
-                    await hl.deployHack(ns, hackableServer.hostname, hackToDeploy, hackTarget.hostname);
-                }
-            }))());
-
-            // check for existing purchased servers and start them, or purchase them if they don't exist and there's enough money
-            if (matrix.purchasedServerList.length > 0) {
-                await (async () => ns.run(`start-purchased-servers.js`, 1, hackToDeploy, hackTarget.hostname))();
-            }
-            else {
-                ns.tprint(`INFO: no purchased servers available!`);
-            }
+                    ns.tprint(`INFO: no purchased servers available!`);
+                };
+            })();
+            
             
 
             ns.toast(`hacks deployed!`);
         };
-        
+
         if (doFetch) {
-            await (async () => matrix.fetchFilesFromServers())();
+            await  matrix.fetchFilesFromServers();
         };
     }
     else {
