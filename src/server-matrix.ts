@@ -1,6 +1,8 @@
 import { NS, Server as Server } from '@ns';
+
 //import { ServerNode as Server } from './server-node';
-import { colors } from './hackLib';
+import * as hl from './helperLib';
+import { colors, portOpeningPrograms as programs } from './helperLib';
 
 /**
  * Represents a server matrix that contains a list of all servers up to a certain depth.
@@ -13,7 +15,7 @@ export class ServerMatrix {
     public scannedDepth: number;
     public hackTarget!: Server;
 
-    constructor(ns: NS, requestedScanDepth: number = NaN, requestedHackTarget: Server = ns.getServer(`joesguns`)) {
+    constructor(ns: NS, requestedScanDepth: number = NaN, requestedHackTarget: Server = ns.getServer(hl.defaultHackTargetHostname)) {
         this.ns = ns;
         if (isNaN(requestedScanDepth)) requestedScanDepth = this.findMaxPossibleScanDepth();
         this.scannedDepth = requestedScanDepth;
@@ -26,7 +28,7 @@ export class ServerMatrix {
      * If no servers have been purchased, it will purchase servers before building the list.
      * @param ns Netscript namespace; defaults to this.ns
      */
-    public async initialize(ns: NS = this.ns): Promise<void>  {
+    public async initialize(ns: NS = this.ns): Promise<void> {
         ns.tprint(`INFO: serverMatrix initializing...`);
         ns.tprint(`INFO: ➡️📃 building list of scanned servers to depth of ${colors.Green}${this.scannedDepth}${colors.Reset}...`);
         await this.buildScannedServerList();
@@ -34,6 +36,21 @@ export class ServerMatrix {
         ns.tprint(`INFO: ➡️📃 building list of purchased servers...`);
         ns.tprint(`INFO: ...found ${colors.Cyan}${this.purchasedServerList.length}${colors.Reset} purchased servers.`)
         if (this.purchasedServerList.length === 0) await this.purchaseServers();
+    }
+
+    public async attemptToNukeServer(server: Server, ns: NS = this.ns): Promise<boolean> {
+        ns.tprint(`WARN: ${colors.Cyan}${server.hostname}${colors.Reset} does not have root access. attempting root...`);
+        this.openPortsOnServer(server);
+        try {
+            ns.nuke(server.hostname);
+            ns.tprint(`INFO: ...💣 successful. root access granted!`);
+            return true;
+        }
+        catch {
+            ns.tprint(`ERROR: ...root access denied! ❌ cannot hack ${colors.Cyan}${server.hostname}${colors.Reset}!`);
+            return false;
+        }
+
     }
 
     /**
@@ -87,6 +104,58 @@ export class ServerMatrix {
     }
 
     /**
+     * Deploys a hack on a server
+     * @param hackToDeploy The hack script to deploy; needs to be a .js or .script file
+     * @param server The server to deploy the hack on
+     * @param killAllFirst Whether to kill all currently running scripts before deploying the hack
+     * @param threadsToUse The number of threads to use for the hack; defaults to the maximum number of threads available on the server
+     * @param ns Netscript namespace; defaults to this.ns
+     */
+    public async deployHackOnServer(hackToDeploy: string, server: Server, killAllFirst: boolean = false, threadsToUse?: number, ns: NS = this.ns): Promise<boolean> {
+        if (killAllFirst) ns.killall(server.hostname);
+        if (!threadsToUse) threadsToUse = Math.max(1, (ns.getServerMaxRam(server.hostname) - ns.getServerUsedRam(server.hostname)) / ns.getScriptRam(hackToDeploy));
+        try {
+            if (!ns.scp(hackToDeploy, server.hostname))
+                throw `...can't scp ${hackToDeploy} to ${server.hostname}!`
+            if (!ns.exec(hackToDeploy, server.hostname, ~~threadsToUse, this.hackTarget.hostname))
+                throw `...can't exec ${hackToDeploy} on ${server.hostname}!`
+            if (!ns.scriptRunning(hackToDeploy, server.hostname))
+                throw `...script not running on ${server.hostname}!`;
+            else {
+                ns.tprint(`INFO: ...hack deployed on ${colors.Cyan}${server.hostname}${colors.Reset} using ${colors.Magenta}${~~threadsToUse}${colors.Reset} threads!`)    
+                return true;
+            }
+        }
+        catch (err) {
+            ns.tprint(`ERROR: ${err} ...hack deployment failed!`);
+            return false;
+        }
+    }
+
+    /**
+     * Deploys a hack on all servers in the matrix' serverList
+     * @param hackToDeploy The hack script to deploy; needs to be a .js or .script file
+     * @param killAllFirst Whether to kill all currently running scripts before deploying the hack
+     * @param ns Netscript namespace; defaults to this.ns
+     */
+    public async deployHackOnAllServers(hackToDeploy: string, killAllFirst: boolean = false, ns: NS = this.ns): Promise<void> {
+        const hackableServers = await this.getHackableServers();
+        for (const server of hackableServers) {
+            try {
+                if (!ns.hasRootAccess(server.hostname)) {
+                    if (!await this.attemptToNukeServer(server))
+                        throw `...nuke failed, aborting deployment!`;
+                }
+                if (!await this.deployHackOnServer(hackToDeploy, server, killAllFirst))
+                    throw `...hack deployment failed!`;
+            }
+            catch (err) {
+                ns.tprint(`ERROR: ${err}`);
+            }
+        }
+    }
+
+    /**
      * Fetches all fetchable files from all servers in the matrix' serverList
      * - `scp` only works for scripts (.js or .script), text files (.txt), and literature files (.lit)
      * @param ns - Netscript namespace; defaults to this.ns
@@ -129,8 +198,18 @@ export class ServerMatrix {
      * Returns an array of Server objects that are suitable for hacking, i.e. servers that have more than 0 RAM
      * @returns An array of Server object
      */
-    public async getHackableServers(): Promise<Server[]> {
+    private async getHackableServers(): Promise<Server[]> {
         return this.fullScannedServerList.filter(server => server.maxRam > 0);
+    }
+
+    /**
+     * Sorts the fullScannedServerList by money available
+     * @param ns Netscript namespace; defaults to this.ns
+     * @returns The hostname of the server with the most money available.
+     */
+    public getRichestServerHostname(ns: NS = this.ns): string {
+        const sortedServerList = [... this.fullScannedServerList].sort((a, b) => ns.getServerMoneyAvailable(b.hostname) - ns.getServerMoneyAvailable(a.hostname));
+        return sortedServerList[0].hostname;
     }
 
     /**
@@ -160,15 +239,44 @@ export class ServerMatrix {
         }
         return maxRAM;
     }
-    
+
     /**
-     * Sorts the fullScannedServerList by money available
-     * @param ns Netscript namespace; defaults to this.ns
-     * @returns The hostname of the server with the most money available.
+     * @remarks This function opens a specified number of ports on a server. 
+     * @param ns Netscript namespace
+     * @param hostname hostname of server on which to open ports
      */
-    public getRichestServerHostname(ns: NS = this.ns): string {
-        const sortedServerList = [... this.fullScannedServerList].sort((a, b) => ns.getServerMoneyAvailable(b.hostname) - ns.getServerMoneyAvailable(a.hostname));
-        return sortedServerList[0].hostname;
+    private async openPortsOnServer(server: Server, ns: NS = this.ns) {
+        const maxPorts = programs.length;
+        const portsRequired = ns.getServerNumPortsRequired(server.hostname);
+        for (let i = 0; i < portsRequired && i < maxPorts; i++) {
+            //ns.tprint(`INFO: ...opening port ${colors.Magenta}${i+1}${colors.Reset}...`); // i+1 because ports are 1-indexed
+            try {
+                if (ns.fileExists(programs[i])) {
+                    switch (i) {
+                        case 0:
+                            ns.brutessh(server.hostname);
+                            break;
+                        case 1:
+                            ns.ftpcrack(server.hostname);
+                            break;
+                        case 2:
+                            ns.relaysmtp(server.hostname);
+                            break;
+                        case 3:
+                            ns.httpworm(server.hostname);
+                            break;
+                        case 4:
+                            ns.sqlinject(server.hostname);
+                            break;
+                    }
+                } else {
+                    throw (`${colors.Yellow}${programs[i]}${colors.Reset} unavailable, cannot open port ${colors.Magenta}${i + 1}${colors.Reset}`);
+                }
+            } catch (err) {
+                ns.tprint(`ERROR: ${err} ...aborting`);
+                break;
+            }
+        }
     }
 
     /**
