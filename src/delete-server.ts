@@ -1,5 +1,5 @@
 import { NS } from '@ns';
-import { colors } from './hackLib'
+import { colors } from './helperLib'
 /** @param {NS} ns Netscript namespace */
 
 export async function main(ns: NS) {

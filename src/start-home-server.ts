@@ -1,6 +1,6 @@
 // created by j__r0d 10/11/23
 import { NS } from '@ns';
-import { colors } from './hackLib'
+import { colors } from './helperLib'
 
 /** @param {NS} ns */
 export async function main(ns: NS) {

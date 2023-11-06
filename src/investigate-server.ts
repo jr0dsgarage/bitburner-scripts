@@ -1,7 +1,7 @@
 import { NS, Server } from '@ns';
 import { ServerMatrix } from './server-matrix';
-import * as hl from './hackLib';
-import { colors } from './hackLib';
+import * as hl from './helperLib';
+import { colors } from './helperLib';
 
 /**
  * investigates a server and prints it's stats and info on loop

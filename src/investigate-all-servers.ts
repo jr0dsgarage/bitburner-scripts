@@ -3,7 +3,7 @@
  */
 import { NS, Server } from '@ns';
 import { ServerMatrix } from './server-matrix';
-import { colors } from './hackLib';
+import { colors } from './helperLib';
 
 /**
  * investigates all servers and prints pertinent hacking information

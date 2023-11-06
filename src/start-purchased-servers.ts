@@ -1,7 +1,7 @@
 // created by j__r0d 10/11/23
 import { NS } from '@ns';
-import { deployHack } from './hackLib'
-import { colors } from './hackLib'
+import { deployHack } from './outdated-and-unused/hackLib'
+import { colors } from './helperLib'
 
 /** @param {NS} ns */
 export async function main(ns: NS) {
