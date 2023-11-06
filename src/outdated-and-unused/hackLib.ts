@@ -2,7 +2,7 @@
 // created by j__r0d 2023-10-22, but a lot of the code was pasted in from other scripts
 
 import { NS } from '@ns';
-import { ServerMatrix as sm }  from './server-matrix';
+import { ServerMatrix as sm }  from '../server-matrix';
 
 export const defaultHackToDeploy = `my-first-hack.js`;
 export const defaultHackTargetHostname = `joesguns`;

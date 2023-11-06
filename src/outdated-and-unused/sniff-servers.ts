@@ -1,7 +1,7 @@
 // created by j__r0d 2023-10-22
 
 import { NS } from '@ns';
-import { buildScannedServerList, fileFetch, getMaxPossibleScanDepth } from '../hackLib';
+import { buildScannedServerList, fileFetch, getMaxPossibleScanDepth } from './hackLib';
 
 /** 
  * @param {NS} ns Netscript namespace
