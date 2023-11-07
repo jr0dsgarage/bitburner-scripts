@@ -54,7 +54,7 @@ export async function main(ns: NS) {
         ns.tprintf(`Weaken time: ${statusColor}${ns.tFormat(~~weakenTime, true)}${colors.Reset}`);
         ns.tprintf(`Percent of Money hacked per Thread: ${statusColor}${ns.formatNumber(percentofMoneyStolenPerThread)}%%${colors.Reset}`);
 
-        const desiredMoneyAmount = maxMoney - moneyAvailable;
+        const desiredMoneyAmount = moneyAvailable;
         const threadsNeededforMoneyAmount = ns.hackAnalyzeThreads(targetHostname, desiredMoneyAmount);
         const securityIncrease = ns.hackAnalyzeSecurity(threadsNeededforMoneyAmount, targetHostname);
         const growThreadsNeeded = ns.growthAnalyze(targetHostname, 100);
