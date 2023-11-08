@@ -1,7 +1,7 @@
 import { NS, Server } from '@ns';
 //import { ServerMatrix } from `./server-matrix`;
 //import * as hl from `./helperLib`;
-import { colors} from './helperLib';
+import { TerminalFormats as colors, colorize } from './helperLib';
 
 /**
  * investigates a server and prints it`s stats and info on loop
@@ -10,9 +10,9 @@ import { colors} from './helperLib';
 
 let STATUSCOLOR = colors.Reset;
 const LINELENGTH = 75;
+const colorCodeRegex = /\x1b\[\d+m/g;
 
-
-export enum ValueFormat {
+enum ValueFormat {
     Percent,
     Time,
     Money,
@@ -37,22 +37,29 @@ export async function main(ns: NS) {
     const minSecurityLevel: number = ns.getServerMinSecurityLevel(targetHostname);
     const maxMoney: number = ns.getServerMaxMoney(targetHostname)
     const requiredHackingLevel: number = ns.getServerRequiredHackingLevel(targetHostname);
-    const usedRam: number = ns.getServerUsedRam(targetHostname);
-    const availableRAM: number = maxRam - usedRam;
+    
 
     while (true) {
         ns.ui.clearTerminal();
+        printHeader(ns, colorize(`Server Investigation Report`, colors.Yellow));
+        const usedRam: number = ns.getServerUsedRam(targetHostname);
+        const availableRAM: number = maxRam - usedRam;
         const moneyAvailable: number = ns.getServerMoneyAvailable(targetHostname);
+        const currentSecurityLevel = ns.getServerSecurityLevel(targetHostname);     
 
-        printHeader(ns, `Server Investigation Report`);
-        const bar = `${colors.White}│${colors.Reset}`;
-        ns.tprintf(bar+` → Investigating ${STATUSCOLOR}${targetHostname}${colors.Reset}:`.padEnd(LINELENGTH+9)+bar);
-        ns.tprintf(bar+` → RAM Used: ${colors.Cyan}${ns.formatNumber(ns.getServerUsedRam(targetHostname), 2)}GB / ${~~maxRam}GB = ${ns.formatNumber(availableRAM, 2)}GB${colors.Reset} Available`.padEnd(LINELENGTH+9)+bar);
-        ns.tprintf(bar+` → Minimum Security Level: ${colors.Cyan}${minSecurityLevel}${colors.Reset}`.padEnd(LINELENGTH+9)+bar);
-        ns.tprintf(bar+` → Required Hacking Level: ${colors.Cyan}${requiredHackingLevel}${colors.Reset}`.padEnd(LINELENGTH+9)+bar);
-        ns.tprintf(bar+` → A successful hack() on a server will raise that server’s security level by 0.002.`)
+        STATUSCOLOR = `${currentSecurityLevel > minSecurityLevel ? colors.Yellow : moneyAvailable < maxMoney ? colors.Magenta : colors.Green}`;
         
-        printSubheader(ns, `Analysis Values`)
+        const bar = colorize(`│`, colors.White);
+        const pointer = colorize(`${currentSecurityLevel > minSecurityLevel ? ` ↓ ` : moneyAvailable < maxMoney ? ` ↑ ` : ` → `}`,STATUSCOLOR);
+        const serverValues: string[] = [
+            `Investigating ${colorize(targetHostname, colors.Cyan)}:`,
+            `RAM Used: ${colorize(`${ns.formatNumber(ns.getServerUsedRam(targetHostname), 2)}GB / ${~~maxRam}GB = ${ns.formatNumber(availableRAM, 2)}GB`, colors.Cyan)} Available`,
+            `Minimum Security Level: ${colorize(minSecurityLevel, colors.Cyan)}`,
+            `Required Hacking Level: ${colorize(requiredHackingLevel, colors.Cyan)}`,
+        ]; 
+        serverValues.forEach(serverValue => ns.tprintf(bar + pointer + serverValue.padEnd(LINELENGTH + 6) + bar));
+
+        printSubheader(ns, colorize(`Analysis Values`, colors.Magenta))
         let analysisClues: Clues = {
             currentSecurityLevel: {
                 label: `Current Security Level`,
@@ -60,7 +67,7 @@ export async function main(ns: NS) {
                 format: ValueFormat.RoundDown,
             },
             hackChance: {
-                label: `Successful ${colors.Green}hack()${colors.Reset} chance`,
+                label: `Successful ${colorize(`hack()`, colors.Green)} chance`,
                 value: ns.hackAnalyzeChance(targetHostname) * 100,
                 format: ValueFormat.Percent
             },
@@ -80,7 +87,7 @@ export async function main(ns: NS) {
                 format: ValueFormat.Percent,
             },
             threadsNeededforMoneyAmount: {
-                label: `Threads needed to steal ${colors.Green}$` + ns.formatNumber(moneyAvailable).padStart(7) + colors.Reset,
+                label: `Threads needed to steal ${colorize(`$${ns.formatNumber(moneyAvailable).padStart(7)}`, colors.Green)}`,
                 value: ns.hackAnalyzeThreads(targetHostname, moneyAvailable),
                 format: ValueFormat.RoundDown,
             },
@@ -105,26 +112,25 @@ export async function main(ns: NS) {
                 format: ValueFormat.RoundDown,
             },
             securityIncreaseIfHack: {
-                label: `Security increase for ${colors.Green}hack()${colors.Reset}`,
-                value: ns.hackAnalyzeSecurity(ns.hackAnalyzeThreads(targetHostname, maxMoney - moneyAvailable), targetHostname),
+                label: `Security increase for ${colorize(`hack()`, colors.Green)}`,
+                value: ns.hackAnalyzeSecurity(ns.hackAnalyzeThreads(targetHostname, moneyAvailable), targetHostname),
             },
             securityIncreaseIfGrow: {
-                label: `Security increase for ${colors.Magenta}grow()${colors.Reset}`,
+                label: `Security increase for ${colorize(`grow()`, colors.Magenta)}`,
                 value: ns.growthAnalyzeSecurity(ns.growthAnalyze(targetHostname, 100), targetHostname),
             },
             securityDecreaseifWeaken: {
-                label: `Security decrease for ${colors.Yellow}weaken()${colors.Reset}`,
+                label: `Security decrease for ${colorize(`weaken()`, colors.Yellow)}`,
                 value: ns.weakenAnalyze(ns.growthAnalyze(targetHostname, 100)),
             },
         };
 
-        STATUSCOLOR = analysisClues.currentSecurityLevel.value > minSecurityLevel ? colors.Yellow : analysisClues.moneyAvailable.value < maxMoney ? colors.Magenta : colors.Green;
         await printClues(ns, analysisClues);
 
         // only print if the Formulas.exe file exists
         if (ns.fileExists(`Formulas.exe`)) {
             const linelength = 75 / 2 - ` Formulas `.length / 2;
-            printSubheader(ns, `Formulas.exe Analysis`)
+            printSubheader(ns, colorize(`Formulas.exe Analysis`, colors.Magenta))
             let cluesUsingFormulas: Clues = {
                 growPercentforThreadCount: {
                     label: `Percent of Growth per Thread`,
@@ -132,7 +138,7 @@ export async function main(ns: NS) {
                     format: ValueFormat.Percent,
                 },
                 growThreads: {
-                    label: `Threads needed to grow to ${colors.Green}$${ns.formatNumber(maxMoney).padStart(2,`.`)}${colors.Reset}`,
+                    label: `Threads needed to grow to ${colorize(`$${ns.formatNumber(maxMoney).padStart(2, '.')}`, colors.Green)}`,
                     value: ns.formulas.hacking.growThreads(target, ns.getPlayer(), maxMoney),
                     format: ValueFormat.RoundDown,
                 },
@@ -146,7 +152,7 @@ export async function main(ns: NS) {
                     format: ValueFormat.Percent,
                 },
                 hackChanceFormulas: {
-                    label: `Successful ${colors.Green}hack()${colors.Reset} chance`,
+                    label: `Successful ${colorize(`hack()`, colors.Green)} chance`,
                     value: ns.formulas.hacking.hackChance(target, ns.getPlayer()) * 100,
                     format: ValueFormat.Percent,
                 },
@@ -156,7 +162,7 @@ export async function main(ns: NS) {
                     format: ValueFormat.Time,
                 },
                 growTimeFormulas: {
-                    label: `Time to grow to ${colors.Green}$${ns.formatNumber(maxMoney)}${colors.Reset}`,
+                    label: `Time to grow to ${colorize(`$${ns.formatNumber(maxMoney)}`, colors.Green)}`,
                     value: ns.formulas.hacking.growTime(target, ns.getPlayer()),
                     format: ValueFormat.Time,
                 },
@@ -199,7 +205,7 @@ export async function printClues(ns: NS, cluesToPrint: Clues) {
                 formattedValue = ns.formatNumber(clue.value);
         }
 
-        const colorCodeRegex = /\x1b\[\d+m/g;
+        
         const prefixColorCodes = clue.label.match(colorCodeRegex) || [];
         const prefixColorCodesLength = prefixColorCodes.reduce((total, code) => total + code.length, 0);
         const prefixPadLength = LINELENGTH / 2 + prefixColorCodesLength + (clue.label.includes('%%') ? 1 : 0);
@@ -216,24 +222,29 @@ export async function printClues(ns: NS, cluesToPrint: Clues) {
 }
 
 export async function printHeader(ns: NS, title: string) {
-    const headerLinelength = LINELENGTH;
-    const titleLinelength = ((LINELENGTH+2) / 2) - (title.length / 2) ;
-    const headerTop = `┌` + `─`.repeat(headerLinelength) + `┐`;
-    const headerTitle = `│`.padEnd(titleLinelength) + `${title}` + `│`.padStart(titleLinelength);
-    const headerBottom = `├` + `─`.repeat(headerLinelength) + `┤`;
+    // need to calculate the length of the title and pad the header accordingly
+    // the title _might_ have color codes in it, so we need to strip those out before calculating the length
+    const prefixColorCodes = title.match(colorCodeRegex) || [];
+    const prefixColorCodesLength = prefixColorCodes.reduce((total, code) => total + code.length, 0);
 
-    ns.tprintf(`${colors.White}${headerTop}${colors.Reset}`);
-    ns.tprintf(`${colors.White}${headerTitle}${colors.Reset}`);
-    ns.tprintf(`${colors.White}${headerBottom}${colors.Reset}`);
+    const headerLinelength = LINELENGTH;
+    const halfLinelengthMinusTitle = ((LINELENGTH+2) / 2) - (title.length / 2) ;
+    const headerTop = colorize((`┌` + `─`.repeat(headerLinelength) + `┐`), colors.White);
+    const headerTitle = colorize(`│`.padEnd(halfLinelengthMinusTitle), colors.White) + title + colorize(`│`.padStart(halfLinelengthMinusTitle), colors.White);
+    const headerBottom = colorize((`├` + `─`.repeat(headerLinelength) + `┤`), colors.White);
+
+    ns.tprintf(`${headerTop}`);
+    ns.tprintf(`${headerTitle}`);
+    ns.tprintf(`${headerBottom}`);
 }
 
 export async function printSubheader(ns: NS, title: string) {
     const titleLinelength = (LINELENGTH / 2) - ((title.length + 2) / 2);
-    const sectionTitle = `├` + `─`.repeat(titleLinelength) + ` ${title} ` + `─`.repeat(titleLinelength) + `┤`;
-    ns.tprintf(`${colors.White}${sectionTitle}${colors.Reset}`);
+    const sectionTitle = colorize(`├` + `─`.repeat(titleLinelength) + ` ${title} ` + `─`.repeat(titleLinelength) + `┤`, colors.White);
+    ns.tprintf(`${sectionTitle}`);
 }
 
 export async function printFooter(ns: NS) {
-    ns.tprintf(`${colors.White}└${`─`.repeat(LINELENGTH/2)}┴${`─`.repeat(LINELENGTH/2)}┘${colors.Reset}`);
+    ns.tprintf(`${colorize(`└${`─`.repeat(LINELENGTH/2)}┴${`─`.repeat(LINELENGTH/2)}┘`, colors.White)}`);
 }
 
