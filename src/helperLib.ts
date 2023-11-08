@@ -1,5 +1,3 @@
-export const defaultHackToDeploy = `my-first-hack.js`;
-export const defaultHackTargetHostname = `joesguns`;
 export const colors = {
     Black: '\u001b[30m',
     Red: '\u001b[31m',
@@ -18,7 +16,10 @@ export const colors = {
     BrightCyan: '\u001b[36;1m',
     BrightWhite: '\u001b[37;1m',
     Reset: '\u001b[0m',
-}
+};
+
+export const defaultHackToDeploy = `my-first-hack.js`;
+export const defaultHackTargetHostname = `joesguns`;
 export const portOpeningPrograms = [
     `brutessh.exe`,
     `ftpcrack.exe`,
@@ -26,3 +27,7 @@ export const portOpeningPrograms = [
     `httpworm.exe`,
     `sqlinject.exe`
 ];
+
+export function colorize(str: string, color: string) {
+    return `${color}${str}${colors.Reset}`;
+}
