@@ -1,7 +1,7 @@
 /** 
  * created by j__r0d 2023-10-11
  * command to start script: 
- *   home; clear; killall; run hack - servers.js my - first - hack.js - h
+ *   home; clear; killall; run hs2.js <hack-script> <target-server> [-h] [-f] [-k]
  * 
  * TODO: write a logger script that will log all the things - might be unnecessary?  i'm only after a better way to format the terminal output
  * TODO: properly calculate hack target -- from Documentation/beginner's guide: 
