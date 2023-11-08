@@ -36,6 +36,7 @@ export class ServerMatrix {
         ns.tprint(`INFO: ➡️📃 building list of purchased servers...`);
         ns.tprint(`INFO: ...found ${colors.Cyan}${this.purchasedServerList.length}${colors.Reset} purchased servers.`)
         if (this.purchasedServerList.length === 0) await this.purchaseServers();
+        ns.tprint(`INFO: ...serverMatrix initialized!`);
     }
 
     public async attemptToNukeServer(server: Server, ns: NS = this.ns): Promise<boolean> {
