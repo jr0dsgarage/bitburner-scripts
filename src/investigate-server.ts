@@ -44,12 +44,12 @@ export async function main(ns: NS) {
         ns.ui.clearTerminal();
         const moneyAvailable: number = ns.getServerMoneyAvailable(targetHostname);
 
-        printTitle(ns, `Server Investigation`);
-        ns.tprintf(`Investigating ${STATUSCOLOR}${targetHostname}${colors.Reset}:` + `${ns.getServerSecurityLevel(targetHostname) > minSecurityLevel ? `👇` : moneyAvailable < maxMoney ? `👆` : `👉`}`);
-        ns.tprintf(`RAM Used: ${colors.Cyan}${ns.formatNumber(ns.getServerUsedRam(targetHostname), 2)}GB / ${~~maxRam}GB = ${ns.formatNumber(availableRAM, 2)}GB${colors.Reset} Available`);
-        ns.tprintf(`Ports still closed: ${colors.Cyan}${ns.getServerNumPortsRequired(targetHostname)}${colors.Reset}`);
-        ns.tprintf(`Minimum Security Level: ${colors.Cyan}${minSecurityLevel}${colors.Reset}`);
-        ns.tprintf(`Required Hacking Level: ${colors.Cyan}${requiredHackingLevel}${colors.Reset}`);
+        printTitle(ns, `Server  Investigation`);
+        const bar = `${colors.White}│${colors.Reset}`;
+        ns.tprintf(bar+`Investigating ${STATUSCOLOR}${targetHostname}${colors.Reset}:`.padEnd(LINELENGTH+9)+bar);
+        ns.tprintf(bar+`RAM Used: ${colors.Cyan}${ns.formatNumber(ns.getServerUsedRam(targetHostname), 2)}GB / ${~~maxRam}GB = ${ns.formatNumber(availableRAM, 2)}GB${colors.Reset} Available`.padEnd(LINELENGTH+9)+bar);
+        ns.tprintf(bar+`Minimum Security Level: ${colors.Cyan}${minSecurityLevel}${colors.Reset}`.padEnd(LINELENGTH+9)+bar);
+        ns.tprintf(bar+`Required Hacking Level: ${colors.Cyan}${requiredHackingLevel}${colors.Reset}`.padEnd(LINELENGTH+9)+bar);
 
         printTitle(ns, `Analysis Values`)
 
