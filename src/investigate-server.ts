@@ -1,7 +1,7 @@
 import { NS, Server } from '@ns';
 //import { ServerMatrix } from `./server-matrix`;
 //import * as hl from `./helperLib`;
-import { colors } from './helperLib';
+import { colors} from './helperLib';
 
 /**
  * investigates a server and prints it`s stats and info on loop
@@ -44,15 +44,15 @@ export async function main(ns: NS) {
         ns.ui.clearTerminal();
         const moneyAvailable: number = ns.getServerMoneyAvailable(targetHostname);
 
-        printTitle(ns, `Server  Investigation`);
+        printHeader(ns, `Server Investigation Report`);
         const bar = `${colors.White}│${colors.Reset}`;
-        ns.tprintf(bar+`Investigating ${STATUSCOLOR}${targetHostname}${colors.Reset}:`.padEnd(LINELENGTH+9)+bar);
-        ns.tprintf(bar+`RAM Used: ${colors.Cyan}${ns.formatNumber(ns.getServerUsedRam(targetHostname), 2)}GB / ${~~maxRam}GB = ${ns.formatNumber(availableRAM, 2)}GB${colors.Reset} Available`.padEnd(LINELENGTH+9)+bar);
-        ns.tprintf(bar+`Minimum Security Level: ${colors.Cyan}${minSecurityLevel}${colors.Reset}`.padEnd(LINELENGTH+9)+bar);
-        ns.tprintf(bar+`Required Hacking Level: ${colors.Cyan}${requiredHackingLevel}${colors.Reset}`.padEnd(LINELENGTH+9)+bar);
-
-        printTitle(ns, `Analysis Values`)
-
+        ns.tprintf(bar+` → Investigating ${STATUSCOLOR}${targetHostname}${colors.Reset}:`.padEnd(LINELENGTH+9)+bar);
+        ns.tprintf(bar+` → RAM Used: ${colors.Cyan}${ns.formatNumber(ns.getServerUsedRam(targetHostname), 2)}GB / ${~~maxRam}GB = ${ns.formatNumber(availableRAM, 2)}GB${colors.Reset} Available`.padEnd(LINELENGTH+9)+bar);
+        ns.tprintf(bar+` → Minimum Security Level: ${colors.Cyan}${minSecurityLevel}${colors.Reset}`.padEnd(LINELENGTH+9)+bar);
+        ns.tprintf(bar+` → Required Hacking Level: ${colors.Cyan}${requiredHackingLevel}${colors.Reset}`.padEnd(LINELENGTH+9)+bar);
+        ns.tprintf(bar+` → A successful hack() on a server will raise that server’s security level by 0.002.`)
+        
+        printSubheader(ns, `Analysis Values`)
         let analysisClues: Clues = {
             currentSecurityLevel: {
                 label: `Current Security Level`,
@@ -80,11 +80,10 @@ export async function main(ns: NS) {
                 format: ValueFormat.Percent,
             },
             threadsNeededforMoneyAmount: {
-                label: `Threads needed to steal ${colors.Green}$${ns.formatNumber(moneyAvailable)}${colors.Reset}`,
+                label: `Threads needed to steal ${colors.Green}$` + ns.formatNumber(moneyAvailable).padStart(7) + colors.Reset,
                 value: ns.hackAnalyzeThreads(targetHostname, moneyAvailable),
                 format: ValueFormat.RoundDown,
             },
-
             hackTime: {
                 label: `Hack time`,
                 value: ns.getHackTime(targetHostname),
@@ -125,7 +124,7 @@ export async function main(ns: NS) {
         // only print if the Formulas.exe file exists
         if (ns.fileExists(`Formulas.exe`)) {
             const linelength = 75 / 2 - ` Formulas `.length / 2;
-            printTitle(ns, `Formulas.exe Analysis`)
+            printSubheader(ns, `Formulas.exe Analysis`)
             let cluesUsingFormulas: Clues = {
                 growPercentforThreadCount: {
                     label: `Percent of Growth per Thread`,
@@ -133,7 +132,7 @@ export async function main(ns: NS) {
                     format: ValueFormat.Percent,
                 },
                 growThreads: {
-                    label: `Threads needed to grow to ${colors.Green}$${ns.formatNumber(maxMoney)}${colors.Reset}`,
+                    label: `Threads needed to grow to ${colors.Green}$${ns.formatNumber(maxMoney).padStart(2,`.`)}${colors.Reset}`,
                     value: ns.formulas.hacking.growThreads(target, ns.getPlayer(), maxMoney),
                     format: ValueFormat.RoundDown,
                 },
@@ -209,20 +208,32 @@ export async function printClues(ns: NS, cluesToPrint: Clues) {
         ns.tprintf(
             `${colors.White}│${colors.Reset}` +
             `${clue.label.padStart(prefixPadLength)}` +
-            `${colors.White} │ ${colors.Reset}` +
+            `${colors.White}│» ${colors.Reset}` +
             `${useStatusColor ? STATUSCOLOR : colors.Cyan}${formattedValue}${colors.Reset}`.padEnd(suffixPadLength) +
             `${colors.White}│${colors.Reset}`
         );
     });
 }
 
-export async function printTitle(ns: NS, title: string) {
+export async function printHeader(ns: NS, title: string) {
+    const headerLinelength = LINELENGTH;
+    const titleLinelength = ((LINELENGTH+2) / 2) - (title.length / 2) ;
+    const headerTop = `┌` + `─`.repeat(headerLinelength) + `┐`;
+    const headerTitle = `│`.padEnd(titleLinelength) + `${title}` + `│`.padStart(titleLinelength);
+    const headerBottom = `├` + `─`.repeat(headerLinelength) + `┤`;
+
+    ns.tprintf(`${colors.White}${headerTop}${colors.Reset}`);
+    ns.tprintf(`${colors.White}${headerTitle}${colors.Reset}`);
+    ns.tprintf(`${colors.White}${headerBottom}${colors.Reset}`);
+}
+
+export async function printSubheader(ns: NS, title: string) {
     const titleLinelength = (LINELENGTH / 2) - ((title.length + 2) / 2);
-    const sectionTitle = `┌` + `─`.repeat(titleLinelength) + ` ${title} ` + `─`.repeat(titleLinelength) + `┐`;
+    const sectionTitle = `├` + `─`.repeat(titleLinelength) + ` ${title} ` + `─`.repeat(titleLinelength) + `┤`;
     ns.tprintf(`${colors.White}${sectionTitle}${colors.Reset}`);
 }
 
 export async function printFooter(ns: NS) {
-    ns.tprintf(`${colors.White}└${`─`.repeat(LINELENGTH)}┘${colors.Reset}`);
+    ns.tprintf(`${colors.White}└${`─`.repeat(LINELENGTH/2)}┴${`─`.repeat(LINELENGTH/2)}┘${colors.Reset}`);
 }
 
