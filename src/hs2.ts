@@ -50,7 +50,7 @@ export async function main(ns: NS) {
                 if (includeHome)
                     ns.run(`start-home-server.js`, 1, hackToDeploy, hackTarget.hostname);
                 else
-                ns.tprint(`INFO: skipping home server. use 2nd arg '-h' to include home server in hacktivities.`);
+                    ns.tprint(`INFO: skipping home server. use 2nd arg '-h' to include home server in hacktivities.`);
             })();
             await (async () => {
                 if (matrix.purchasedServerList.length > 0) {
@@ -60,9 +60,6 @@ export async function main(ns: NS) {
                     ns.tprint(`INFO: no purchased servers available!`);
                 };
             })();
-            
-            
-
             ns.toast(`hacks deployed!`);
         };
 
