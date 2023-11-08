@@ -33,15 +33,14 @@ export async function main(ns: NS) {
         /* future Tor Router functionality
         // buy a tor router and then all of the executables as money becomes available
         // this doesn't work yet, waiting for the API to unlock? I think?
-         if (ns.hasTorRouter()) {
+        //connect darkweb; buy FTPCrack.exe; buy relaySMTP.exe; buy HTTPWorm.exe; buy SQLInject.exe; buy DeepscanV1.exe; buy DeepscanV2.exe;  buy serverProfiler.exe ; buy Autolink.exe; home;
+        if (ns.hasTorRouter()) {
             ns.tprint(`INFO: TOR router found...`);
-            //eventually i should be able to do this through script, but for now here is a command that will buy all the executables, skipping those that are not yet affordable
-            //connect darkweb; buy FTPCrack.exe; buy relaySMTP.exe; buy HTTPWorm.exe; buy SQLInject.exe; buy DeepscanV1.exe; buy DeepscanV2.exe;  buy serverProfiler.exe ; buy Autolink.exe; home;
-        }
+            }
         else {
             //buy one
         }
-     */
+        */
 
         if (hackTarget) {
             ns.tprint(`INFO: attempting to deploy ${colors.Magenta}${hackToDeploy}${colors.Reset} to all servers; targeting ${colors.Green}${hackTarget.hostname}${colors.Reset} ...`);
