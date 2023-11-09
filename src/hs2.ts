@@ -11,7 +11,7 @@
 
 import { NS, Server } from '@ns';
 import { ServerMatrix } from './server-matrix';
-import { colors } from './helperLib';
+import { TerminalFormats as colors, colorize } from './helperLib';
 
 /** 
  * @param {NS} ns Netscript namespace
@@ -43,7 +43,7 @@ export async function main(ns: NS) {
         */
 
         if (hackTarget) {
-            ns.tprint(`INFO: attempting to deploy ${colors.Magenta}${hackToDeploy}${colors.Reset} to all servers; targeting ${colors.Green}${hackTarget.hostname}${colors.Reset} ...`);
+            ns.tprint(`INFO: attempting to deploy ${colorize(hackToDeploy,colors.Magenta)} to all servers; targeting ${colorize(hackTarget.hostname,colors.Cyan)} ...`);
             await matrix.deployHackOnAllServers(hackToDeploy, killAllFirst);
             await (async () => {
                 if (includeHome)
