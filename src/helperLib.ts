@@ -14,8 +14,13 @@ export const portOpeningPrograms = [
 export type Color = string;
 export type TextStyle = string;
 
+//https://en.wikipedia.org/wiki/ANSI_escape_code#SGR_(Select_Graphic_Rendition)_parameters
 export class TerminalFormats {
     static Reset: Color = '\u001b[0m';
+    static Bold: TextStyle = '\u001b[1m';
+    static Underline: TextStyle = '\u001b[4m'; 
+
+    
     static Black: Color = '\u001b[30m';
     static Red: Color = '\u001b[31m';
     static Green: Color = '\u001b[32m';
@@ -50,9 +55,7 @@ export class TerminalFormats {
     static BrightCyanBackground: Color = '\u001b[46;1m';
     static BrightWhiteBackground: Color = '\u001b[47;1m';
 
-    static Bold: TextStyle = '\u001b[1m';
-    static Underline: TextStyle = '\u001b[4m';
-    static Italic: TextStyle = '\u001b[3m';
+    
 
 }
 
