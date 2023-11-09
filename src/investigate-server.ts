@@ -222,7 +222,7 @@ export async function printClues(ns: NS, cluesToPrint: Clues) {
             borderBar +
             `${clue.label.padStart(prefixPadLength)}` +
             `${colorize(midSeparator,colors.White)}` +
-            `${colorize(formattedValue,(useStatusColor ? STATUSCOLOR : colors.Cyan))}`.padEnd(suffixPadLength) +
+            `${colorize(formattedValue,(useStatusColor ? STATUSCOLOR : colors.Cyan)).padEnd(suffixPadLength)}` +
             borderBar
         );
     });
@@ -230,14 +230,12 @@ export async function printClues(ns: NS, cluesToPrint: Clues) {
 
 export async function printHeader(ns: NS, title: string) {
     const halfLinelength = getHalfLinelength(ns, title) + borderBar.length;
-    const headerTop =
-        colorize((`┌` + `─`.repeat(LINELENGTH) + `┐`), colors.White);
+    const headerTop = colorize((`┌` + `─`.repeat(LINELENGTH) + `┐`), colors.White);
     const headerTitle =
         borderBar.padEnd( halfLinelength) +
         title +
         borderBar.padStart(halfLinelength) ;
-    const headerBottom =
-        colorize((`├` + `─`.repeat(LINELENGTH) + `┤`), colors.White);
+    const headerBottom = colorize((`├` + `─`.repeat(LINELENGTH) + `┤`), colors.White);
 
     ns.tprintf(`${headerTop}`);
     ns.tprintf(`${headerTitle}`);
