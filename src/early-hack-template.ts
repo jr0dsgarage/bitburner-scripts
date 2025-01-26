@@ -16,7 +16,7 @@ export async function main(ns: NS) {
   const securityThresh = ns.getServerMinSecurityLevel(target);
 
   // Infinite loop that continously hacks/grows/weakens the target server
-  while (true) {
+  while (!ns.isRunning("early-hack-template.js", ns.getHostname())) {
     if (ns.getServerSecurityLevel(target) > securityThresh) {
       // If the server's security level is above our threshold, weaken it
       await ns.weaken(target);

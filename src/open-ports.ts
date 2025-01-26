@@ -4,7 +4,7 @@ import { openPorts } from './hackLib';
 
 /** @param {NS} ns */
 export async function main(ns: NS) {
-    let hostname = ns.args[0]?.toString();
+    const hostname = ns.args[0]?.toString();
     openPorts(ns, hostname);
 }
 

@@ -1,7 +1,8 @@
 // created by j__r0d 10/11/23
 import { NS } from '@ns';
-import { deployHack } from './outdated-and-unused/hackLib'
-import { colors } from './helperLib'
+import { deployHack } from './hackLib';
+import { colors } from './helperLib';
+
 
 /** @param {NS} ns */
 export async function main(ns: NS) {
@@ -12,12 +13,12 @@ export async function main(ns: NS) {
     let i = 1;
 
     while (i < ns.getPurchasedServerLimit() + 1) {
-        let hostname = `pserv-`.concat(i.toString());
+        const hostname = `pserv-`.concat(i.toString());
         ns.killall(hostname);
         await deployHack(ns, hostname, hackToDeploy, hackTarget);
         if (ns.scriptRunning(hackToDeploy, hostname)) {
             ++hackedCount;
-        };
+        }
         ++i;
     }
     ns.tprint(`INFO: hacks deployed on ${colors.Green}${hackedCount}${colors.Reset} purchased servers`);

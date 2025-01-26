@@ -41,7 +41,7 @@ export async function main(ns: NS) {
     const requiredHackingLevel: number = ns.getServerRequiredHackingLevel(targetHostname);
     
 
-    while (true) {
+    while (!ns.scriptKill(ns.getScriptName(), ns.getHostname())) {
         ns.ui.clearTerminal();
         printHeader(ns, colorize(`Server Investigation Report`, colors.Bold));
         const usedRam: number = ns.getServerUsedRam(targetHostname);
@@ -64,7 +64,7 @@ export async function main(ns: NS) {
 
         printSubheader(ns, colorize(`Analysis Values`, colors.White))
         
-        let analysisClues: Clues = {
+        const analysisClues: Clues = {
             currentSecurityLevel: {
                 label: `Current Security Level`,
                 value: ns.getServerSecurityLevel(targetHostname),
@@ -137,7 +137,7 @@ export async function main(ns: NS) {
             
             printSubheader(ns, colorize(`Formulas.exe Analysis`, colors.White))
             
-            let cluesUsingFormulas: Clues = {
+            const cluesUsingFormulas: Clues = {
                 growPercentforThreadCount: {
                     label: `Percent of Growth per Thread`,
                     value: ns.formulas.hacking.growPercent(target, ns.growthAnalyze(targetHostname, 100), ns.getPlayer()) * 100,

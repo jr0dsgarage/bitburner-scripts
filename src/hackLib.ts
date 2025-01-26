@@ -2,7 +2,7 @@
 // created by j__r0d 2023-10-22
 
 import { NS } from '@ns';
-import { colors } from './colors';
+import { colors } from './outdated-and-unused/colors';
 
 
 export const defaultHackToDeploy = `my-first-hack.js`;
@@ -80,7 +80,7 @@ export function canAddServer(serverHostname: string, serverListName: string[]) {
     const isDuplicateServer = serverListName.includes(serverHostname);
 
     return !isForbiddenServer && !isDuplicateServer && !isForbiddenServerPrefix;
-};
+}
 
 /**
  * @remarks deploys a hack script to a server and starts it running, using the maximum number of threads available.
@@ -89,12 +89,12 @@ export function canAddServer(serverHostname: string, serverListName: string[]) {
  * @param hackToDeploy hack script to deploy
  * @param hackTarget target server for the deployed hack
  */
-export async function deployHack(ns: NS, hostname: string, hackToDeploy: string = "my-first-hack.js", hackTarget: string = `joesguns`) {
+export async function deployHack(ns: NS, hostname: string, hackToDeploy = "my-first-hack.js", hackTarget = `joesguns`) {
     ns.tprint(`INFO: deploying hack to server: ${colors.Cyan}${hostname}${colors.Reset}`);
 
     ns.killall(hostname); // free up RAM
     ns.scp(hackToDeploy, hostname); // always over-write the existing script with the latest version
-    let threadsToUse = Math.max(1, (ns.getServerMaxRam(hostname) - ns.getServerUsedRam(hostname)) / ns.getScriptRam(hackToDeploy));
+    const threadsToUse = Math.max(1, (ns.getServerMaxRam(hostname) - ns.getServerUsedRam(hostname)) / ns.getScriptRam(hackToDeploy));
     ns.exec(hackToDeploy, hostname, ~~threadsToUse, hackTarget);
     
     if (ns.scriptRunning(hackToDeploy, hostname)) ns.tprint(`INFO: ...hack deployed using ${colors.Magenta}${~~threadsToUse}${colors.Reset} threads!`);
@@ -123,7 +123,7 @@ export async function fileFetch(ns: NS, hostname: string, homefilelist: string[]
  * @returns maximum scan depth based on the executables available, returns a number
  */
 export async function getScanDepth(ns: NS) {
-    let scanDepth: number = 3;
+    let scanDepth = 3;
     if (ns.fileExists(`DeepscanV1.exe`)) scanDepth = 5;
     if (ns.fileExists(`DeepscanV2.exe`)) scanDepth = 10;
     return scanDepth;
@@ -202,8 +202,22 @@ export async function purchaseServer(ns: NS, hostname: string, ram: number) {
     return hostname;
 }
 
-export async function startPurchasedServers(ns: NS, hackToDeploy: string, hackTarget: string, ramToPurchase: number) {
 
+export async function startPurchasedServers(ns: NS, hackToDeploy: string, hackTarget: string, ramToPurchase: number) {
+    ns.tprint('INFO: deploying hack on purchased servers...');
+    let hackedCount = 0;
+    let i = 1;
+
+    while (i < ns.getPurchasedServerLimit() + 1) {
+        const hostname = `pserv-`.concat(i.toString());
+        ns.killall(hostname);
+        await deployHack(ns, hostname, hackToDeploy, hackTarget);
+        if (ns.scriptRunning(hackToDeploy, hostname)) {
+            ++hackedCount;
+        }
+        ++i;
+    }
+    ns.tprint(`INFO: hacks deployed on ${colors.Green}${hackedCount}${colors.Reset} purchased servers`);
 }
 
 // this doesn't do anything yet, but needs to be implemented

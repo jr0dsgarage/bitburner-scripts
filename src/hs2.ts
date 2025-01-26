@@ -57,17 +57,17 @@ export async function main(ns: NS) {
                 }
                 else {
                     ns.tprint(`INFO: no purchased servers available!`);
-                };
+                }
             })();
             ns.toast(`hacks deployed!`);
-        };
+        }
 
         if (doFetch) {
             await  matrix.fetchFilesFromServers();
-        };
+        }
     }
     else {
         ns.tprint(`ERROR: no hack script to deploy. include script name!`);
         ns.toast(`no hacks deployed!`, 'error')
-    };
+    }
 }

@@ -9,13 +9,13 @@ import { colors, portOpeningPrograms as programs } from './helperLib';
  */
 export class ServerMatrix {
     private ns: NS;
-    private totalThreads: number = 0;
+    private totalThreads = 0;
     public fullScannedServerList: Server[] = [];
     public purchasedServerList: Server[] = [];
     public scannedDepth: number;
     public hackTarget!: Server;
 
-    constructor(ns: NS, requestedScanDepth: number = NaN, requestedHackTarget: Server = ns.getServer(hl.defaultHackTargetHostname)) {
+    constructor(ns: NS, requestedScanDepth = NaN, requestedHackTarget: Server = ns.getServer(hl.defaultHackTargetHostname)) {
         this.ns = ns;
         if (isNaN(requestedScanDepth)) requestedScanDepth = this.findMaxPossibleScanDepth();
         this.scannedDepth = requestedScanDepth;
@@ -61,7 +61,7 @@ export class ServerMatrix {
      * @param serverList - The list of servers to start the search from
      * @returns A Promise that resolves to an array of Server objects
      */
-    private async buildScannedServerList(depth: number = NaN, serverList: Server[] = this.fullScannedServerList) {
+    private async buildScannedServerList(depth = NaN, serverList: Server[] = this.fullScannedServerList) {
         let allowedServerNameList: string[] = []
 
         if (isNaN(depth)) depth = this.scannedDepth;
@@ -112,7 +112,7 @@ export class ServerMatrix {
      * @param threadsToUse The number of threads to use for the hack; defaults to the maximum number of threads available on the server
      * @param ns Netscript namespace; defaults to this.ns
      */
-    public async deployHackOnServer(hackToDeploy: string, server: Server, killAllFirst: boolean = false, threadsToUse?: number, ns: NS = this.ns): Promise<boolean> {
+    public async deployHackOnServer(hackToDeploy: string, server: Server, killAllFirst = false, threadsToUse?: number, ns: NS = this.ns): Promise<boolean> {
         if (killAllFirst) ns.killall(server.hostname);
         if (!threadsToUse) threadsToUse = Math.max(1, (ns.getServerMaxRam(server.hostname) - ns.getServerUsedRam(server.hostname)) / ns.getScriptRam(hackToDeploy));
         try {
@@ -139,7 +139,7 @@ export class ServerMatrix {
      * @param killAllFirst Whether to kill all currently running scripts before deploying the hack
      * @param ns Netscript namespace; defaults to this.ns
      */
-    public async deployHackOnAllServers(hackToDeploy: string, killAllFirst: boolean = false, ns: NS = this.ns): Promise<void> {
+    public async deployHackOnAllServers(hackToDeploy: string, killAllFirst = false, ns: NS = this.ns): Promise<void> {
         const hackableServers = await this.getHackableServers();
         for (const server of hackableServers) {
             try {
@@ -219,7 +219,7 @@ export class ServerMatrix {
      * @returns maximum scan depth based on the executables available, returns a number
      */
     private findMaxPossibleScanDepth(ns: NS = this.ns): number {
-        let scanDepth: number = 3;
+        let scanDepth = 3;
         if (ns.fileExists(`DeepscanV1.exe`)) scanDepth = 5;
         if (ns.fileExists(`DeepscanV2.exe`)) scanDepth = 10;
         return scanDepth;

@@ -5,6 +5,12 @@ import { buildScannedServerList, fileFetch, getScanDepth } from './hackLib';
 
 /** 
  * @param {NS} ns Netscript namespace
+ * @remarks
+ * This function scans servers up to a specified depth and optionally fetches files from each server.
+ * The scan depth and initial server list can be provided as arguments.
+ * If the scan depth is not provided or is invalid, it is determined dynamically.
+ * If the server list is not provided, it is built by scanning.
+ * The function also checks for fetch flags ('-f' or '-fetch') to determine whether to fetch files.
  */
 export async function main(ns: NS) {
     let scanDepth = parseInt(ns.args[0].toString());
