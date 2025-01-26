@@ -1,6 +1,6 @@
 // the contents of this script came from the Beginner's Guide in the game's documentation...
 import { NS } from '@ns';
-import { colors } from './outdated-and-unused/colors';
+import { colors } from './helperLib';
 import { deployHack, purchaseServer, upgradeServer} from './hackLib';
 /** @param {NS} ns */
 

@@ -2,7 +2,7 @@
 // created by j__r0d 2023-10-22
 
 import { NS } from '@ns';
-import { colors } from './outdated-and-unused/colors';
+import { colors } from './helperLib';
 
 
 export const defaultHackToDeploy = `my-first-hack.js`;

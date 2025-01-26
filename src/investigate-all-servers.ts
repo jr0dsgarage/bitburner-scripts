@@ -14,7 +14,8 @@ export async function main(ns: NS) {
     const matrix = new ServerMatrix(ns);
     await matrix.initialize();
 
-    while (!ns.scriptKill("investigate-all-servers.js", ns.getHostname())) {
+    // eslint-disable-next-line no-constant-condition
+    while (true) {
         ns.ui.clearTerminal();
 
         ns.tprintf(`INFO: investigating ${matrix.fullScannedServerList.length} servers...`);
