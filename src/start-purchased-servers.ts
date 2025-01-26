@@ -1,6 +1,7 @@
 // created by j__r0d 10/11/23
 import { NS } from '@ns';
-import { colors } from './colors';
+import { deployHack } from './outdated-and-unused/hackLib'
+import { colors } from './helperLib'
 
 /** @param {NS} ns */
 export async function main(ns: NS) {
@@ -10,16 +11,11 @@ export async function main(ns: NS) {
     let hackedCount = 0;
     let i = 1;
 
-    
-    // TODO: ack okay this could be easier using ns.getPurchasedServers() ...
-    while (i < ns.getPurchasedServerLimit()+1) {
+    while (i < ns.getPurchasedServerLimit() + 1) {
         let hostname = `pserv-`.concat(i.toString());
         ns.killall(hostname);
-        let threadsToUse = Math.max(1, (ns.getServerMaxRam(hostname) - ns.getServerUsedRam(hostname)) / ns.getScriptRam(hackToDeploy));
-        ns.scp(hackToDeploy, hostname);  
-        ns.exec(hackToDeploy, hostname, ~~threadsToUse, hackTarget)
+        await deployHack(ns, hostname, hackToDeploy, hackTarget);
         if (ns.scriptRunning(hackToDeploy, hostname)) {
-            ns.tprint(`INFO: ...hack deployed using ${colors.Magenta}${~~threadsToUse}${colors.Reset} threads on ${colors.Cyan}${hostname}${colors.Reset}`)
             ++hackedCount;
         };
         ++i;
