@@ -1,0 +1,28 @@
+import { colors } from '../src/helperLib';
+import { deployHack, purchaseServer } from '../src/hackLib';
+/** @param {NS} ns */
+/**
+ * @param {NS} ns
+ */
+export async function main(ns) {
+    const hackToDeploy = ns.args[0].toString();
+    const hackTarget = ns.args[1].toString();
+    const ram = ns.args[2] ? parseInt(ns.args[2].toString()) : 16;
+    // Continuously try to purchase servers until we've reached the maximum
+    // amount of servers, + 1 to account for 1-based indexing
+    let i = 1;
+    while (i < ns.getPurchasedServerLimit() + 1) {
+        // TODO: implement an upgrade feature that will upgrade existing servers 
+        // if the purchased-server script is called with a higher RAM value than the existing RAM on the server
+        if (ns.getServerMoneyAvailable(`home`) > ns.getPurchasedServerCost(ram)) {
+            const hostname = await purchaseServer(ns, `pserv-` + i, ram);
+            ns.tprint(`INFO: purchased server ${colors.Cyan}${hostname}${colors.Reset} with ${colors.Green}${ram}GB${colors.Reset} RAM`);
+            await deployHack(ns, hostname, hackToDeploy, hackTarget);
+            ++i;
+        }
+        //Make the script wait for 100 milli-seconds before looping again.
+        //Removing this line will cause an infinite loop and crash the game.
+        await ns.sleep(100);
+    }
+}
+//# sourceMappingURL=data:application/json;base64,eyJ2ZXJzaW9uIjozLCJmaWxlIjoicHVyY2hhc2Utc2VydmVyLmpzIiwic291cmNlUm9vdCI6IiIsInNvdXJjZXMiOlsicHVyY2hhc2Utc2VydmVyLnRzIl0sIm5hbWVzIjpbXSwibWFwcGluZ3MiOiJBQUVBLE9BQU8sRUFBRSxNQUFNLEVBQUUsTUFBTSxrQkFBa0IsQ0FBQztBQUMxQyxPQUFPLEVBQUUsVUFBVSxFQUFFLGNBQWMsRUFBZ0IsTUFBTSxnQkFBZ0IsQ0FBQztBQUMxRSxxQkFBcUI7QUFFckI7O0dBRUc7QUFFSCxNQUFNLENBQUMsS0FBSyxVQUFVLElBQUksQ0FBQyxFQUFNO0lBQzdCLE1BQU0sWUFBWSxHQUFXLEVBQUUsQ0FBQyxJQUFJLENBQUMsQ0FBQyxDQUFDLENBQUMsUUFBUSxFQUFFLENBQUM7SUFDbkQsTUFBTSxVQUFVLEdBQVcsRUFBRSxDQUFDLElBQUksQ0FBQyxDQUFDLENBQUMsQ0FBQyxRQUFRLEVBQUUsQ0FBQztJQUNqRCxNQUFNLEdBQUcsR0FBVyxFQUFFLENBQUMsSUFBSSxDQUFDLENBQUMsQ0FBQyxDQUFDLENBQUMsQ0FBQyxRQUFRLENBQUMsRUFBRSxDQUFDLElBQUksQ0FBQyxDQUFDLENBQUMsQ0FBQyxRQUFRLEVBQUUsQ0FBQyxDQUFDLENBQUMsQ0FBQyxFQUFFLENBQUM7SUFFdEUsdUVBQXVFO0lBQ3ZFLHlEQUF5RDtJQUN6RCxJQUFJLENBQUMsR0FBRyxDQUFDLENBQUM7SUFDVixPQUFPLENBQUMsR0FBRyxFQUFFLENBQUMsdUJBQXVCLEVBQUUsR0FBRyxDQUFDLEVBQUU7UUFFekMseUVBQXlFO1FBQ3pFLHVHQUF1RztRQUV2RyxJQUFJLEVBQUUsQ0FBQyx1QkFBdUIsQ0FBQyxNQUFNLENBQUMsR0FBRyxFQUFFLENBQUMsc0JBQXNCLENBQUMsR0FBRyxDQUFDLEVBQUU7WUFDckUsTUFBTSxRQUFRLEdBQVcsTUFBTSxjQUFjLENBQUMsRUFBRSxFQUFDLFFBQVEsR0FBRyxDQUFDLEVBQUUsR0FBRyxDQUFDLENBQUM7WUFDcEUsRUFBRSxDQUFDLE1BQU0sQ0FBQywwQkFBMEIsTUFBTSxDQUFDLElBQUksR0FBRyxRQUFRLEdBQUcsTUFBTSxDQUFDLEtBQUssU0FBUyxNQUFNLENBQUMsS0FBSyxHQUFHLEdBQUcsS0FBSyxNQUFNLENBQUMsS0FBSyxNQUFNLENBQUMsQ0FBQztZQUM3SCxNQUFNLFVBQVUsQ0FBQyxFQUFFLEVBQUUsUUFBUSxFQUFFLFlBQVksRUFBRSxVQUFVLENBQUMsQ0FBQztZQUN6RCxFQUFFLENBQUMsQ0FBQztTQUNQO1FBQ0Qsa0VBQWtFO1FBQ2xFLG9FQUFvRTtRQUNwRSxNQUFNLEVBQUUsQ0FBQyxLQUFLLENBQUMsR0FBRyxDQUFDLENBQUM7S0FDdkI7QUFDTCxDQUFDIiwic291cmNlc0NvbnRlbnQiOlsiLy8gdGhlIGNvbnRlbnRzIG9mIHRoaXMgc2NyaXB0IGNhbWUgZnJvbSB0aGUgQmVnaW5uZXIncyBHdWlkZSBpbiB0aGUgZ2FtZSdzIGRvY3VtZW50YXRpb24uLi5cclxuaW1wb3J0IHsgTlMgfSBmcm9tICdAbnMnO1xyXG5pbXBvcnQgeyBjb2xvcnMgfSBmcm9tICcuLi9zcmMvaGVscGVyTGliJztcclxuaW1wb3J0IHsgZGVwbG95SGFjaywgcHVyY2hhc2VTZXJ2ZXIsIHVwZ3JhZGVTZXJ2ZXJ9IGZyb20gJy4uL3NyYy9oYWNrTGliJztcclxuLyoqIEBwYXJhbSB7TlN9IG5zICovXHJcblxyXG4vKipcclxuICogQHBhcmFtIHtOU30gbnMgXHJcbiAqL1xyXG5cclxuZXhwb3J0IGFzeW5jIGZ1bmN0aW9uIG1haW4obnM6IE5TKSB7XHJcbiAgICBjb25zdCBoYWNrVG9EZXBsb3k6IHN0cmluZyA9IG5zLmFyZ3NbMF0udG9TdHJpbmcoKTtcclxuICAgIGNvbnN0IGhhY2tUYXJnZXQ6IHN0cmluZyA9IG5zLmFyZ3NbMV0udG9TdHJpbmcoKTtcclxuICAgIGNvbnN0IHJhbTogbnVtYmVyID0gbnMuYXJnc1syXSA/IHBhcnNlSW50KG5zLmFyZ3NbMl0udG9TdHJpbmcoKSkgOiAxNjtcclxuXHJcbiAgICAvLyBDb250aW51b3VzbHkgdHJ5IHRvIHB1cmNoYXNlIHNlcnZlcnMgdW50aWwgd2UndmUgcmVhY2hlZCB0aGUgbWF4aW11bVxyXG4gICAgLy8gYW1vdW50IG9mIHNlcnZlcnMsICsgMSB0byBhY2NvdW50IGZvciAxLWJhc2VkIGluZGV4aW5nXHJcbiAgICBsZXQgaSA9IDE7XHJcbiAgICB3aGlsZSAoaSA8IG5zLmdldFB1cmNoYXNlZFNlcnZlckxpbWl0KCkgKyAxKSB7XHJcbiAgICAgICAgXHJcbiAgICAgICAgLy8gVE9ETzogaW1wbGVtZW50IGFuIHVwZ3JhZGUgZmVhdHVyZSB0aGF0IHdpbGwgdXBncmFkZSBleGlzdGluZyBzZXJ2ZXJzIFxyXG4gICAgICAgIC8vIGlmIHRoZSBwdXJjaGFzZWQtc2VydmVyIHNjcmlwdCBpcyBjYWxsZWQgd2l0aCBhIGhpZ2hlciBSQU0gdmFsdWUgdGhhbiB0aGUgZXhpc3RpbmcgUkFNIG9uIHRoZSBzZXJ2ZXJcclxuXHJcbiAgICAgICAgaWYgKG5zLmdldFNlcnZlck1vbmV5QXZhaWxhYmxlKGBob21lYCkgPiBucy5nZXRQdXJjaGFzZWRTZXJ2ZXJDb3N0KHJhbSkpIHtcclxuICAgICAgICAgICAgY29uc3QgaG9zdG5hbWU6IHN0cmluZyA9IGF3YWl0IHB1cmNoYXNlU2VydmVyKG5zLGBwc2Vydi1gICsgaSwgcmFtKTtcclxuICAgICAgICAgICAgbnMudHByaW50KGBJTkZPOiBwdXJjaGFzZWQgc2VydmVyICR7Y29sb3JzLkN5YW59JHtob3N0bmFtZX0ke2NvbG9ycy5SZXNldH0gd2l0aCAke2NvbG9ycy5HcmVlbn0ke3JhbX1HQiR7Y29sb3JzLlJlc2V0fSBSQU1gKTtcclxuICAgICAgICAgICAgYXdhaXQgZGVwbG95SGFjayhucywgaG9zdG5hbWUsIGhhY2tUb0RlcGxveSwgaGFja1RhcmdldCk7XHJcbiAgICAgICAgICAgICsraTtcclxuICAgICAgICB9XHJcbiAgICAgICAgLy9NYWtlIHRoZSBzY3JpcHQgd2FpdCBmb3IgMTAwIG1pbGxpLXNlY29uZHMgYmVmb3JlIGxvb3BpbmcgYWdhaW4uXHJcbiAgICAgICAgLy9SZW1vdmluZyB0aGlzIGxpbmUgd2lsbCBjYXVzZSBhbiBpbmZpbml0ZSBsb29wIGFuZCBjcmFzaCB0aGUgZ2FtZS5cclxuICAgICAgICBhd2FpdCBucy5zbGVlcCgxMDApO1xyXG4gICAgfVxyXG59Il19
