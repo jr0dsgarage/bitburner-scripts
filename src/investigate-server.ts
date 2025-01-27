@@ -41,7 +41,7 @@ export async function main(ns: NS) {
     const requiredHackingLevel: number = ns.getServerRequiredHackingLevel(targetHostname);
     
 
-    while (!ns.scriptKill(ns.getScriptName(), ns.getHostname())) {
+    while (true) {
         ns.ui.clearTerminal();
         printHeader(ns, colorize(`Server Investigation Report`, colors.Bold));
         const usedRam: number = ns.getServerUsedRam(targetHostname);
