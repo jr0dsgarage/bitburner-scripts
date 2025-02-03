@@ -1,8 +1,6 @@
 // created by j__r0d
 // modified 'early-hack-template' from beginner's guide
 
-// TODO: figure out the ns.args[0].toString() causing an error, which is forcing me to use : any instead of a string
-
 import { NS } from '@ns';
 const DEBUG = false;
 
