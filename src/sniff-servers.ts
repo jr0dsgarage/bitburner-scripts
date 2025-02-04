@@ -13,12 +13,12 @@ import { buildScannedServerList, fileFetch, getScanDepth } from './hackLib';
  * The function also checks for fetch flags ('-f' or '-fetch') to determine whether to fetch files.
  */
 export async function main(ns: NS) {
-    let scanDepth = parseInt(ns.args[0].toString());
-    let serverList: string[] = ns.args[1]?.toString().split(',');
-    const doFetch = (ns.args.includes('-f') || ns.args.includes('-fetch') )? true : false;
+    let scanDepth = parseInt(ns.args[0]?.toString() || '');
+    let serverList: string[] = ns.args[1]?.toString().split(',') || [];
+    const doFetch = (ns.args.includes('-f') || ns.args.includes('-fetch')) ? true : false;
     if (isNaN(scanDepth)) scanDepth = await getScanDepth(ns);
     if (serverList.length === 0) serverList = await buildScannedServerList(ns, scanDepth);
-    const homefilelist = await (async () =>  ns.ls('home'))();
+    const homefilelist = await (async () => ns.ls('home'))();
     serverList.forEach((hostname: string) => {
         if (doFetch) fileFetch(ns, hostname, homefilelist);
     });
