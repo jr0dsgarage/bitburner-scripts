@@ -58,8 +58,8 @@ export async function main(ns: NS) {
         // Deploy the hack script to each server
         for (const server of servers) {
             ns.scp(hackToDeploy, server.name, `home`);
-            debugPrint(`deployed ${hackToDeploy} to ${server.name}`);
-            if (!ns.hasRootAccess(hackTarget)) {
+            if (ns.fileExists(hackToDeploy, server.name)) debugPrint(`deployed ${hackToDeploy} to ${server.name}`);
+            if (!ns.hasRootAccess(server.name)) {
                 ns.nuke(server.name);
                 debugPrint(`${server.name} has been nuked`);
             } else {
