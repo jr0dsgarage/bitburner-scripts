@@ -35,7 +35,8 @@ export async function main(ns: NS) {
         hackTarget = ns.args[1].toString();
     }
 
-    const servers = [
+    // List of servers to deploy the hack script to; this list comes from the Beginner's guide
+    let servers = [
         { name: 'n00dles', threads: 1 },
         { name: 'sigma-cosmetics', threads: 6 },
         { name: 'joesguns', threads: 6 },
@@ -44,31 +45,29 @@ export async function main(ns: NS) {
         { name: 'harakiri-sushi', threads: 6 }
     ];
 
+    // Add home to servers if requested
+    if (includeHome) servers.push({ name: 'home', threads: 1 });
+
     if (hackToDeploy !== '') {
         debugPrint(`attempting to deploy ${hackToDeploy} to all servers; targeting ${hackTarget} ...`);
-
-        // Deploy the hack script on the home server if requested
-        await (async () => {
-            if (includeHome)
-                ns.run(`start-home-server.js`, 1, hackToDeploy, hackTarget);
-            else
-                ns.tprint(`INFO: skipping home server. use 2nd arg '-h' to include home server in hacktivities.`);
-        })();
-
         // Deploy the hack script to each server
         for (const server of servers) {
+            // Copy the requested hack script to the server
             ns.scp(hackToDeploy, server.name, `home`);
             if (ns.fileExists(hackToDeploy, server.name)) debugPrint(`deployed ${hackToDeploy} to ${server.name}`);
+
+            // NUKE the server if it doesn't have root access
             if (!ns.hasRootAccess(server.name)) {
                 ns.nuke(server.name);
                 debugPrint(`${server.name} has been nuked`);
             } else {
                 debugPrint(`${server.name} already has root access`);
             }
+
+            // Run the hack script on the server
             ns.exec(hackToDeploy, server.name, server.threads, hackTarget);
-            if (ns.scriptRunning(hackToDeploy, server.name)) {
-                ns.tprint(`INFO: ${hackToDeploy} is running on ${server.name}`);
-            }
+            if (ns.scriptRunning(hackToDeploy, server.name)) ns.tprint(`INFO: ${hackToDeploy} is running on ${server.name}`);
+
         }
     } else {
         ns.tprint(`ERROR: no hack script to deploy. include script name!`);
