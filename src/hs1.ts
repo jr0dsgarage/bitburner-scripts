@@ -28,6 +28,7 @@ export async function main(ns: NS) {
     let hackTarget = defaultHackTarget;
     const includeHome = ns.args.includes('-h') || ns.args.includes('-home');
     const doFetch = ns.args.includes('-f') || ns.args.includes('-fetch');
+    const homefilelist = await (async () => ns.ls('home'))();
     const killAllFirst = ns.args.includes('-k') || ns.args.includes('-kill');
 
     // Check if the second argument is a target server or a flag
@@ -68,6 +69,17 @@ export async function main(ns: NS) {
             ns.exec(hackToDeploy, server.name, server.threads, hackTarget);
             if (ns.scriptRunning(hackToDeploy, server.name)) ns.tprint(`INFO: ${hackToDeploy} is running on ${server.name}`);
 
+            // Fetch files if requested
+            if (doFetch) {
+                ns.ls(server.name).forEach((file: string) => {
+                    if (!homefilelist.includes(file) && server.name !== 'home')
+                        try {
+                            ns.scp(file, `home`, server.name);
+                            ns.tprint(`INFO: ...${file} fetched from ${server.name}`);
+                        }
+                        catch { ns.tprint(`ERROR: ...can't fetch ${file} from ${server.name}!`); }
+                });
+            }
         }
     } else {
         ns.tprint(`ERROR: no hack script to deploy. include script name!`);
