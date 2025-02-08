@@ -53,6 +53,9 @@ export async function main(ns: NS) {
         debugPrint(`attempting to deploy ${hackToDeploy} to all servers; targeting ${hackTarget} ...`);
         // Deploy the hack script to each server
         for (const server of servers) {
+            // Kill all scripts on the server if requested
+            if (killAllFirst) ns.killall(server.name);
+            
             // Copy the requested hack script to the server
             ns.scp(hackToDeploy, server.name, `home`);
             if (ns.fileExists(hackToDeploy, server.name)) debugPrint(`deployed ${hackToDeploy} to ${server.name}`);
