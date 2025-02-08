@@ -1,4 +1,5 @@
 /** 
+ * hack script 2
  * created by j__r0d 2023-10-11
  * command to start script: 
  *   home; clear; killall; run hs2.js <hack-script> [<target-server>] [-h] [-f] [-k]
