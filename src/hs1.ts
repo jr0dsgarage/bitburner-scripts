@@ -37,7 +37,7 @@ export async function main(ns: NS) {
     }
 
     // List of servers to deploy the hack script to; this list comes from the Beginner's guide
-    let servers = [
+    const servers = [
         { name: 'n00dles', threads: 1 },
         { name: 'sigma-cosmetics', threads: 6 },
         { name: 'joesguns', threads: 6 },
