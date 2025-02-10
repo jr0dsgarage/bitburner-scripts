@@ -69,7 +69,7 @@ export async function main(ns: NS) {
             }
 
             // Run the hack script on the server
-            ns.exec(hackToDeploy, server.name, server.threads, hackTarget);
+            ns.exec(hackToDeploy, server.name, server.threads, hackTarget, DEBUG);
             if (ns.scriptRunning(hackToDeploy, server.name)) ns.tprint(`INFO: ${hackToDeploy} is running on ${server.name}`);
 
             // Fetch files if requested
