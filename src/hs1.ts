@@ -11,17 +11,12 @@
  */
 
 import { NS } from '@ns';
+import { Logger } from './logger';
 const DEFAULT_HACK_TARGET = 'n00dles';
 
 /** @param {NS} ns */
 export async function main(ns: NS) {
-    ns.tprint(`INFO: hack initiated...`);
-
-    function debugPrint(message: string) {
-        if (DEBUG) {
-            ns.tprint(`DEBUG: ${message}`);
-        }
-    }
+    Logger.info(ns, 'hack initiated...');
 
     function parseFlags(args: (string | number | boolean)[]): { includeHome: boolean, doFetch: boolean, killAllFirst: boolean, debug: boolean } {
         return {
@@ -33,11 +28,9 @@ export async function main(ns: NS) {
     }
 
     const { includeHome, doFetch, killAllFirst, debug } = parseFlags(ns.args);
-    const DEBUG = debug;
 
     const hackToDeploy: string = ns.args[0]?.toString() || '';
     let hackTarget: string = DEFAULT_HACK_TARGET;
-
     // Check if the second argument is a target server or a flag and set hackTarget accordingly
     if (ns.args[1] && !ns.args[1].toString().startsWith('-')) {
         hackTarget = ns.args[1].toString();
@@ -59,12 +52,12 @@ export async function main(ns: NS) {
     try {
         homefilelist = ns.ls('home');
     } catch (error) {
-        ns.tprint(`ERROR: Failed to list files on home server: ${error}`);
+        Logger.error(ns, `Failed to list files on home server: ${error}`);
     }
 
     if (hackToDeploy !== '') {
         try {
-            debugPrint(`attempting to deploy ${hackToDeploy} to all servers; targeting ${hackTarget} ...`);
+            Logger.debug(ns, `attempting to deploy ${hackToDeploy} to all servers; targeting ${hackTarget} ...`, debug);
             // Deploy the hack script to each server
             for (const server of servers) {
                 // Kill all scripts on the server if requested
@@ -72,19 +65,27 @@ export async function main(ns: NS) {
                 
                 // Copy the requested hack script to the server
                 ns.scp(hackToDeploy, server.name, `home`);
-                if (ns.fileExists(hackToDeploy, server.name)) debugPrint(`deployed ${hackToDeploy} to ${server.name}`);
+                if (ns.fileExists(hackToDeploy, server.name)) Logger.debug(ns, `deployed ${hackToDeploy} to ${server.name}`, debug);
 
                 // NUKE the server if it doesn't have root access
                 if (!ns.hasRootAccess(server.name)) {
-                    ns.nuke(server.name);
-                    debugPrint(`${server.name} has been nuked`);
-                } else {
-                    debugPrint(`${server.name} already has root access`);
+                    try {
+                        ns.nuke(server.name);
+                        if (ns.hasRootAccess(server.name)) {
+                            Logger.debug(ns, `${server.name} has been nuked`, debug);
+                        } else {
+                            throw new Error(`Failed to nuke ${server.name}`);
+                        }
+                    } catch (error) {
+                        Logger.error(ns, `${error}`);
+                    }} else {
+                    Logger.debug(ns, `${server.name} already has root access`, debug);
                 }
 
             // Run the hack script on the server
-            ns.exec(hackToDeploy, server.name, server.threads, hackTarget, DEBUG);
-            if (ns.scriptRunning(hackToDeploy, server.name)) ns.tprint(`INFO: ${hackToDeploy} is running on ${server.name}`);
+            Logger.debug(ns, `Attempting to execute ${hackToDeploy} on ${server.name} with ${server.threads} threads targetting ${hackTarget}`, debug);
+            ns.exec(hackToDeploy, server.name, server.threads, hackTarget, debug);
+            if (ns.scriptRunning(hackToDeploy, server.name)) Logger.info(ns, `${hackToDeploy} is running on ${server.name}`);
 
                 // Fetch files if requested
                 if (doFetch) {
@@ -92,17 +93,17 @@ export async function main(ns: NS) {
                         if (!homefilelist.includes(file) && server.name !== 'home')
                             try {
                                 ns.scp(file, `home`, server.name);
-                                ns.tprint(`INFO: ...${file} fetched from ${server.name}`);
+                                Logger.info(ns, `...${file} fetched from ${server.name}`);
                             }
-                            catch { ns.tprint(`ERROR: ...can't fetch ${file} from ${server.name}!`); }
+                            catch { Logger.error(ns, `...can't fetch ${file} from ${server.name}!`); }
                     });
                 }
             }
         } catch (error) {
-            ns.tprint(`ERROR: Failed to deploy hack script: ${error}`);
+            Logger.error(ns, `Failed to deploy hack script: ${error}`);
         }
     } else {
-        ns.tprint(`ERROR: no hack script to deploy. include script name!`);
-        ns.tprint(`Usage: home; clear; killall; run hs1.js <hack-script> [<target-server>] [-h -home] [-f -fetch] [-k -kill] [-d -debug]`);
+        Logger.error(ns, `no hack script to deploy. include script name!`);
+        Logger.info(ns, `Usage: home; clear; killall; run hs1.js <hack-script> [<target-server>] [-h -home] [-f -fetch] [-k -kill] [-d -debug]`);
     }
 }

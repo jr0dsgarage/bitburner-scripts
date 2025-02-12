@@ -14,9 +14,9 @@ class Logger {
     private static getColor(level: LogLevel): string {
         switch (level) {
             case LogLevel.INFO:
-                return '\x1b[32m'; // Green
-            case LogLevel.DEBUG:
                 return '\x1b[34m'; // Blue
+            case LogLevel.DEBUG:
+                return '\x1b[33m'; // Yellow
             case LogLevel.ERROR:
                 return '\x1b[31m'; // Red
             default:
@@ -35,8 +35,10 @@ class Logger {
         ns.tprint(Logger.formatMessage(LogLevel.INFO, message, ...variables));
     }
 
-    static debug(ns: any, message: string, ...variables: any[]): void {
-        ns.tprint(Logger.formatMessage(LogLevel.DEBUG, message, ...variables));
+    static debug(ns: any, message: string, DEBUG: boolean, ...variables: any[]): void {
+        if (DEBUG) {
+            ns.tprint(Logger.formatMessage(LogLevel.DEBUG, message, ...variables));
+        }
     }
 
     static error(ns: any, message: string, ...variables: any[]): void {
