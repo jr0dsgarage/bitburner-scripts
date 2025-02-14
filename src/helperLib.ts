@@ -23,7 +23,7 @@ export class TerminalFormats {
 
     // Colors found using colorTable.ts
     static Info: Color = '\u001b[38;5;26m';
-    static Debug: Color = '\u001b[38;5;178m';
+    static Debug: Color = '\u001b[38;5;123m';
     static Error: Color = '\u001b[38;5;196m';
     
     // Standard Colors
