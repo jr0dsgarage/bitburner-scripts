@@ -2,7 +2,7 @@ import { NS, Server as Server } from '@ns';
 
 //import { ServerNode as Server } from './server-node';
 import * as hl from './helperLib';
-import { colors, portOpeningPrograms as programs } from './helperLib';
+import { TerminalFormats as colors, portOpeningPrograms as programs } from './helperLib';
 
 /**
  * Represents a server matrix that contains a list of all servers up to a certain depth.
