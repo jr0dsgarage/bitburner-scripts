@@ -14,13 +14,19 @@ export const portOpeningPrograms = [
 export type Color = string;
 export type TextStyle = string;
 
-//https://en.wikipedia.org/wiki/ANSI_escape_code#SGR_(Select_Graphic_Rendition)_parameters
+// https://en.wikipedia.org/wiki/ANSI_escape_code#SGR_(Select_Graphic_Rendition)_parameters
+// https://gist.github.com/dominikwilkowski/60eed2ea722183769d586c76f22098dd
 export class TerminalFormats {
     static Reset: Color = '\u001b[0m';
     static Bold: TextStyle = '\u001b[1m';
     static Underline: TextStyle = '\u001b[4m'; 
 
+    // Colors found using colorTable.ts
+    static Info: Color = '\u001b[38;5;26m';
+    static Debug: Color = '\u001b[38;5;123m';
+    static Error: Color = '\u001b[38;5;196m';
     
+    // Standard Colors
     static Black: Color = '\u001b[30m';
     static Red: Color = '\u001b[31m';
     static Green: Color = '\u001b[32m';
@@ -54,32 +60,8 @@ export class TerminalFormats {
     static BrightMagentaBackground: Color = '\u001b[45;1m';
     static BrightCyanBackground: Color = '\u001b[46;1m';
     static BrightWhiteBackground: Color = '\u001b[47;1m';
-
-    
-
 }
 
 export function colorize(value: any, color: Color) {
     return `${color}${value}${TerminalFormats.Reset}`;
-}
-
-// colors found on reddit
-export const colors = {
-    Black: '\u001b[30m',
-    Red: '\u001b[31m',
-    Green: '\u001b[32m',
-    Yellow: '\u001b[33m',
-    Blue: '\u001b[34m',
-    Magenta: '\u001b[35m',
-    Cyan: '\u001b[36m',
-    White: '\u001b[37m',
-    BrightBlack: '\u001b[30;1m',
-    BrightRed: '\u001b[31;1m',
-    BrightGreen: '\u001b[32;1m',
-    BrightYellow: '\u001b[33;1m',
-    BrightBlue: '\u001b[34;1m',
-    BrightMagenta: '\u001b[35;1m',
-    BrightCyan: '\u001b[36;1m',
-    BrightWhite: '\u001b[37;1m',
-    Reset: '\u001b[0m',
 }
