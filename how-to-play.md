@@ -50,6 +50,8 @@ This is an instructional how-to on using my personal scripts to play Bitburner.
 
 ## After upgrading the home computer
 
+### If there is 'down-time' between creating programs, complete Hacking contracts for CSEC to earn favor and increase hacking skill
+
 1. Run hs2.js.  
 
     This advanced hacking script will:
@@ -74,10 +76,18 @@ This is an instructional how-to on using my personal scripts to play Bitburner.
     - -k will killall running scripts first
     - -d will print debug text for more information
 
-    **The hs2.js script can be re-run at any time,  but should ALWAYS be re-run after a new program is Created.**
+    **The hs2.js script can be re-run at any time,  but should ***ALWAYS*** be re-run after a new program is Created, because it will be able to open more ports**
 
-2. At Hacking skill 75 Create Program: `DeepscanV1.exe`
+2. At Hacking skill 75 Create Program: `DeepscanV1.exe` then `ServerProfiler.exe`
 
-3. If there is 'down-time' between creating programs, complete Hacking contracts for CSEC to earn favor and increase hacking skill
+3. At Hacking skill 100 Create Program: `FTPCrack.exe`
 
-4. At Hacking skill XX Create Program: `ServerProfiler.exe`
+4. At Hacking skill 250 Create Program: `relaySMTP.exe`
+
+5. At Hacking skill 400 Create Program: `DeepscanV2.exe`
+
+6. At Hacking skill 500 Create Program: `HTTPWorm.exe`
+
+7. At Hacking skill 750 Create Program: `SQLInject.exe`
+
+8. At Hacking skill 1000 Create Program: `Formulas.exe`
