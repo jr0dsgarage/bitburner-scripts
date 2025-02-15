@@ -65,7 +65,7 @@ This is an instructional how-to on using my personal scripts to play Bitburner.
     home; clear; killall; run hs2.js my-first-hack.js -h -f -k -d
     ```
 
-    NB: the script will automatically target the server designated as default in `server-matrix.js`, which is `joesguns`, unless the <target-server> argument is set
+    NB: the script will automatically target the server designated as default in `server-matrix.js`, which is `joesguns`, unless the `<target-server>` argument is set
     
     NB: The flags are optional
 
