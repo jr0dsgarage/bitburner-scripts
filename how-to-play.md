@@ -2,7 +2,7 @@
 
 This is an instructional how-to on using my personal scripts to play Bitburner.
 
-**NB: This is a work in progress and should not be followed yet**
+## NB: This is a work in progress and should not be followed yet
 
 ## Setup the Game
 
@@ -10,7 +10,7 @@ This is an instructional how-to on using my personal scripts to play Bitburner.
 
 - Connect to the Remote API using port `12525` in Options to get the scripts onto the home computer.  If VSCode is not set up to run the API, follow the instructions in  [Beginnersguide.md](/BeginnersGuide.md)
 
-    - In VSCode the src files will end in .ts, but in game they are seen as .js files
+  - In VSCode the src files will end in .ts, but in game they are seen as .js files
 
 ## Starting the Game
 
@@ -20,9 +20,10 @@ This is an instructional how-to on using my personal scripts to play Bitburner.
 
     Usage: `run hs1.js <hack-script> [<target-server>] [-h] [-f] [-k] [-d]`
 
-    ```
+    ```bash
     home; clear; killall; run hs1.js my-first-hack.js -h -f -k -d
     ```
+
     NB: the script will automatically target the `n00dles` server with the hack unless the <target-server> argument is set
     
     NB: The flags are optional
@@ -52,7 +53,7 @@ This is an instructional how-to on using my personal scripts to play Bitburner.
 1. Run hs2.js.  
 
     This advanced hacking script will:
-    -  auto purchase personal servers if there is enough monies to do so. 
+    - auto purchase personal servers if there is enough monies to do so. 
     - scan all servers to the depth that is currently possible, and build a server matrix.
     - automatically open ports on each server based off of which programs have been Created.  
     - auto nuke each server
@@ -60,9 +61,10 @@ This is an instructional how-to on using my personal scripts to play Bitburner.
 
     Usage: `run hs2.js <hack-script> [<target-server>] [-h] [-f] [-k] [-d]`
 
-    ```
+    ```bash
     home; clear; killall; run hs2.js my-first-hack.js -h -f -k -d
     ```
+
     NB: the script will automatically target the server designated as default in `server-matrix.js`, which is `joesguns`, unless the <target-server> argument is set
     
     NB: The flags are optional
