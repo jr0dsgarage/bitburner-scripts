@@ -4,11 +4,12 @@ import { TerminalFormats as colors, colorize } from './helperLib';
 * Logger class to log messages to the terminal with different log levels.
 */
 
-type LogLevel = 'INFO' | 'DEBUG' | 'ERROR';
+type LogLevel = 'DEBUG' | 'INFO' | 'WARN' | 'ERROR';
 
 const logLevelColors: { [key in LogLevel]: string } = {
-    INFO: colors.Info,
     DEBUG: colors.Debug,
+    INFO: colors.Info,
+    WARN: colors.Warn,
     ERROR: colors.Error
 };
 
@@ -31,15 +32,20 @@ class Logger {
         return `${colorize(`[${level}]`, logLevelColors[level])} ${formattedMessage}`;
     }
 
-    static info(ns: any, message: string, ...variables: any[]): void {
-        ns.tprint(Logger.formatMessage('INFO', message, ...variables));
-    }
-
     static debug(ns: any, message: string, DEBUG: boolean, ...variables: any[]): void {
         if (DEBUG) {
             ns.tprint(Logger.formatMessage('DEBUG', message, ...variables));
         }
     }
+    
+    static info(ns: any, message: string, ...variables: any[]): void {
+        ns.tprint(Logger.formatMessage('INFO', message, ...variables));
+    }
+
+    static warn(ns: any, message: string, ...variables: any[]): void {
+        ns.tprint(Logger.formatMessage('WARN', message, ...variables));
+    }
+    
 
     static error(ns: any, message: string, ...variables: any[]): void {
         ns.tprint(Logger.formatMessage('ERROR', message, ...variables));

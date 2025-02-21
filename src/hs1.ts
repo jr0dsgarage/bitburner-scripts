@@ -27,7 +27,7 @@ export async function main(ns: NS) {
         };
     }
 
-    const { includeHome, doFetch, killAllFirst, debug } = parseFlags(ns.args);
+    const { includeHome, doFetch, killAllFirst, debug: debugFlag } = parseFlags(ns.args);
 
     const hackToDeploy: string = ns.args[0]?.toString() || '';
     let hackTarget: string = DEFAULT_HACK_TARGET;
@@ -57,7 +57,7 @@ export async function main(ns: NS) {
 
     if (hackToDeploy !== '') {
         try {
-            Logger.debug(ns, `attempting to deploy {0} to all servers; targeting {1} ...`, debug, hackToDeploy, hackTarget);
+            Logger.debug(ns, `attempting to deploy {0} to all servers; targeting {1} ...`, debugFlag, hackToDeploy, hackTarget);
             // Deploy the hack script to each server
             for (const server of servers) {
                 // Kill all scripts on the server if requested
@@ -65,26 +65,26 @@ export async function main(ns: NS) {
                 
                 // Copy the requested hack script to the server
                 ns.scp(hackToDeploy, server.name, `home`);
-                if (ns.fileExists(hackToDeploy, server.name)) Logger.debug(ns, `deployed {0} to {1}`, debug, hackToDeploy, server.name);
+                if (ns.fileExists(hackToDeploy, server.name)) Logger.debug(ns, `deployed {0} to {1}`, debugFlag, hackToDeploy, server.name);
 
                 // NUKE the server if it doesn't have root access
                 if (!ns.hasRootAccess(server.name)) {
                     try {
                         ns.nuke(server.name);
                         if (ns.hasRootAccess(server.name)) {
-                            Logger.debug(ns, `{0} has been nuked`, debug, server.name);
+                            Logger.debug(ns, `{0} has been nuked`, debugFlag, server.name);
                         } else {
                             throw new Error(`Failed to nuke ${server.name}`);
                         }
                     } catch (error) {
                         Logger.error(ns, `${error}`);
                     }} else {
-                    Logger.debug(ns, `{0} already has root access`, debug, server.name);
+                    Logger.debug(ns, `{0} already has root access`, debugFlag, server.name);
                 }
 
                 // Run the hack script on the server
-                Logger.debug(ns, `Attempting to execute {0} on {1} with {2} threads targetting {3}`, debug, hackToDeploy, server.name, server.threads, hackTarget);
-                ns.exec(hackToDeploy, server.name, server.threads, hackTarget, debug);
+                Logger.debug(ns, `Attempting to execute {0} on {1} with {2} threads targetting {3}`, debugFlag, hackToDeploy, server.name, server.threads, hackTarget);
+                ns.exec(hackToDeploy, server.name, server.threads, hackTarget, debugFlag);
                 if (ns.scriptRunning(hackToDeploy, server.name)) Logger.info(ns, `{0} is running on {1} using {2} threads`,hackToDeploy, server.name, server.threads);
 
                 // Fetch files if requested
@@ -99,6 +99,7 @@ export async function main(ns: NS) {
                     });
                 }
             }
+            ns.toast('hacks deployed!');
         } catch (error) {
             Logger.error(ns, `Failed to deploy hack script: {0}`, error);
         }

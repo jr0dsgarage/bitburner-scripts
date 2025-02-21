@@ -29,7 +29,7 @@ export async function main(ns: NS) {
         };
     }
 
-    const { includeHome, doFetch, killAllFirst, debug } = parseFlags(ns.args);
+    const { includeHome, doFetch, killAllFirst, debug: debugFlag } = parseFlags(ns.args);
 
     const hackToDeploy: string = ns.args[0]?.toString();
 
@@ -54,7 +54,7 @@ export async function main(ns: NS) {
         */
 
         if (hackTarget) {
-            Logger.info(ns, 'attempting to deploy {0} to all servers; targeting {1} ...', hackToDeploy, hackTarget.hostname);
+            Logger.debug(ns, 'attempting to deploy {0} to all servers; targeting {1} ...', debugFlag, hackToDeploy, hackTarget.hostname);
             await matrix.deployHackOnAllServers(hackToDeploy, killAllFirst);
             await (async () => {
                 if (includeHome)
