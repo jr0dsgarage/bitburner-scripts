@@ -152,7 +152,7 @@ export class ServerMatrix {
                     throw `...hack deployment failed!`;
             }
             catch (err) {
-                Logger.error(ns, '{0}', err);
+                Logger.error(ns, `${err}`);
             }
         }
     }
