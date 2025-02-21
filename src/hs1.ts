@@ -72,7 +72,7 @@ export async function main(ns: NS) {
                     try {
                         ns.nuke(server.name);
                         if (ns.hasRootAccess(server.name)) {
-                            Logger.debug(ns, `{0} has been nuked`, debugFlag, server.name);
+                            Logger.info(ns, `{0} has been nuked`, server.name);
                         } else {
                             throw new Error(`Failed to nuke ${server.name}`);
                         }
