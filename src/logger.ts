@@ -17,9 +17,12 @@ class Logger {
     private static formatMessage(level: LogLevel, message: string, ...variables: any[]): string {
         // Split the message into parts and apply the log level color to the entire message
         let formattedMessage = message.split(/{(\d+)}/g).map((part, index) => {
-            // If the part is a placeholder, replace it with the corresponding variable colored magenta
+            // If the part is a placeholder, replace it with the corresponding variable
             if (index % 2 === 1) {
-                return colorize(variables[parseInt(part)], colors.Magenta);
+                const variable = variables[parseInt(part)];
+                // Colorize numbers as green, otherwise magenta
+                const color = typeof variable === 'number' ? colors.Green : colors.Magenta;
+                return colorize(variable, color);
             }
             // Otherwise, colorize the part with the log level color
             return colorize(part, logLevelColors[level]);

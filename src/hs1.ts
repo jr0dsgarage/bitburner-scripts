@@ -82,10 +82,10 @@ export async function main(ns: NS) {
                     Logger.debug(ns, `{0} already has root access`, debug, server.name);
                 }
 
-            // Run the hack script on the server
-            Logger.debug(ns, `Attempting to execute {0} on {1} with {2} threads targetting {3}`, debug, hackToDeploy, server.name, server.threads, hackTarget);
-            ns.exec(hackToDeploy, server.name, server.threads, hackTarget, debug);
-            if (ns.scriptRunning(hackToDeploy, server.name)) Logger.info(ns, `{0} is running on {1}`,hackToDeploy, server.name);
+                // Run the hack script on the server
+                Logger.debug(ns, `Attempting to execute {0} on {1} with {2} threads targetting {3}`, debug, hackToDeploy, server.name, server.threads, hackTarget);
+                ns.exec(hackToDeploy, server.name, server.threads, hackTarget, debug);
+                if (ns.scriptRunning(hackToDeploy, server.name)) Logger.info(ns, `{0} is running on {1} using {2} threads`,hackToDeploy, server.name, server.threads);
 
                 // Fetch files if requested
                 if (doFetch) {
