@@ -21,8 +21,15 @@ class Logger {
             // If the part is a placeholder, replace it with the corresponding variable
             if (index % 2 === 1) {
                 const variable = variables[parseInt(part)];
-                // Colorize numbers as green, otherwise magenta
-                const color = typeof variable === 'number' ? colors.Green : colors.Magenta;
+                // Colorize numbers as green, .exe files as yellow, otherwise magenta
+                let color;
+                if (typeof variable === 'number') {
+                    color = colors.Green;
+                } else if (typeof variable === 'string' && variable.endsWith('.exe')) {
+                    color = colors.Yellow;
+                } else {
+                    color = colors.Magenta;
+                }
                 return colorize(variable, color);
             }
             // Otherwise, colorize the part with the log level color
