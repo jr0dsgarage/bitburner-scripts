@@ -55,7 +55,7 @@ export async function main(ns: NS) {
 
         if (hackTarget) {
             Logger.debug(ns, 'attempting to deploy {0} to all servers; targeting {1} ...', debugFlag, hackToDeploy, hackTarget.hostname);
-            await matrix.deployHackOnAllServers(hackToDeploy, killAllFirst);
+            await matrix.deployHackOnAllServers(hackToDeploy, killAllFirst, debugFlag);
             await (async () => {
                 if (includeHome)
                     ns.run('start-home-server.js', 1, hackToDeploy, hackTarget.hostname);

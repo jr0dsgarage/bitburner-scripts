@@ -113,13 +113,13 @@ export class ServerMatrix {
      * @param threadsToUse The number of threads to use for the hack; defaults to the maximum number of threads available on the server
      * @param ns Netscript namespace; defaults to this.ns
      */
-    public async deployHackOnServer(hackToDeploy: string, server: Server, killAllFirst = false, threadsToUse?: number, ns: NS = this.ns): Promise<boolean> {
+    public async deployHackOnServer(hackToDeploy: string, server: Server, killAllFirst = false, debug = false, threadsToUse?: number, ns: NS = this.ns): Promise<boolean> {
         if (killAllFirst) ns.killall(server.hostname);
         if (!threadsToUse) threadsToUse = Math.max(1, (ns.getServerMaxRam(server.hostname) - ns.getServerUsedRam(server.hostname)) / ns.getScriptRam(hackToDeploy));
         try {
             if (!ns.scp(hackToDeploy, server.hostname))
                 throw `...can't scp ${hackToDeploy} to ${server.hostname}!`
-            if (!ns.exec(hackToDeploy, server.hostname, ~~threadsToUse, this.hackTarget.hostname))
+            if (!ns.exec(hackToDeploy, server.hostname, ~~threadsToUse, this.hackTarget.hostname, debug))
                 throw `...can't exec ${hackToDeploy} on ${server.hostname}!`
             if (!ns.scriptRunning(hackToDeploy, server.hostname))
                 throw `...script not running on ${server.hostname}!`;
@@ -138,19 +138,21 @@ export class ServerMatrix {
      * Deploys a hack on all servers in the matrix' serverList
      * @param hackToDeploy The hack script to deploy; needs to be a .js or .script file
      * @param killAllFirst Whether to kill all currently running scripts before deploying the hack
+     * @param debug Whether to log debug information
      * @param ns Netscript namespace; defaults to this.ns
      */
-    public async deployHackOnAllServers(hackToDeploy: string, killAllFirst = false, ns: NS = this.ns): Promise<void> {
+    public async deployHackOnAllServers(hackToDeploy: string, killAllFirst = false, debug = false, ns: NS = this.ns): Promise<void> {
         const hackableServers = await this.getHackableServers();
+        Logger.debug(ns, 'deploying {0} to all servers...', debug, hackToDeploy);
         for (const server of hackableServers) {
             try {
                 if (!ns.hasRootAccess(server.hostname)) {
                     if (!await this.attemptToNukeServer(server))
                         throw `...nuke failed, aborting deployment!`;
                 }
-                if (!await this.deployHackOnServer(hackToDeploy, server, killAllFirst))
+                if (!await this.deployHackOnServer(hackToDeploy, server, killAllFirst, debug))
                     throw `...hack deployment failed!`;
-            }
+                            }
             catch (err) {
                 Logger.error(ns, `${err}`);
             }
