@@ -22,9 +22,11 @@ export class TerminalFormats {
     static Underline: TextStyle = '\u001b[4m'; 
 
     // Colors found using colorTable.ts
-    static Info: Color = '\u001b[38;5;26m';
     static Debug: Color = '\u001b[38;5;123m';
+    static Info: Color = '\u001b[38;5;26m';
+    static Warn: Color = '\u001b[38;5;208m';
     static Error: Color = '\u001b[38;5;196m';
+    
     
     // Standard Colors
     static Black: Color = '\u001b[30m';

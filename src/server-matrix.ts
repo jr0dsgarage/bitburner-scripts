@@ -1,8 +1,9 @@
 import { NS, Server as Server } from '@ns';
+import { Logger } from './logger';
 
 //import { ServerNode as Server } from './server-node';
 import * as hl from './helperLib';
-import { TerminalFormats as colors, portOpeningPrograms as programs } from './helperLib';
+import { portOpeningPrograms as programs } from './helperLib';
 
 /**
  * Represents a server matrix that contains a list of all servers up to a certain depth.
@@ -29,26 +30,26 @@ export class ServerMatrix {
      * @param ns Netscript namespace; defaults to this.ns
      */
     public async initialize(ns: NS = this.ns): Promise<void> {
-        ns.tprint(`INFO: serverMatrix initializing...`);
-        ns.tprint(`INFO: ➡️📃 building list of scanned servers to depth of ${colors.Green}${this.scannedDepth}${colors.Reset}...`);
+        Logger.info(ns, 'serverMatrix initializing...');
+        Logger.info(ns, '➡️📃 building list of scanned servers to depth of {0}...', this.scannedDepth);
         await this.buildScannedServerList();
-        ns.tprint(`INFO: ...found ${colors.Cyan}${this.fullScannedServerList.length}${colors.Reset} servers.`)
-        ns.tprint(`INFO: ➡️📃 building list of purchased servers...`);
-        ns.tprint(`INFO: ...found ${colors.Cyan}${this.purchasedServerList.length}${colors.Reset} purchased servers.`)
+        Logger.info(ns, '...found {0} servers.', this.fullScannedServerList.length);
+        Logger.info(ns, '➡️📃 building list of purchased servers...');
+        Logger.info(ns, '...found {0} purchased servers.', this.purchasedServerList.length);
         if (this.purchasedServerList.length === 0) await this.purchaseServers();
-        ns.tprint(`INFO: ...serverMatrix initialized!`);
+        Logger.info(ns, '...serverMatrix initialized!');
     }
 
     public async attemptToNukeServer(server: Server, ns: NS = this.ns): Promise<boolean> {
-        ns.tprint(`WARN: ${colors.Cyan}${server.hostname}${colors.Reset} does not have root access. attempting root...`);
+        Logger.warn(ns, '{0} does not have root access. attempting root...', server.hostname);
         this.openPortsOnServer(server);
         try {
             ns.nuke(server.hostname);
-            ns.tprint(`INFO: ...💣 successful. root access granted!`);
+            Logger.info(ns, '...💣 successful. root access granted!');
             return true;
         }
         catch {
-            ns.tprint(`ERROR: ...root access denied! ❌ cannot hack ${colors.Cyan}${server.hostname}${colors.Reset}!`);
+            Logger.error(ns, '...root access denied! ❌ cannot hack {0}!', server.hostname);
             return false;
         }
 
@@ -112,23 +113,23 @@ export class ServerMatrix {
      * @param threadsToUse The number of threads to use for the hack; defaults to the maximum number of threads available on the server
      * @param ns Netscript namespace; defaults to this.ns
      */
-    public async deployHackOnServer(hackToDeploy: string, server: Server, killAllFirst = false, threadsToUse?: number, ns: NS = this.ns): Promise<boolean> {
+    public async deployHackOnServer(hackToDeploy: string, server: Server, killAllFirst = false, debug = false, threadsToUse?: number, ns: NS = this.ns): Promise<boolean> {
         if (killAllFirst) ns.killall(server.hostname);
         if (!threadsToUse) threadsToUse = Math.max(1, (ns.getServerMaxRam(server.hostname) - ns.getServerUsedRam(server.hostname)) / ns.getScriptRam(hackToDeploy));
         try {
             if (!ns.scp(hackToDeploy, server.hostname))
                 throw `...can't scp ${hackToDeploy} to ${server.hostname}!`
-            if (!ns.exec(hackToDeploy, server.hostname, ~~threadsToUse, this.hackTarget.hostname))
+            if (!ns.exec(hackToDeploy, server.hostname, ~~threadsToUse, this.hackTarget.hostname, debug))
                 throw `...can't exec ${hackToDeploy} on ${server.hostname}!`
             if (!ns.scriptRunning(hackToDeploy, server.hostname))
                 throw `...script not running on ${server.hostname}!`;
             else {
-                ns.tprint(`INFO: ...hack deployed on ${colors.Cyan}${server.hostname}${colors.Reset} using ${colors.Magenta}${~~threadsToUse}${colors.Reset} threads!`)    
+                Logger.info(ns, '...hack deployed on {0} using {1} threads!', server.hostname, ~~threadsToUse);
                 return true;
             }
         }
         catch (err) {
-            ns.tprint(`ERROR: ${err} ...hack deployment failed!`);
+            Logger.error(ns, '{0} ...hack deployment failed!', err);
             return false;
         }
     }
@@ -137,21 +138,23 @@ export class ServerMatrix {
      * Deploys a hack on all servers in the matrix' serverList
      * @param hackToDeploy The hack script to deploy; needs to be a .js or .script file
      * @param killAllFirst Whether to kill all currently running scripts before deploying the hack
+     * @param debug Whether to log debug information
      * @param ns Netscript namespace; defaults to this.ns
      */
-    public async deployHackOnAllServers(hackToDeploy: string, killAllFirst = false, ns: NS = this.ns): Promise<void> {
+    public async deployHackOnAllServers(hackToDeploy: string, killAllFirst = false, debug = false, ns: NS = this.ns): Promise<void> {
         const hackableServers = await this.getHackableServers();
+        Logger.debug(ns, 'deploying {0} to all servers...', debug, hackToDeploy);
         for (const server of hackableServers) {
             try {
                 if (!ns.hasRootAccess(server.hostname)) {
                     if (!await this.attemptToNukeServer(server))
                         throw `...nuke failed, aborting deployment!`;
                 }
-                if (!await this.deployHackOnServer(hackToDeploy, server, killAllFirst))
+                if (!await this.deployHackOnServer(hackToDeploy, server, killAllFirst, debug))
                     throw `...hack deployment failed!`;
-            }
+                            }
             catch (err) {
-                ns.tprint(`ERROR: ${err}`);
+                Logger.error(ns, `${err}`);
             }
         }
     }
@@ -162,7 +165,7 @@ export class ServerMatrix {
      * @param ns - Netscript namespace; defaults to this.ns
      */
     public async fetchFilesFromServers(ns: NS = this.ns) {
-        ns.tprint(`INFO: fetching files from servers:\n` + this.fullScannedServerList.map(server => server.hostname).join(`, `));
+        Logger.info(ns, 'fetching files from servers:\n' + this.fullScannedServerList.map(server => server.hostname).join(`, `));
         this.fullScannedServerList.forEach(async server => {
             await (async () => this.fetchAllFiles(server))();
         });
@@ -179,9 +182,9 @@ export class ServerMatrix {
             if (!homefilelist.includes(file))
                 try {
                     ns.scp(file, `home`, server.hostname);
-                    ns.tprint(`INFO: ...${file} fetched from ${server.hostname}`);
+                    Logger.info(ns, `...{0} fetched from {1}`, file, server.hostname);
                 }
-                catch { ns.tprint(`ERROR: ...can't fetch ${file} from ${server.hostname}!`); }
+                catch { Logger.error(ns, `...can't fetch {0} from {1}!`, file, server.hostname); }
         });
     }
 
@@ -250,7 +253,6 @@ export class ServerMatrix {
         const maxPorts = programs.length;
         const portsRequired = ns.getServerNumPortsRequired(server.hostname);
         for (let i = 0; i < portsRequired && i < maxPorts; i++) {
-            //ns.tprint(`INFO: ...opening port ${colors.Magenta}${i+1}${colors.Reset}...`); // i+1 because ports are 1-indexed
             try {
                 if (ns.fileExists(programs[i])) {
                     switch (i) {
@@ -269,12 +271,12 @@ export class ServerMatrix {
                         case 4:
                             ns.sqlinject(server.hostname);
                             break;
-                    }
+                    } 
                 } else {
-                    throw (`${colors.Yellow}${programs[i]}${colors.Reset} unavailable, cannot open port ${colors.Magenta}${i + 1}${colors.Reset}`);
+                    throw (`{0} unavailable, cannot open port {1}`);
                 }
             } catch (err) {
-                ns.tprint(`ERROR: ${err} ...aborting`);
+                Logger.error(ns, `${err}`, programs[i], i + 1);
                 break;
             }
         }
@@ -285,25 +287,19 @@ export class ServerMatrix {
      * @param ns - Netscript namespace; defaults to this.ns
      */
     public async purchaseServers(ns: NS = this.ns): Promise<void> {
-        ns.tprint(`INFO: ...no purchased servers found. checking for available monies...`)
-        if (ns.getServerMoneyAvailable(`home`) > (ns.getPurchasedServerCost(this.maxPurchaseableRAM()) * ns.getPurchasedServerLimit())) {
-            ns.tprint(`INFO: enough monies secured; attempting to purchase servers...`)
+        Logger.info(ns, '...no purchased servers found. checking for available monies...');
+        if (ns.getServerMoneyAvailable('home') > (ns.getPurchasedServerCost(this.maxPurchaseableRAM()) * ns.getPurchasedServerLimit())) {
+            Logger.info(ns, 'enough monies secured; attempting to purchase servers...');
             let i = 1;
             while (i < ns.getPurchasedServerLimit() + 1) {
-
-                // TODO: implement an upgrade feature that will upgrade existing servers 
-                // if the purchased-server script is called with a higher RAM value than the existing RAM on the server
-
-                const hostname: string = ns.purchaseServer(`pserv-` + i, this.maxPurchaseableRAM());
-                ns.tprint(`INFO: purchased server ${colors.Cyan}${hostname}${colors.Reset} with ${colors.Green}${this.maxPurchaseableRAM()}GB${colors.Reset} RAM`);
+                const hostname: string = ns.purchaseServer('pserv-' + i, this.maxPurchaseableRAM());
+                Logger.info(ns, 'purchased server {0} with {1}GB RAM', hostname, this.maxPurchaseableRAM());
                 ++i;
-                //Make the function wait for 100 milli-seconds before looping again.
-                //Removing this line will cause an infinite loop and crash the game.
                 await ns.sleep(100);
             }
         }
         else {
-            ns.tprint(`WARN: not enough monies to purchase servers! keep hacking...`);
+            Logger.warn(ns, 'not enough monies to purchase servers! keep hacking...');
         }
     }
     /**
