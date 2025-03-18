@@ -1,30 +1,12 @@
 // a library of functions used to hack servers and other fun things
-// created by j__r0d 2023-10-22, but a lot of the code was pasted in from other scripts
+// created by j__r0d 2023-10-22
 
 import { NS } from '@ns';
-import { ServerMatrix as sm }  from '../server-matrix';
+import { TerminalFormats as colors } from '../src/helperLib';
+
 
 export const defaultHackToDeploy = `my-first-hack.js`;
 export const defaultHackTargetHostname = `joesguns`;
-export const colors = {
-    Black: '\u001b[30m',
-    Red: '\u001b[31m',
-    Green: '\u001b[32m',
-    Yellow: '\u001b[33m',
-    Blue: '\u001b[34m',
-    Magenta: '\u001b[35m',
-    Cyan: '\u001b[36m',
-    White: '\u001b[37m',
-    BrightBlack: '\u001b[30;1m',
-    BrightRed: '\u001b[31;1m',
-    BrightGreen: '\u001b[32;1m',
-    BrightYellow: '\u001b[33;1m',
-    BrightBlue: '\u001b[34;1m',
-    BrightMagenta: '\u001b[35;1m',
-    BrightCyan: '\u001b[36;1m',
-    BrightWhite: '\u001b[37;1m',
-    Reset: '\u001b[0m',
-}
 
 /**
  * @remarks This function is a recursive function that scans servers to a given tree depth and returns a list of all servers to hack.
@@ -58,10 +40,10 @@ export async function buildScannedServerList(ns: NS, depth: number, serverList: 
         const newServers: string[] = [];
 
         for (const server of serverList) {
-            const neighborHostnames = await (async () => ns.scan(server))();
-            const newNeighborHostnames = neighborHostnames.filter(serverHostname => canAddServer(serverHostname, serverList.concat(newServers)));
-            newServers.push(...newNeighborHostnames);
-            scannedServers.push(...newNeighborHostnames);
+            const neighbors = await (async () => ns.scan(server))();
+            const newNeighbors = neighbors.filter(server => canAddServer(server, serverList.concat(newServers)));
+            newServers.push(...newNeighbors);
+            scannedServers.push(...newNeighbors);
         }
 
         serverList.push(...newServers);
@@ -72,25 +54,9 @@ export async function buildScannedServerList(ns: NS, depth: number, serverList: 
 }
 
 /**
- * @remarks calculates the maximum amount of RAM that can be purchased for a server; 
- * @remarks  based on the amount of money currently available on the home server.
- * @param ns Netscript namespace
- * @returns the maximum amount of RAM that can be purchased for a server, as a 2^n number (8, 16, 32, 64, etc.)
- */
-
-export function calculateMaxRAM(ns: NS) {
-    const moneyPerServer = ns.getServerMoneyAvailable(`home`) / ns.getPurchasedServerLimit();
-    let maxRAM = 8;
-    while ( ns.getPurchasedServerCost(maxRAM * 2) <  moneyPerServer) {
-        maxRAM *= 2;
-    }
-    return maxRAM;
-}
-
-/**
  * @remarks checks a server hostname against a list of forbidden servers and prefixes, and a list of servers already in the server list.
  * @param serverHostname hostname of server to check against forbidden servers and prefixes
- * @param serverList list of servers to check against for duplicates
+ * @param serverListName list of servers to check against for duplicates
  * @returns boolean value indicating whether the server can be added to the server list
  * @remarks the code in this function was created by Copilot after I asked a few questions about a better way to do this.
  * below was my attempt....clearly I wasn't thinking in the same direction at all, however copilot _did_ use this code to generate its own code.
@@ -105,16 +71,16 @@ export function calculateMaxRAM(ns: NS) {
  *     }; 
  * ```
  */
-export function canAddServer(serverHostname: string, serverList: string[]) {
+export function canAddServer(serverHostname: string, serverListName: string[]) {
     const forbiddenServers = ['home', 'darkweb'];
     const forbiddenServerPrefixes = ['pserv-'];
 
     const isForbiddenServer = forbiddenServers.some(forbiddenServer => forbiddenServer === serverHostname);
     const isForbiddenServerPrefix = forbiddenServerPrefixes.some(prefix => serverHostname.startsWith(prefix));
-    const isDuplicateServer = serverList.includes(serverHostname);
+    const isDuplicateServer = serverListName.includes(serverHostname);
 
     return !isForbiddenServer && !isDuplicateServer && !isForbiddenServerPrefix;
-};
+}
 
 /**
  * @remarks deploys a hack script to a server and starts it running, using the maximum number of threads available.
@@ -123,24 +89,15 @@ export function canAddServer(serverHostname: string, serverList: string[]) {
  * @param hackToDeploy hack script to deploy
  * @param hackTarget target server for the deployed hack
  */
-export async function deployHack(ns: NS, hostname: string, hackToDeploy: string = "my-first-hack.js", hackTarget: string = `joesguns`): Promise<void> {
-    //ns.tprint(`INFO: deploying hack to server: ${colors.Cyan}${hostname}${colors.Reset}`);
-    try {
-        ns.scp(hackToDeploy, hostname);
-    } 
-    catch {
-        ns.tprint(`ERROR: ...can't scp ${hackToDeploy} to ${hostname}!`);
-    }
-    let threadsToUse = Math.max(1, (ns.getServerMaxRam(hostname) - ns.getServerUsedRam(hostname)) / ns.getScriptRam(hackToDeploy));
-    try {
-        ns.exec(hackToDeploy, hostname, ~~threadsToUse, hackTarget);
-    }
-    catch {
-        ns.tprint(`ERROR: ...can't exec ${hackToDeploy} on ${hostname}!`);
-    }
+export async function deployHack(ns: NS, hostname: string, hackToDeploy = "my-first-hack.js", hackTarget = `joesguns`) {
+    ns.tprint(`INFO: deploying hack to server: ${colors.Cyan}${hostname}${colors.Reset}`);
+
+    ns.killall(hostname); // free up RAM
+    ns.scp(hackToDeploy, hostname); // always over-write the existing script with the latest version
+    const threadsToUse = Math.max(1, (ns.getServerMaxRam(hostname) - ns.getServerUsedRam(hostname)) / ns.getScriptRam(hackToDeploy));
+    ns.exec(hackToDeploy, hostname, ~~threadsToUse, hackTarget);
     
-    if (ns.scriptRunning(hackToDeploy, hostname)) ns.tprint(`INFO: ...hack deployed on ${colors.Cyan}${hostname}${colors.Reset} using ${colors.Magenta}${~~threadsToUse}${colors.Reset} threads!`);
-    else ns.tprint(`...hack deployment failed!`);
+    if (ns.scriptRunning(hackToDeploy, hostname)) ns.tprint(`INFO: ...hack deployed using ${colors.Magenta}${~~threadsToUse}${colors.Reset} threads!`);
 }
 
 /**
@@ -165,8 +122,8 @@ export async function fileFetch(ns: NS, hostname: string, homefilelist: string[]
  * @param ns Netscript namespace
  * @returns maximum scan depth based on the executables available, returns a number
  */
-export async function getMaxPossibleScanDepth(ns: NS) {
-    let scanDepth: number = 3;
+export async function getScanDepth(ns: NS) {
+    let scanDepth = 3;
     if (ns.fileExists(`DeepscanV1.exe`)) scanDepth = 5;
     if (ns.fileExists(`DeepscanV2.exe`)) scanDepth = 10;
     return scanDepth;
@@ -245,8 +202,22 @@ export async function purchaseServer(ns: NS, hostname: string, ram: number) {
     return hostname;
 }
 
-export async function startPurchasedServers(ns: NS, hackToDeploy: string, hackTarget: string, ramToPurchase: number) {
 
+export async function startPurchasedServers(ns: NS, hackToDeploy: string, hackTarget: string, ramToPurchase: number) {
+    ns.tprint('INFO: deploying hack on purchased servers...');
+    let hackedCount = 0;
+    let i = 1;
+
+    while (i < ns.getPurchasedServerLimit() + 1) {
+        const hostname = `pserv-`.concat(i.toString());
+        ns.killall(hostname);
+        await deployHack(ns, hostname, hackToDeploy, hackTarget);
+        if (ns.scriptRunning(hackToDeploy, hostname)) {
+            ++hackedCount;
+        }
+        ++i;
+    }
+    ns.tprint(`INFO: hacks deployed on ${colors.Green}${hackedCount}${colors.Reset} purchased servers`);
 }
 
 // this doesn't do anything yet, but needs to be implemented

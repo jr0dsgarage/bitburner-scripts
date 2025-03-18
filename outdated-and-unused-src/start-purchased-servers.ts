@@ -1,7 +1,7 @@
 // created by j__r0d 10/11/23
 import { NS } from '@ns';
-import { deployHack } from './hackLib';
-import { TerminalFormats as colors } from './helperLib';
+import { deployHack } from '../src/hackLib';
+import { TerminalFormats as colors } from '../src/helperLib';
 
 
 /** @param {NS} ns */
