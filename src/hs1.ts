@@ -46,7 +46,6 @@ export async function main(ns: NS) {
         hackTarget = ns.args[1].toString();
     }
     
-    // Add home to servers if requested
     if (includeHome) servers.push({ name: 'home', threads: 1 });
 
     let homefilelist: string[] = [];
@@ -58,10 +57,10 @@ export async function main(ns: NS) {
 
     if (hackToDeploy !== '') {
         try {
+            // Deploy the hack script to all servers
             Logger.debug(ns, `attempting to deploy {0} to all servers; targeting {1} ...`, debugFlag, hackToDeploy, hackTarget);
-            // Deploy the hack script to each server
             for (const server of servers) {
-                // Kill all scripts on the server if requested
+                // Kill all scripts on the server if flag is set
                 if (killAllFirst) ns.killall(server.name);
                 
                 // Copy the requested hack script to the server
@@ -83,12 +82,12 @@ export async function main(ns: NS) {
                     Logger.debug(ns, `{0} already has root access`, debugFlag, server.name);
                 }
 
-                // Run the hack script on the server
+                // Execute the hack script on the server
                 Logger.debug(ns, `Attempting to execute {0} on {1} with {2} threads targetting {3}`, debugFlag, hackToDeploy, server.name, server.threads, hackTarget);
                 ns.exec(hackToDeploy, server.name, server.threads, hackTarget, debugFlag);
                 if (ns.scriptRunning(hackToDeploy, server.name)) Logger.info(ns, `{0} is running on {1} using {2} threads`,hackToDeploy, server.name, server.threads);
 
-                // Fetch files if requested
+                // Fetch files if flag is set
                 if (doFetch) {
                     ns.ls(server.name).forEach((file: string) => {
                         if (!homefilelist.includes(file) && server.name !== 'home')
