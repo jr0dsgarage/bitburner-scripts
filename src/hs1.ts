@@ -12,6 +12,16 @@
 
 import { NS } from '@ns';
 import { Logger } from './logger';
+
+// List of servers to deploy the hack script to; this list comes from the Beginner's guide
+const servers = [
+    { name: 'n00dles', threads: 1 },
+    { name: 'sigma-cosmetics', threads: 6 },
+    { name: 'joesguns', threads: 6 },
+    { name: 'nectar-net', threads: 6 },
+    { name: 'hong-fang-tea', threads: 6 },
+    { name: 'harakiri-sushi', threads: 6 }
+];
 const DEFAULT_HACK_TARGET = 'n00dles';
 
 /** @param {NS} ns */
@@ -36,15 +46,6 @@ export async function main(ns: NS) {
         hackTarget = ns.args[1].toString();
     }
     
-    // List of servers to deploy the hack script to; this list comes from the Beginner's guide
-    const servers = [
-        { name: 'n00dles', threads: 1 },
-        { name: 'sigma-cosmetics', threads: 6 },
-        { name: 'joesguns', threads: 6 },
-        { name: 'nectar-net', threads: 6 },
-        { name: 'hong-fang-tea', threads: 6 },
-        { name: 'harakiri-sushi', threads: 6 }
-    ];
     // Add home to servers if requested
     if (includeHome) servers.push({ name: 'home', threads: 1 });
 
