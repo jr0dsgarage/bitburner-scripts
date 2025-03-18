@@ -2,8 +2,8 @@
  * `Keep security level low. Security level affects everything when hacking. Two important Netscript functions for this are getServerSecurityLevel() and getServerMinSecurityLevel()`
  */
 import { NS, Server } from '@ns';
-import { ServerMatrix } from './server-matrix';
-import { TerminalFormats as colors } from './helperLib';
+import { ServerMatrix } from './lib/server-matrix';
+import { TerminalFormats as colors } from './lib/helperLib';
 
 /**
  * investigates all servers and prints pertinent hacking information

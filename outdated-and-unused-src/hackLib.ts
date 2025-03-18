@@ -2,7 +2,7 @@
 // created by j__r0d 2023-10-22
 
 import { NS } from '@ns';
-import { TerminalFormats as colors } from '../src/helperLib';
+import { TerminalFormats as colors } from '../src/lib/helperLib';
 
 
 export const defaultHackToDeploy = `my-first-hack.js`;

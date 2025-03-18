@@ -10,8 +10,8 @@
  */
 
 import { NS, Server } from '@ns';
-import { ServerMatrix } from './server-matrix';
-import { Logger } from './logger';
+import { ServerMatrix } from './lib/server-matrix';
+import { Logger } from './lib/logger';
 
 /** 
  * @param {NS} ns Netscript namespace

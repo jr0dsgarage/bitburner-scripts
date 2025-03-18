@@ -1,7 +1,7 @@
 import { NS, Server } from '@ns';
 //import { ServerMatrix } from `./server-matrix`;
 //import * as hl from `./helperLib`;
-import { TerminalFormats as colors, colorize } from './helperLib';
+import { TerminalFormats as colors, colorize } from './lib/helperLib';
 
 /**
  * investigates a server and prints it`s stats and info on loop

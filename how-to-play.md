@@ -21,7 +21,7 @@ This is an instructional how-to on using my personal scripts to play Bitburner.
     Usage: `run hs1.js <hack-script> [<target-server>] [-h] [-f] [-k] [-d]`
 
     ```bash
-    home; clear; killall; run hs1.js my-first-hack.js -h -f -k -d
+    home; clear; killall; run hs1.js ./deployables/my-first-hack.js -h -f -k -d
     ```
 
     NB: the script will automatically target the `n00dles` server with the hack unless the `<target-server>` argument is set
@@ -64,7 +64,7 @@ This is an instructional how-to on using my personal scripts to play Bitburner.
     Usage: `run hs2.js <hack-script> [<target-server>] [-h] [-f] [-k] [-d]`
 
     ```bash
-    home; clear; killall; run hs2.js my-first-hack.js -h -f -k -d
+    home; clear; killall; run hs2.js ./deployables/my-first-hack.js -h -f -k -d
     ```
 
     NB: the script will automatically target the server designated as default in `server-matrix.js`, which is `joesguns`, unless the `<target-server>` argument is set

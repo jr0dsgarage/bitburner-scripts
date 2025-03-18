@@ -1,5 +1,5 @@
 import { NS } from '@ns';
-import { TerminalFormats as colors } from './helperLib'
+import { TerminalFormats as colors } from './lib/helperLib'
 /** @param {NS} ns Netscript namespace */
 
 export async function main(ns: NS) {

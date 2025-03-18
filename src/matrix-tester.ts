@@ -1,5 +1,5 @@
 import { NS } from '@ns';
-import { ServerMatrix } from './server-matrix';
+import { ServerMatrix } from './lib/server-matrix';
 
 // const loopDelay = 60000; // milliseconds; default: 1 minute
 
