@@ -55,21 +55,7 @@ export async function main(ns: NS) {
 
         if (hackTarget) {
             Logger.debug(ns, 'attempting to deploy {0} to all servers; targeting {1} ...', debugFlag, hackToDeploy, hackTarget.hostname);
-            await matrix.deployHackOnAllServers(hackToDeploy, killAllFirst, debugFlag);
-            await (async () => {
-                if (includeHome)
-                    ns.run('start-home-server.js', 1, hackToDeploy, hackTarget.hostname);
-                else
-                    Logger.info(ns, 'skipping home server. use 2nd arg \'-h\' to include home server in hacktivities.');
-            })();
-            await (async () => {
-                if (matrix.purchasedServerList.length > 0) {
-                    ns.run('start-purchased-servers.js', 1, hackToDeploy, hackTarget.hostname);
-                }
-                else {
-                    Logger.info(ns, 'no purchased servers available!');
-                }
-            })();
+            await matrix.deployHackOnAllServers(hackToDeploy, includeHome, killAllFirst, debugFlag);
             ns.toast('hacks deployed!');
         }
 

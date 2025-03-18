@@ -137,14 +137,17 @@ export class ServerMatrix {
     /**
      * Deploys a hack on all servers in the matrix' serverList
      * @param hackToDeploy The hack script to deploy; needs to be a .js or .script file
+     * @param includeHome Whether to include the home server in the deployment
      * @param killAllFirst Whether to kill all currently running scripts before deploying the hack
      * @param debug Whether to log debug information
      * @param ns Netscript namespace; defaults to this.ns
      */
-    public async deployHackOnAllServers(hackToDeploy: string, killAllFirst = false, debug = false, ns: NS = this.ns): Promise<void> {
-        const hackableServers = await this.getHackableServers();
+    public async deployHackOnAllServers(hackToDeploy: string, includeHome = false, killAllFirst = false, debug = false, ns: NS = this.ns): Promise<void> {
+        const serversToUseForHacking = await this.getHackableServers();
+        if (includeHome) serversToUseForHacking.push(ns.getServer('home'));
+        if (this.purchasedServerList.length > 0) serversToUseForHacking.push(...this.purchasedServerList);
         Logger.debug(ns, 'deploying {0} to all servers...', debug, hackToDeploy);
-        for (const server of hackableServers) {
+        for (const server of serversToUseForHacking) {
             try {
                 if (!ns.hasRootAccess(server.hostname)) {
                     if (!await this.attemptToNukeServer(server))
