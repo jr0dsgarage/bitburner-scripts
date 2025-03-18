@@ -1,5 +1,5 @@
 {
-  "include": ["NetscriptDefinitions.d.ts", "src/**/*", "outdated-and-unused-src/deploy-hack.ts", "outdated-and-unused-src/connected-servers-info.ts"],
+  "include": ["NetscriptDefinitions.d.ts", "src/**/*"],
   "exclude": ["src/lib/react.ts"],
   "compilerOptions": {
     "module": "esnext",
