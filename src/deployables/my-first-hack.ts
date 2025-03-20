@@ -19,20 +19,22 @@ export async function main(ns: NS) {
   // have. If the target's security level is higher than this,
   // we'll weaken it before doing anything else
   const securityThresh = ns.getServerMinSecurityLevel(target);
+  
   while (true) {
     // Infinite loop that continously hacks/grows/weakens the target server
     if (ns.getServerSecurityLevel(target) > securityThresh) {
       // If the server's security level is above our threshold, weaken it
-      if (reporting) ns.tprint(`${ns.getHostname()} 👇 ${target}`);
       await ns.weaken(target);
+      if (reporting) ns.tprint(`${ns.getHostname().padStart(15)} 👇 ${target}: current Server Security Level: ${ns.getServerSecurityLevel(target).toFixed(2)}`);
     } else if (ns.getServerMoneyAvailable(target) < moneyThresh) {
       // If the server's money is less than our threshold, grow it
-      if (reporting) ns.tprint(`${ns.getHostname()} 👆 ${target}`);
       await ns.grow(target);
+      if (reporting) ns.tprint(`${ns.getHostname().padStart(15)} 👆 ${target}: current Server Money Available: ${ns.getServerMoneyAvailable(target).toFixed(2)} `);
+      
     } else {
       // Otherwise, hack it
       await ns.hack(target);
-      if (reporting) ns.tprint(`${ns.getHostname()} 👉 ${target}`);
+      if (reporting) ns.tprint(`${ns.getHostname().padStart(15)} 👉 ${target} current Server Money Available: ${ns.getServerMoneyAvailable(target).toFixed(2)}`);
     }
   }
 }
