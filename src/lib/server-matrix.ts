@@ -168,7 +168,7 @@ export class ServerMatrix {
      * @param ns - Netscript namespace; defaults to this.ns
      */
     public async fetchFilesFromServers(ns: NS = this.ns) {
-        Logger.info(ns, 'fetching files from servers:\n' + this.fullScannedServerList.map(server => server.hostname).join(`, `));
+        Logger.info(ns, 'fetching files from servers...');
         this.fullScannedServerList.forEach(async server => {
             await (async () => this.fetchAllFiles(server))();
         });
