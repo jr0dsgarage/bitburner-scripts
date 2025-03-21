@@ -59,6 +59,8 @@ export async function main(ns: NS) {
         try {
             // Deploy the hack script to all servers
             Logger.debug(ns, `attempting to deploy {0} to all servers; targeting {1} ...`, debugFlag, hackToDeploy, hackTarget);
+            if (!ns.fileExists(hackToDeploy, 'home')) throw new Error (`${hackToDeploy} does not exist!!`);
+            
             for (const server of servers) {
                 // Kill all scripts on the server if flag is set
                 if (killAllFirst) ns.killall(server.name);
