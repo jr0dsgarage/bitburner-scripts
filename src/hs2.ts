@@ -33,39 +33,47 @@ export async function main(ns: NS) {
 
     const hackToDeploy: string = ns.args[0]?.toString();
 
-    if (hackToDeploy) {
-        const matrix = new ServerMatrix(ns);
-        await matrix.initialize();
-        let hackTarget: Server = matrix.hackTarget;  // matrix.hackTarget has a default built-in, so use that if no target is specified;
-        // Check if the second argument is a target server or a flag and set hackTarget accordingly
-        if (ns.args[1] && !ns.args[1].toString().startsWith('-')) {
-            hackTarget.hostname = ns.args[1].toString();
-        }
-        /* future Tor Router functionality
-        // buy a tor router and then all of the executables as money becomes available
-        // this doesn't work yet, waiting for the API to unlock? I think?
-        //connect darkweb; buy FTPCrack.exe; buy relaySMTP.exe; buy HTTPWorm.exe; buy SQLInject.exe; buy DeepscanV1.exe; buy DeepscanV2.exe;  buy serverProfiler.exe ; buy Autolink.exe; home;
-        if (ns.hasTorRouter()) {
-            Logger.info(ns, 'TOR router found...');
+    try {
+        if (hackToDeploy) {
+            if (!ns.fileExists(hackToDeploy, 'home')) throw new Error(`${hackToDeploy} does not exist!!`);
+            const matrix = new ServerMatrix(ns);
+            await matrix.initialize();
+            let hackTarget: Server = matrix.hackTarget;  // matrix.hackTarget has a default built-in, so use that if no target is specified;
+            // Check if the second argument is a target server or a flag and set hackTarget accordingly
+            if (ns.args[1] && !ns.args[1].toString().startsWith('-')) {
+                hackTarget.hostname = ns.args[1].toString();
             }
+            /* future Tor Router functionality
+            // buy a tor router and then all of the executables as money becomes available
+            // this doesn't work yet, waiting for the API to unlock? I think?
+            //connect darkweb; buy FTPCrack.exe; buy relaySMTP.exe; buy HTTPWorm.exe; buy SQLInject.exe; buy DeepscanV1.exe; buy DeepscanV2.exe;  buy serverProfiler.exe ; buy Autolink.exe; home;
+            if (ns.hasTorRouter()) {
+                Logger.info(ns, 'TOR router found...');
+                }
+            else {
+                //buy one
+            }
+            */
+
+            if (hackTarget) {
+                Logger.debug(ns, 'attempting to deploy {0} to all servers; targeting {1} ...', debugFlag, hackToDeploy, hackTarget.hostname);
+                await matrix.deployHackOnAllServers(hackToDeploy, includeHome, killAllFirst, debugFlag);
+                ns.toast('hacks deployed!');
+            }
+
+            if (doFetch) {
+                await matrix.fetchFilesFromServers();
+            }
+        }
         else {
-            //buy one
-        }
-        */
-
-        if (hackTarget) {
-            Logger.debug(ns, 'attempting to deploy {0} to all servers; targeting {1} ...', debugFlag, hackToDeploy, hackTarget.hostname);
-            await matrix.deployHackOnAllServers(hackToDeploy, includeHome, killAllFirst, debugFlag);
-            ns.toast('hacks deployed!');
+            Logger.error(ns, 'no hack script to deploy. include script name!');
+            Logger.info(ns, 'command to start script: run hs2.js <hack-script> [<target-server>] [-h] [-f] [-k] [-d]');
+            ns.toast('no hacks deployed!', 'error');
         }
 
-        if (doFetch) {
-            await matrix.fetchFilesFromServers();
-        }
     }
-    else {
-        Logger.error(ns, 'no hack script to deploy. include script name!');
-        Logger.info(ns, 'command to start script: run hs2.js <hack-script> [<target-server>] [-h] [-f] [-k] [-d]');
-        ns.toast('no hacks deployed!', 'error');
+    catch (error) {
+        Logger.error(ns, `Error: ${error}`);
+        ns.tprint(`Error: ${error}`);
     }
 }
