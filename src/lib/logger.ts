@@ -17,7 +17,7 @@ class Logger {
     // ...used Copilot for this.  I never would have come up with this myself.
     private static formatMessage(level: LogLevel, message: string, ...variables: any[]): string {
         // Split the message into parts and apply the log level color to the entire message
-        let formattedMessage = message.split(/{(\d+)}/g).map((part, index) => {
+        const formattedMessage = message.split(/{(\d+)}/g).map((part, index) => {
             // If the part is a placeholder, replace it with the corresponding variable
             if (index % 2 === 1) {
                 const variable = variables[parseInt(part)];
