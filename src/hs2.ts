@@ -20,6 +20,10 @@ import { Logger } from './lib/logger';
 export async function main(ns: NS) {
     Logger.info(ns, 'hack initiated...');
 
+    function parseArgument(args: (string | number | boolean)[], index: number, defaultValue: string): string {
+        return args[index] && !args[index].toString().startsWith('-') ? args[index].toString() : defaultValue;
+    }
+
     function parseFlags(args: (string | number | boolean)[]): { includeHome: boolean, doFetch: boolean, killAllFirst: boolean, debug: boolean } {
         return {
             includeHome: args.includes('-h') || args.includes('-home'),
@@ -29,20 +33,19 @@ export async function main(ns: NS) {
         };
     }
 
+    const hackToDeploy = parseArgument(ns.args, 0, '');
     const { includeHome, doFetch, killAllFirst, debug: debugFlag } = parseFlags(ns.args);
 
-    const hackToDeploy: string = ns.args[0]?.toString();
-
     try {
-        if (hackToDeploy) {
+        if (hackToDeploy !== '') {
             if (!ns.fileExists(hackToDeploy, 'home')) throw new Error(`${hackToDeploy} does not exist!!`);
             const matrix = new ServerMatrix(ns);
             await matrix.initialize();
-            let hackTarget: Server = matrix.hackTarget;  // matrix.hackTarget has a default built-in, so use that if no target is specified;
-            // Check if the second argument is a target server or a flag and set hackTarget accordingly
-            if (ns.args[1] && !ns.args[1].toString().startsWith('-')) {
-                hackTarget.hostname = ns.args[1].toString();
-            }
+
+            // Set the hack target to the server's built-in default, then change it to the argument target if one is provided
+            const hackTarget: Server = matrix.hackTarget; 
+            hackTarget.hostname = parseArgument(ns.args, 1, hackTarget.hostname);
+            
             /* future Tor Router functionality
             // buy a tor router and then all of the executables as money becomes available
             // this doesn't work yet, waiting for the API to unlock? I think?
@@ -55,25 +58,24 @@ export async function main(ns: NS) {
             }
             */
 
-            if (hackTarget) {
-                Logger.debug(ns, 'attempting to deploy {0} to all servers; targeting {1} ...', debugFlag, hackToDeploy, hackTarget.hostname);
-                await matrix.deployHackOnAllServers(hackToDeploy, includeHome, killAllFirst, debugFlag);
-                ns.toast('hacks deployed!');
-            }
-
+            Logger.debug(ns, 'attempting to deploy {0} to all servers; targeting {1} ...', debugFlag, hackToDeploy, hackTarget.hostname);
+            if (!ns.serverExists(hackTarget.hostname)) throw new Error(`server ${hackTarget.hostname} does not exist!`);
+            if (hackTarget.hostname === 'home') throw new Error('cannot hack home server!');
+            await matrix.deployHackOnAllServers(hackToDeploy, includeHome, killAllFirst, debugFlag);
+            ns.toast('hacks deployed!');
+            
             if (doFetch) {
                 await matrix.fetchFilesFromServers();
             }
         }
         else {
-            Logger.error(ns, 'no hack script to deploy. include script name!');
             Logger.info(ns, 'command to start script: run hs2.js <hack-script> [<target-server>] [-h] [-f] [-k] [-d]');
             ns.toast('no hacks deployed!', 'error');
+            throw new Error('no hack script designated! Please provide a hack script to deploy.');
         }
 
     }
-    catch (error) {
-        Logger.error(ns, `Error: ${error}`);
-        ns.tprint(`Error: ${error}`);
+    catch (err) {
+        Logger.error(ns, `${err}`);
     }
 }
