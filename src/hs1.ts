@@ -28,6 +28,10 @@ const DEFAULT_HACK_TARGET = 'n00dles';
 export async function main(ns: NS) {
     Logger.info(ns, 'hack initiated...');
 
+    function parseArgument(args: (string | number | boolean)[], index: number, defaultValue: string): string {
+        return args[index] && !args[index].toString().startsWith('-') ? args[index].toString() : defaultValue;
+    }
+
     function parseFlags(args: (string | number | boolean)[]): { includeHome: boolean, doFetch: boolean, killAllFirst: boolean, debug: boolean } {
         return {
             includeHome: args.includes('-h') || args.includes('-home'),
@@ -37,14 +41,11 @@ export async function main(ns: NS) {
         };
     }
 
+    const hackToDeploy = parseArgument(ns.args, 0, '');
+    const hackTarget = parseArgument(ns.args, 1, DEFAULT_HACK_TARGET);
     const { includeHome, doFetch, killAllFirst, debug: debugFlag } = parseFlags(ns.args);
 
-    const hackToDeploy: string = ns.args[0]?.toString() || '';
-    let hackTarget: string = DEFAULT_HACK_TARGET;
-    // Check if the second argument is a target server or a flag and set hackTarget accordingly
-    if (ns.args[1] && !ns.args[1].toString().startsWith('-')) {
-        hackTarget = ns.args[1].toString();
-    }
+    
     
     if (includeHome) servers.push({ name: 'home', threads: 1 });
 
