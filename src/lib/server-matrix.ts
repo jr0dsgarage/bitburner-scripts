@@ -36,7 +36,12 @@ export class ServerMatrix {
         Logger.info(ns, '...found {0} servers.', this.fullScannedServerList.length);
         Logger.info(ns, '➡️📃 building list of purchased servers...');
         Logger.info(ns, '...found {0} purchased servers.', this.purchasedServerList.length);
-        if (this.purchasedServerList.length === 0) await this.purchaseServers();
+        if (this.purchasedServerList.length != ns.getPurchasedServerLimit()) {
+            await this.purchaseServers();
+        }
+        if (this.purchasedServerList.length > 0) {
+            await this.upgradePurchasedServers();
+        }
         Logger.info(ns, '...serverMatrix initialized!');
     }
 
@@ -146,7 +151,9 @@ export class ServerMatrix {
         const serversToUseForHacking = await this.getHackableServers();
         if (includeHome) serversToUseForHacking.push(ns.getServer('home'));
         if (this.purchasedServerList.length > 0) serversToUseForHacking.push(...this.purchasedServerList);
-        Logger.debug(ns, 'deploying {0} to all servers...', debug, hackToDeploy);
+        
+        Logger.info(ns, 'attempting to deploy {0} to {1} servers...', debug, hackToDeploy, serversToUseForHacking.length);
+        
         for (const server of serversToUseForHacking) {
             try {
                 if (!ns.hasRootAccess(server.hostname)) {
@@ -305,6 +312,30 @@ export class ServerMatrix {
             Logger.warn(ns, 'not enough monies to purchase servers! keep hacking...');
         }
     }
+
+    /**
+     * Upgrades the purchased servers to the maximum amount of RAM available.
+     * @param ns - Netscript namespace; defaults to this.ns
+     */
+    public async upgradePurchasedServers(ns: NS = this.ns): Promise<void> {
+        Logger.info(ns, 'attempting to upgrade purchased servers...');
+        this.purchasedServerList.forEach(async server => {
+            const maxRAM = this.maxPurchaseableRAM();
+            const currentRAM = server.maxRam;
+            if (currentRAM < maxRAM) {
+                const cost = ns.getPurchasedServerCost(maxRAM);
+                if (ns.getServerMoneyAvailable('home') > cost) {
+                    ns.killall(server.hostname);
+                    ns.deleteServer(server.hostname);
+                    ns.purchaseServer(server.hostname, maxRAM);
+                    Logger.info(ns, 'upgraded server {0} from {1}GB to {2}GB RAM', server.hostname, currentRAM, maxRAM);
+                } else {
+                    Logger.warn(ns, 'not enough money to upgrade purchased servers!');
+                }
+            }
+        });
+    }
+
     /**
      * Finds the best server to hack based on the score calculated by `scoreServer`
      * @param ns - Netscript namespace; defaults to this.ns
