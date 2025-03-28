@@ -1,5 +1,6 @@
 import { NS } from '@ns';
-import { TerminalFormats as colors } from './lib/helperLib'
+import { Logger } from './lib/logger';
+
 /** @param {NS} ns Netscript namespace */
 
 export async function main(ns: NS) {
@@ -11,7 +12,7 @@ export async function main(ns: NS) {
         deleteServer(ns, purchasedServer);
     }
     else {
-        ns.tprint(`ERROR: no server specified for deletion! ${colors.Red}(use -a to delete all purchased servers)${colors.Reset}`);
+        Logger.error(ns,`no server specified for deletion! (use -a to delete all purchased servers)`);
     }
     
 }
@@ -20,9 +21,9 @@ export async function deleteServer(ns: NS, server: string) {
     try {
         ns.killall(server);
         ns.deleteServer(server);
-        ns.tprint(`INFO: deleted server ${colors.Cyan}${server}${colors.Reset}`);
+        Logger.info(ns, `deleted server {0}`, server);
     } catch {
-        ns.tprint(`ERROR: failed to delete server ${colors.Cyan}${server}${colors.Reset}`);
+        Logger.error(ns, `ERROR: failed to delete server {0}`, server);
     }
 }
 
