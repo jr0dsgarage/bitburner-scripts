@@ -134,7 +134,7 @@ export class ServerMatrix {
             }
         }
         catch (err) {
-            Logger.error(ns, '{0} ...hack deployment failed!', err);
+            Logger.error(ns, `${err}`);
             return false;
         }
     }
@@ -152,7 +152,7 @@ export class ServerMatrix {
         if (includeHome) serversToUseForHacking.push(ns.getServer('home'));
         if (this.purchasedServerList.length > 0) serversToUseForHacking.push(...this.purchasedServerList);
         
-        Logger.info(ns, 'attempting to deploy {0} to {1} servers...', debug, hackToDeploy, serversToUseForHacking.length);
+        Logger.info(ns, 'attempting to deploy {0} to {1} servers...', hackToDeploy, serversToUseForHacking.length);
         
         for (const server of serversToUseForHacking) {
             try {
@@ -161,7 +161,7 @@ export class ServerMatrix {
                         throw `...nuke failed, aborting deployment!`;
                 }
                 if (!await this.deployHackOnServer(hackToDeploy, server, killAllFirst, debug))
-                    throw `...hack deployment failed!`;
+                    throw `...hack deployment failed on ${server.hostname}!`;
                             }
             catch (err) {
                 Logger.error(ns, `${err}`);
@@ -179,6 +179,7 @@ export class ServerMatrix {
         this.fullScannedServerList.forEach(async server => {
             await (async () => this.fetchAllFiles(server))();
         });
+        Logger.info(ns, '...all possible files fetched!');
     }
 
     /**
@@ -191,8 +192,10 @@ export class ServerMatrix {
         ns.ls(server.hostname).forEach((file: string) => {
             if (!homefilelist.includes(file))
                 try {
-                    ns.scp(file, `home`, server.hostname);
-                    Logger.info(ns, `...{0} fetched from {1}`, file, server.hostname);
+                    if (!file.endsWith('.cct')){
+                        ns.scp(file, `home`, server.hostname);
+                        Logger.info(ns, `...{0} fetched from {1}`, file, server.hostname);
+                    }
                 }
                 catch { Logger.error(ns, `...can't fetch {0} from {1}!`, file, server.hostname); }
         });
