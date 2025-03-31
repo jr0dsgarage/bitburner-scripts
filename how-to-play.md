@@ -76,18 +76,26 @@ This is an instructional how-to on using my personal scripts to play Bitburner.
     - -k will killall running scripts first
     - -d will print debug text for more information
 
-    **The hs2.js script can be re-run at any time,  but should ***ALWAYS*** be re-run after a new program is Created, because it will be able to open more ports**
+    **The hs2.js script can be re-run at any time,  but should ***ALWAYS*** be re-run after a new Program is created, because it will be able to open more ports**
 
 2. At Hacking skill 75 Create Program: `DeepscanV1.exe` then `ServerProfiler.exe`
 
-3. At Hacking skill 100 Create Program: `FTPCrack.exe`
+3. Run `scan-analyze 5` to display a list of all servers
 
-4. At Hacking skill 250 Create Program: `relaySMTP.exe`
+4. Click on the server `I.I.I.I.` 
+    - run `backdoor` to receive an invitation to the `The Black Hand` faction
 
-5. At Hacking skill 400 Create Program: `DeepscanV2.exe`
+5. Click on the server `avmnite-02h` 
+    - run `backdoor` to receive an invitation to the `Nitesec` faction
 
-6. At Hacking skill 500 Create Program: `HTTPWorm.exe`
+6. At Hacking skill 100 Create Program: `FTPCrack.exe`
 
-7. At Hacking skill 750 Create Program: `SQLInject.exe`
+7. At Hacking skill 250 Create Program: `relaySMTP.exe`
 
-8. At Hacking skill 1000 Create Program: `Formulas.exe`
+8. At Hacking skill 400 Create Program: `DeepscanV2.exe`
+
+9. At Hacking skill 500 Create Program: `HTTPWorm.exe`
+
+10. At Hacking skill 750 Create Program: `SQLInject.exe`
+
+11. At Hacking skill 1000 Create Program: `Formulas.exe`
