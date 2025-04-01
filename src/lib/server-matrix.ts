@@ -45,6 +45,12 @@ export class ServerMatrix {
         Logger.info(ns, '...serverMatrix initialized!');
     }
 
+    /**
+     * Attempts to gain root access to a server by using the nuke function.
+     * @param server The server to attempt to nuke
+     * @param ns Netscript namespace; defaults to this.ns
+     * @returns A Promise that resolves to true if root access was granted, false otherwise
+     */
     public async attemptToNukeServer(server: Server, ns: NS = this.ns): Promise<boolean> {
         Logger.warn(ns, '{0} does not have root access. attempting root...', server.hostname);
         this.openPortsOnServer(server);
@@ -148,7 +154,7 @@ export class ServerMatrix {
      * @param ns Netscript namespace; defaults to this.ns
      */
     public async deployHackOnAllServers(hackToDeploy: string, includeHome = false, killAllFirst = false, debug = false, ns: NS = this.ns): Promise<void> {
-        const serversToUseForHacking = await this.getHackableServers();
+        const serversToUseForHacking = await this.getServersThatCanHack();
         if (includeHome) serversToUseForHacking.push(ns.getServer('home'));
         if (this.purchasedServerList.length > 0) serversToUseForHacking.push(...this.purchasedServerList);
         
@@ -156,13 +162,11 @@ export class ServerMatrix {
         
         for (const server of serversToUseForHacking) {
             try {
-                if (!ns.hasRootAccess(server.hostname)) {
-                    if (!await this.attemptToNukeServer(server))
-                        throw `...nuke failed, aborting deployment!`;
+                if (ns.hasRootAccess(server.hostname)) {
+                    if (!await this.deployHackOnServer(hackToDeploy, server, killAllFirst, debug))
+                        throw `...hack deployment failed on ${server.hostname}!`;
                 }
-                if (!await this.deployHackOnServer(hackToDeploy, server, killAllFirst, debug))
-                    throw `...hack deployment failed on ${server.hostname}!`;
-                            }
+            }
             catch (err) {
                 Logger.error(ns, `${err}`);
             }
@@ -212,10 +216,10 @@ export class ServerMatrix {
     }
 
     /**
-     * Returns an array of Server objects that are suitable for hacking, i.e. servers that have more than 0 RAM
+     * Returns an array of Server objects that can hack other servers, i.e. servers that have more than 0 RAM
      * @returns An array of Server object
      */
-    private async getHackableServers(): Promise<Server[]> {
+    private async getServersThatCanHack(): Promise<Server[]> {
         return this.fullScannedServerList.filter(server => server.maxRam > 0);
     }
 
@@ -255,6 +259,22 @@ export class ServerMatrix {
             maxRAM *= 2;
         }
         return maxRAM;
+    }
+
+    public async nukeAllServers(ns: NS = this.ns): Promise<void> {
+        let nukedServerCount = 0;
+        Logger.info(ns, 'attempting to nuke all servers...');
+        this.fullScannedServerList.forEach(async server => {
+            if (!ns.hasRootAccess(server.hostname)) {
+                if (await this.attemptToNukeServer(server, ns)) {
+                    ++nukedServerCount;
+                }
+            } else {
+                Logger.info(ns, '...{0} already has root access!', server.hostname);
+                ++nukedServerCount;
+            }
+        });
+        Logger.info(ns, '...{0} servers nuked!', nukedServerCount);
     }
 
     /**

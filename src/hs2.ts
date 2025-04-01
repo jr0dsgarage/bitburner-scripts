@@ -61,6 +61,8 @@ export async function main(ns: NS) {
             Logger.debug(ns, 'attempting to deploy {0} to all servers; targeting {1} ...', debugFlag, hackToDeploy, hackTarget.hostname);
             if (!ns.serverExists(hackTarget.hostname)) throw new Error(`server ${hackTarget.hostname} does not exist!`);
             if (hackTarget.hostname === 'home') throw new Error('cannot hack home server!');
+            await matrix.nukeAllServers();
+            
             await matrix.deployHackOnAllServers(hackToDeploy, includeHome, killAllFirst, debugFlag);
             ns.toast('hacks deployed!');
             
