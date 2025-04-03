@@ -29,18 +29,20 @@ export class ServerMatrix {
      * If no servers have been purchased, it will purchase servers before building the list.
      * @param ns Netscript namespace; defaults to this.ns
      */
-    public async initialize(ns: NS = this.ns): Promise<void> {
+    public async initialize(ns: NS = this.ns, purchaseServers = false): Promise<void> {
         Logger.info(ns, 'serverMatrix initializing...');
         Logger.info(ns, '➡️📃 building list of scanned servers to depth of {0}...', this.scannedDepth);
         await this.buildScannedServerList();
         Logger.info(ns, '...found {0} servers.', this.fullScannedServerList.length);
         Logger.info(ns, '➡️📃 building list of purchased servers...');
         Logger.info(ns, '...found {0} purchased servers.', this.purchasedServerList.length);
-        if (this.purchasedServerList.length != ns.getPurchasedServerLimit()) {
-            await this.purchaseServers();
-        }
-        if (this.purchasedServerList.length > 0) {
-            await this.upgradePurchasedServers();
+        if (purchaseServers) {
+            if (this.purchasedServerList.length != ns.getPurchasedServerLimit()) {
+                await this.purchaseServers();
+            }
+            if (this.purchasedServerList.length > 0) {
+                await this.upgradePurchasedServers();
+            }
         }
         Logger.info(ns, '...serverMatrix initialized!');
     }
@@ -205,6 +207,38 @@ export class ServerMatrix {
         });
     }
 
+    private async findBestServerToHack(ns: NS = this.ns): Promise<Server> {
+        let currentBestTarget: Server | undefined = undefined;
+        let bestScore = -Infinity;
+        this.fullScannedServerList.forEach(server => {
+            const score = this.scoreServer(server);
+            if (score > bestScore) {
+                currentBestTarget = server;
+                bestScore = score;
+            }
+        });
+        return currentBestTarget ? currentBestTarget : ns.getServer(hl.defaultHackTargetHostname);
+    }
+
+    /**
+     * Calculates the score of a server based on its money and security factors.
+     * @remarks this algo came from CoPilot 
+     * @param server - The server to calculate the score for.
+     * @param ns - Netscript namespace; defaults to this.ns
+     * @returns The score of the server as a number
+     */
+    public scoreServer = (server: Server, ns: NS = this.ns): number => {
+        const playerHackingLevel = ns.getHackingLevel();
+        const money = ns.getServerMoneyAvailable(server.hostname);
+        const maxMoney = ns.getServerMaxMoney(server.hostname);
+        const moneyFactor = Math.pow(money / maxMoney, 2);
+        const securityLevel = ns.getServerSecurityLevel(server.hostname);
+        const requiredHackLevel = ns.getServerRequiredHackingLevel(server.hostname);
+        const securityFactor = requiredHackLevel > playerHackingLevel ? 0 : (securityLevel - requiredHackLevel) / securityLevel;
+        const score = moneyFactor * securityFactor;
+        return score;
+    }
+    
     /**
      * Returns the amount of available RAM on a given server.
      * @param server - The server for which to calculate available RAM.
@@ -263,18 +297,23 @@ export class ServerMatrix {
 
     public async nukeAllServers(ns: NS = this.ns): Promise<void> {
         let nukedServerCount = 0;
+        let failednukeCount = 0;
         Logger.info(ns, 'attempting to nuke all servers...');
-        this.fullScannedServerList.forEach(async server => {
+        
+        for (const server of this.fullScannedServerList) {
             if (!ns.hasRootAccess(server.hostname)) {
-                if (await this.attemptToNukeServer(server, ns)) {
+                if (await this.attemptToNukeServer(server)) {
                     ++nukedServerCount;
+                } else {
+                    ++failednukeCount;
                 }
             } else {
                 Logger.info(ns, '...{0} already has root access!', server.hostname);
                 ++nukedServerCount;
             }
-        });
-        Logger.info(ns, '...{0} servers nuked!', nukedServerCount);
+        }
+        
+        Logger.info(ns, '...{0} servers nuked!  {1} servers failed.', nukedServerCount, failednukeCount);
     }
 
     /**

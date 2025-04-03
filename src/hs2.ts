@@ -40,7 +40,7 @@ export async function main(ns: NS) {
         if (hackToDeploy !== '') {
             if (!ns.fileExists(hackToDeploy, 'home')) throw new Error(`${hackToDeploy} does not exist!!`);
             const matrix = new ServerMatrix(ns);
-            await matrix.initialize();
+            await matrix.initialize(ns,true);
 
             // Set the hack target to the server's built-in default, then change it to the argument target if one is provided
             const hackTarget: Server = matrix.hackTarget; 
@@ -58,9 +58,10 @@ export async function main(ns: NS) {
             }
             */
 
-            Logger.debug(ns, 'attempting to deploy {0} to all servers; targeting {1} ...', debugFlag, hackToDeploy, hackTarget.hostname);
+            Logger.debug(ns, 'hack initialized, attempting to deploy {0} to all servers; targeting {1} ...', debugFlag, hackToDeploy, hackTarget.hostname);
             if (!ns.serverExists(hackTarget.hostname)) throw new Error(`server ${hackTarget.hostname} does not exist!`);
             if (hackTarget.hostname === 'home') throw new Error('cannot hack home server!');
+            
             await matrix.nukeAllServers();
             
             await matrix.deployHackOnAllServers(hackToDeploy, includeHome, killAllFirst, debugFlag);
