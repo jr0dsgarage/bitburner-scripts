@@ -12,13 +12,15 @@ import { TerminalFormats as colors } from './lib/helperLib';
 
 export async function main(ns: NS) {
     const matrix = new ServerMatrix(ns);
-    await matrix.initialize();
+    await matrix.initialize(ns, false);
 
     // eslint-disable-next-line no-constant-condition
     while (true) {
         ns.ui.clearTerminal();
-
         ns.tprintf(`INFO: investigating ${matrix.fullScannedServerList.length} servers...`);
+        
+        const targetServer = await matrix.getTargetServer();
+
         matrix.fullScannedServerList.forEach((targetableServer: Server) => {
             const targetHostname: string = targetableServer.hostname;
             const securityLevel: number = ns.getServerSecurityLevel(targetHostname);
@@ -31,9 +33,11 @@ export async function main(ns: NS) {
             const growTime: number = ns.getGrowTime(targetHostname);
             const weakenTime: number = ns.getWeakenTime(targetHostname);
 
-            const playerHackingLevel = ns.getHackingLevel();
-            const requiredHackingLevel: number = ns.getServerRequiredHackingLevel(targetHostname);
+            const hackChance: number = ns.hackAnalyzeChance(targetHostname);
+            const hackAmount: number = ns.hackAnalyze(targetHostname);
+            const hackThreads: number = ns.hackAnalyzeThreads(targetHostname, moneyAvailable);
 
+            const serverScore = matrix.scoreServer(targetableServer);
             
             const hostnameString = `${colors.Cyan}${targetHostname}${colors.Reset}:${securityLevel > minSecurityLevel ? '👇' : moneyAvailable < maxMoney ? '👆' : '👉'}`;
             const moneyString = `${colors.Magenta}$${ns.formatNumber(moneyAvailable).padEnd(8, ' ')}/$${ns.formatNumber(maxMoney)}${colors.Reset}`;
@@ -41,10 +45,14 @@ export async function main(ns: NS) {
             const hackString = `H:${statusColor}${(~~hackTime)}${colors.Reset}`;
             const growString = `G:${statusColor}${(~~growTime)}${colors.Reset}`;
             const weakenString = `W:${statusColor}${(~~weakenTime)}${colors.Reset}`;
+            const hackChanceString = `HC:${statusColor}${hackChance.toFixed(4)}${colors.Reset}`;
+            const hackAmountString = `HA:${statusColor}${hackAmount.toFixed(4)}${colors.Reset}`;
+            const hackThreadsString = `HT:${statusColor}${hackThreads.toFixed(4)}${colors.Reset}`;
             
-            const targetString = targetHostname === matrix.getRichestServerHostname() && requiredHackingLevel < (playerHackingLevel / 2) ? `🎯` : ``;
+            const targetString = targetHostname === targetServer.hostname ? `🎯` : `x`;
+            const serverScoreString = `${colors.Cyan}${serverScore.toFixed(5)}${colors.Reset}`;
 
-            ns.tprintf(`${hostnameString.padEnd(30, `.`)}${moneyString.padEnd(30, `.`)}${securityString.padEnd(20, `.`)}${hackString.padEnd(20, `.`)}${growString.padEnd(20, `.`)}${weakenString.padEnd(20, `.`)}${targetString}`);
+            ns.tprintf(`${hostnameString.padEnd(30, `.`)}${moneyString.padEnd(30, `.`)}${securityString.padEnd(20, `.`)}${hackString.padEnd(20, `.`)}${growString.padEnd(20, `.`)}${weakenString.padEnd(20, `.`)}${targetString.padEnd(3, `.`)}${hackChanceString.padEnd(20, `.`)}${hackAmountString.padEnd(20, `.`)}${hackThreadsString.padEnd(25, `.`)}${serverScoreString}`);
         });
         await ns.sleep(500);
     }

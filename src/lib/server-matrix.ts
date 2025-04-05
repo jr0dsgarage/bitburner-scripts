@@ -207,7 +207,7 @@ export class ServerMatrix {
         });
     }
 
-    private async findBestServerToHack(ns: NS = this.ns): Promise<Server> {
+    public async findBestServerToHack(ns: NS = this.ns): Promise<Server> {
         let currentBestTarget: Server | undefined = undefined;
         let bestScore = -Infinity;
         this.fullScannedServerList.forEach(server => {
@@ -221,35 +221,6 @@ export class ServerMatrix {
     }
 
     /**
-     * Calculates the score of a server based on its money and security factors.
-     * @remarks this algo came from CoPilot 
-     * @param server - The server to calculate the score for.
-     * @param ns - Netscript namespace; defaults to this.ns
-     * @returns The score of the server as a number
-     */
-    public scoreServer = (server: Server, ns: NS = this.ns): number => {
-        const playerHackingLevel = ns.getHackingLevel();
-        const money = ns.getServerMoneyAvailable(server.hostname);
-        const maxMoney = ns.getServerMaxMoney(server.hostname);
-        const moneyFactor = Math.pow(money / maxMoney, 2);
-        const securityLevel = ns.getServerSecurityLevel(server.hostname);
-        const requiredHackLevel = ns.getServerRequiredHackingLevel(server.hostname);
-        const securityFactor = requiredHackLevel > playerHackingLevel ? 0 : (securityLevel - requiredHackLevel) / securityLevel;
-        const score = moneyFactor * securityFactor;
-        return score;
-    }
-    
-    /**
-     * Returns the amount of available RAM on a given server.
-     * @param server - The server for which to calculate available RAM.
-     * @param ns - Netscript namespace; defaults to this.ns
-     * @returns The amount of available RAM on the server as a number, in GB.
-     */
-    private getAvailableRam(server: Server, ns: NS = this.ns): number {
-        return ns.getServerMaxRam(server.hostname) - ns.getServerUsedRam(server.hostname);
-    }
-
-    /**
      * Returns an array of Server objects that can hack other servers, i.e. servers that have more than 0 RAM
      * @returns An array of Server object
      */
@@ -258,11 +229,41 @@ export class ServerMatrix {
     }
 
     /**
+     * Returns the server that is the best target for hacking, based on the player's hacking level and the server's max money.
+     * @param ns Netscript namespace; defaults to this.ns
+     * @returns The best server to hack as a Server object
+     */
+    public async getTargetServer(ns: NS = this.ns): Promise<Server> {
+        const playerHackingLevel = ns.getHackingLevel();
+        // find the server with the most money that meets the criteria and has the highest combined score
+        let bestTarget: Server | null = null;
+        let maxScore = -Infinity;
+
+        for (const server of this.fullScannedServerList) {
+            const requiredHackingLevel: number = ns.getServerRequiredHackingLevel(server.hostname);
+            const maxMoneyonServer: number = ns.getServerMaxMoney(server.hostname);
+
+            if (
+                (playerHackingLevel / requiredHackingLevel) > 0.5 &&
+                ns.hackAnalyzeThreads(server.hostname, maxMoneyonServer) > 0
+            ) {
+                // Incorporate weaken effect and weaken time into the score
+                const score = this.scoreServer(server);
+                if (score > maxScore) {
+                    bestTarget = server;
+                    maxScore = score;
+                }
+            }
+        }
+        return bestTarget ?? ns.getServer(hl.defaultHackTargetHostname);
+    }
+
+    /**
      * Sorts the fullScannedServerList by money available
      * @param ns Netscript namespace; defaults to this.ns
      * @returns The hostname of the server with the most money available.
      */
-    public getRichestServerHostname(ns: NS = this.ns): string {
+    public async getRichestServerHostname(ns: NS = this.ns): Promise<string> {
         const sortedServerList = [... this.fullScannedServerList].sort((a, b) => ns.getServerMoneyAvailable(b.hostname) - ns.getServerMoneyAvailable(a.hostname));
         return sortedServerList[0].hostname;
     }
@@ -376,6 +377,25 @@ export class ServerMatrix {
     }
 
     /**
+     * Calculates the score of a server based on its money and security factors.
+     * @remarks this algo came from CoPilot 
+     * @param server - The server to calculate the score for.
+     * @param ns - Netscript namespace; defaults to this.ns
+     * @returns The score of the server as a number
+     */
+        public scoreServer = (server: Server, ns: NS = this.ns): number => {
+            const maxMoneyonServer: number = ns.getServerMoneyAvailable(server.hostname);
+            const hackAnalyzeValue: number = ns.hackAnalyze(server.hostname);
+            const weakenEffect: number = ns.weakenAnalyze(1); // Effect of a single thread of weaken
+            const weakenTime: number = ns.getWeakenTime(server.hostname); // Time required to weaken the server
+    
+            // Incorporate weaken effect and weaken time into the score
+            const score = (maxMoneyonServer * hackAnalyzeValue) / (weakenEffect * weakenTime);  
+            return score;
+            
+        }
+
+    /**
      * Upgrades the purchased servers to the maximum amount of RAM available.
      * @param ns - Netscript namespace; defaults to this.ns
      */
@@ -397,59 +417,4 @@ export class ServerMatrix {
             }
         });
     }
-
-    /**
-     * Finds the best server to hack based on the score calculated by `scoreServer`
-     * @param ns - Netscript namespace; defaults to this.ns
-     * @returns The best server to hack, or `undefined` if there are no servers to hack
-     */
-    /*     public async findBestHackTarget(ns: NS = this.ns): Promise<Server> {
-            let currentBestTarget: Server | undefined = undefined;
-            let bestScore = -Infinity;
-            this.fullScannedServerList.forEach(server => {
-                const score = this.scoreServer(server);
-                if (score > bestScore) {
-                    currentBestTarget = server;
-                    bestScore = score;
-                }
-                //ns.tprint(`INFO: ...${colors.Cyan} ${server.hostname}${colors.Reset} scored ${colors.Green}${score}${colors.Reset}`)
-            });
-            if (currentBestTarget) return currentBestTarget;
-            else throw new Error(`ERROR: could not acquire hack target!`);
-        } */
-
-    /**
-     * Calculates the score of a server based on its money and security factors.
-     * @remarks this algo came from CoPilot 
-     * @param server - The server to calculate the score for.
-     * @param ns - Netscript namespace; defaults to this.ns
-     * @returns The score of the server as a number
-     */
-    /* public scoreServer = (server: Server, ns: NS = this.ns): number => {
-        //ns.tprint(`Calculating score for server ${server.hostname}...`);
-
-        const playerHackingLevel = ns.getHackingLevel();
-        //ns.tprint(`Player hacking level: ${playerHackingLevel}`);
-
-        const money = ns.getServerMoneyAvailable(server.hostname);
-        //ns.tprint(`Money available on ${server.hostname}: ${money}`);
-
-        const maxMoney = ns.getServerMaxMoney(server.hostname);
-        //ns.tprint(`Maximum money available on ${server.hostname}: ${maxMoney}`);
-
-        const moneyFactor = Math.pow(money / maxMoney, 2);
-        //ns.tprint(`Money factor: ${moneyFactor}`);
-
-        const securityLevel = ns.getServerSecurityLevel(server.hostname);
-        //ns.tprint(`Security level of ${server.hostname}: ${securityLevel}`);
-
-        const requiredHackLevel = ns.getServerRequiredHackingLevel(server.hostname);
-        //ns.tprint(`Hacking level required to hack ${server.hostname}: ${requiredHackLevel}`);
-
-        const securityFactor = requiredHackLevel > playerHackingLevel ? 0: (securityLevel - requiredHackLevel) / securityLevel;
-        //ns.tprint(`Security factor: ${securityFactor}`);
-
-        const score = moneyFactor * securityFactor;
-        return score;
-    } */
 }
