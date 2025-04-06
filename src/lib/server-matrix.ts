@@ -75,29 +75,37 @@ export class ServerMatrix {
      * @param serverList - The list of servers to start the search from
      * @returns A Promise that resolves to an array of Server objects
      */
-    private async buildScannedServerList(depth = NaN, serverList: Server[] = this.fullScannedServerList) {
-        let allowedServerNameList: string[] = []
+    private async buildScannedServerList(depth = NaN) {
+        const visitedServers = new Set<string>();
+        const queue: string[] = ['home'];
 
         if (isNaN(depth)) depth = this.scannedDepth;
 
-        if (serverList.length === 0) {
-            const scannedServerNames: string[] = this.ns.scan();
-            allowedServerNameList = scannedServerNames.filter(server => this.canAddServer(this.ns.getServer(server)));
-            this.fullScannedServerList.push(...allowedServerNameList.map(allowedHostname => this.ns.getServer(allowedHostname)));
-            --depth;
-        }
+        while (queue.length > 0 && depth > 0) {
+            const currentServerName = queue.shift();
+            if (!currentServerName) continue;
+            if (visitedServers.has(currentServerName)) continue;
 
-        while (depth > 0) {
-            const newServers: Server[] = [];
+            visitedServers.add(currentServerName);
+            const currentServer = this.ns.getServer(currentServerName);
 
-            for (const server of serverList) {
-                const serverNeighborNames: string[] = this.ns.scan(server.hostname);
-                const allowedNeighborNames = serverNeighborNames.filter(server => this.canAddServer(this.ns.getServer(server), this.fullScannedServerList.concat(newServers)));
-                newServers.push(...allowedNeighborNames.map(allowedHostname => this.ns.getServer(allowedHostname)));
-                allowedServerNameList.push(...allowedNeighborNames);
+            if (this.canAddServer(currentServer)) {
+                this.fullScannedServerList.push(currentServer);
             }
-            this.fullScannedServerList.push(...newServers);
-            --depth;
+
+            const neighbors = this.ns.scan(currentServerName);
+            for (const neighbor of neighbors) {
+                if (!visitedServers.has(neighbor)) {
+                    queue.push(neighbor);
+                }
+            }
+
+            if (queue.length === 0) {
+                --depth;
+                if (depth > 0) {
+                    queue.push(...this.fullScannedServerList.map(server => server.hostname));
+                }
+            }
         }
     }
 
@@ -246,10 +254,11 @@ export class ServerMatrix {
             if (
                 (playerHackingLevel / requiredHackingLevel) > 0.5 &&
                 ns.hackAnalyzeThreads(server.hostname, maxMoneyonServer) > 0
-            ) {
-                // Incorporate weaken effect and weaken time into the score
+            )
+            {
                 const score = this.scoreServer(server);
                 if (score > maxScore) {
+                    ns.tprint(`new best target: ${server.hostname} with score: ${score}`);
                     bestTarget = server;
                     maxScore = score;
                 }
