@@ -215,6 +215,11 @@ export class ServerMatrix {
         });
     }
 
+    /**
+     * Finds the best server to hack based on the score of each server
+     * @param ns Netscript namespace; defaults to this.ns
+     * @returns The best server to hack as a Server object
+     */
     public async findBestServerToHack(ns: NS = this.ns): Promise<Server> {
         let currentBestTarget: Server | undefined = undefined;
         let bestScore = -Infinity;
@@ -305,6 +310,11 @@ export class ServerMatrix {
         return maxRAM;
     }
 
+    /*
+    * This function nukes all servers in the serverList array
+    * @param ns Netscript namespace
+    * @returns void
+    */
     public async nukeAllServers(ns: NS = this.ns): Promise<void> {
         let nukedServerCount = 0;
         let failednukeCount = 0;
@@ -405,7 +415,7 @@ export class ServerMatrix {
         }
 
     /**
-     * Upgrades the purchased servers to the maximum amount of RAM available.
+     * Upgrades the purchased servers to the maximum amount of RAM that can be afforded.
      * @param ns - Netscript namespace; defaults to this.ns
      */
     public async upgradePurchasedServers(ns: NS = this.ns): Promise<void> {
