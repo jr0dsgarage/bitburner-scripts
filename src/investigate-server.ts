@@ -10,6 +10,7 @@ import { TerminalFormats as colors, colorize } from './lib/helperLib';
 
 let STATUSCOLOR = colors.Reset;
 const LINELENGTH = 75;
+// eslint-disable-next-line no-control-regex
 const colorCodeRegex = /\x1b\[\d+m/g;
 const borderBar = colorize(`│`, colors.White);
 const midSeparator = borderBar + `»`.padEnd(2);
@@ -41,23 +42,27 @@ export async function main(ns: NS) {
     const requiredHackingLevel: number = ns.getServerRequiredHackingLevel(targetHostname);
     
 
-    while (true) {
-        ns.ui.clearTerminal();
-        printHeader(ns, colorize(`Server Investigation Report`, colors.Bold));
+    while (!ns.getScriptName().includes("exit")) {
+        
         const usedRam: number = ns.getServerUsedRam(targetHostname);
         const availableRAM: number = maxRam - usedRam;
         const moneyAvailable: number = ns.getServerMoneyAvailable(targetHostname);
-        const currentSecurityLevel = ns.getServerSecurityLevel(targetHostname);     
+        const currentSecurityLevel = ns.getServerSecurityLevel(targetHostname);
+        const serverPath: string[] = await getServerPath(ns, targetHostname);
+        const serverPathString: string = serverPath.length > 0 ? serverPath.join(` → `) : `No Path Found`;
 
         STATUSCOLOR = `${currentSecurityLevel > minSecurityLevel ? colors.Yellow : moneyAvailable < maxMoney ? colors.Magenta : colors.Green}`;
         
+        ns.ui.clearTerminal();
         
-        const pointer = colorize(`${currentSecurityLevel > minSecurityLevel ? ` ↓ ` : moneyAvailable < maxMoney ? ` ↑ ` : ` → `}`,STATUSCOLOR);
+        printHeader(ns, colorize(`Server Investigation Report`, colors.Bold));
+        const pointer = colorize(`${currentSecurityLevel > minSecurityLevel ? ` ↓ ` : moneyAvailable < maxMoney ? ` ↑ ` : ` → `}`, STATUSCOLOR);
         const serverValues: string[] = [
             `Investigating ${colorize(targetHostname, colors.Cyan)}:`,
             `RAM Used: ${colorize(`${ns.formatNumber(ns.getServerUsedRam(targetHostname), 2)}GB / ${~~maxRam}GB = ${ns.formatNumber(availableRAM, 2)}GB`, colors.Cyan)} Available`,
             `Minimum Security Level: ${colorize(minSecurityLevel, colors.Cyan)}`,
             `Required Hacking Level: ${colorize(requiredHackingLevel, colors.Cyan)}`,
+            
         ];
         
         serverValues.forEach(serverValue => ns.tprintf(borderBar + pointer + serverValue.padEnd(LINELENGTH + 6) + borderBar));
@@ -182,9 +187,24 @@ export async function main(ns: NS) {
         }
 
         printFooter(ns);
-
+        ns.tprintf(`Path to Server: ${colorize(serverPathString, colors.Cyan)}`)
         await ns.sleep(100);
     }
+}
+
+export async function getServerPath(ns: NS, target: string): Promise<string[]> {
+    const serverPath: string[] = [target];
+    let currentServer: string = target;
+    while (currentServer !== `home`) {
+        const parentServer: string | null = ns.scan(currentServer).find(server => server !== currentServer && server !== serverPath[serverPath.length - 1]) || null;
+        if (parentServer) {
+            serverPath.push(parentServer);
+            currentServer = parentServer;
+        } else {
+            break;
+        }
+    }
+    return serverPath.reverse();
 }
 
 export async function printClues(ns: NS, cluesToPrint: Clues) {
