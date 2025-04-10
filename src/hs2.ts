@@ -1,8 +1,9 @@
 /** 
  * hack script 2
- * created by j__r0d 2023-10-11
+ * originally created by j__r0d 2023-10-11
+ * heavily updated in March 2025
  * command to start script: 
- *   home; clear; killall; run hs2.js <hack-script> [<target-server>] [-h] [-f] [-k] [-d]
+ *   home; clear; killall; run hs2.js <hack-script> [<target-server>] [-h] [-f] [-k] [-d] [-p]
  * 
  * TODO: properly calculate hack target -- from Documentation/beginner's guide: 
  *      `your hacking target should be the server with highest max money that's required hacking level is under 1/2 of your hacking level.`
@@ -24,39 +25,29 @@ export async function main(ns: NS) {
         return args[index] && !args[index].toString().startsWith('-') ? args[index].toString() : defaultValue;
     }
 
-    function parseFlags(args: (string | number | boolean)[]): { includeHome: boolean, doFetch: boolean, killAllFirst: boolean, debug: boolean } {
+    function parseFlags(args: (string | number | boolean)[]): { includeHome: boolean, doFetch: boolean, killAllFirst: boolean, debug: boolean, purchaseServers: boolean } {
         return {
             includeHome: args.includes('-h') || args.includes('-home'),
             doFetch: args.includes('-f') || args.includes('-fetch'),
             killAllFirst: args.includes('-k') || args.includes('-kill'),
-            debug: args.includes('-d') || args.includes('-debug')
+            debug: args.includes('-d') || args.includes('-debug'),
+            purchaseServers: args.includes('-p') || args.includes('-purchase')
         };
     }
 
     const hackToDeploy = parseArgument(ns.args, 0, '');
-    const { includeHome, doFetch, killAllFirst, debug: debugFlag } = parseFlags(ns.args);
+    const { includeHome, doFetch, killAllFirst, debug: debugFlag, purchaseServers: purchaseServerFlag } = parseFlags(ns.args);
 
     try {
         if (hackToDeploy !== '') {
             if (!ns.fileExists(hackToDeploy, 'home')) throw new Error(`${hackToDeploy} does not exist!!`);
             const matrix = new ServerMatrix(ns);
-            await matrix.initialize(ns,true);
+            await matrix.initialize(ns,purchaseServerFlag);
 
-            // Set the hack target to the server's built-in default, then change it to the argument target if one is provided
+            // Set the hack target to the server's built-in default, 
+            // then change it to the argument target if one is provided
             const hackTarget: Server = matrix.hackTarget; 
             hackTarget.hostname = parseArgument(ns.args, 1, hackTarget.hostname);
-            
-            /* future Tor Router functionality
-            // buy a tor router and then all of the executables as money becomes available
-            // this doesn't work yet, waiting for the API to unlock? I think?
-            //connect darkweb; buy FTPCrack.exe; buy relaySMTP.exe; buy HTTPWorm.exe; buy SQLInject.exe; buy DeepscanV1.exe; buy DeepscanV2.exe;  buy serverProfiler.exe ; buy Autolink.exe; home;
-            if (ns.hasTorRouter()) {
-                Logger.info(ns, 'TOR router found...');
-                }
-            else {
-                //buy one
-            }
-            */
 
             Logger.debug(ns, 'hack initialized, attempting to deploy {0} to all servers; targeting {1} ...', debugFlag, hackToDeploy, hackTarget.hostname);
             if (!ns.serverExists(hackTarget.hostname)) throw new Error(`server ${hackTarget.hostname} does not exist!`);
