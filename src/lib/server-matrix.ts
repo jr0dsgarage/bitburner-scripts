@@ -128,21 +128,21 @@ export class ServerMatrix {
 
     /**
      * Deploys a hack on a server
-     * @param hackToDeploy The hack script to deploy; needs to be a .js or .script file
+     * @param scriptToDeploy The hack script to deploy; needs to be a .js or .script file
      * @param server The server to deploy the hack on
      * @param killAllFirst Whether to kill all currently running scripts before deploying the hack
      * @param threadsToUse The number of threads to use for the hack; defaults to the maximum number of threads available on the server
      * @param ns Netscript namespace; defaults to this.ns
      */
-    public async deployScriptOnServer(hackToDeploy: string, server: Server, killAllFirst = false, debug = false, threadsToUse?: number, ns: NS = this.ns): Promise<boolean> {
+    public async deployScriptOnServer(scriptToDeploy: string, server: Server, killAllFirst = false, debug = false, threadsToUse?: number, ns: NS = this.ns): Promise<boolean> {
         if (killAllFirst) ns.killall(server.hostname);
-        if (!threadsToUse) threadsToUse = Math.max(1, (ns.getServerMaxRam(server.hostname) - ns.getServerUsedRam(server.hostname)) / ns.getScriptRam(hackToDeploy));
+        if (!threadsToUse) threadsToUse = Math.max(1, (ns.getServerMaxRam(server.hostname) - ns.getServerUsedRam(server.hostname)) / ns.getScriptRam(scriptToDeploy));
         try {
-            if (!ns.scp(hackToDeploy, server.hostname))
-                throw `...can't scp ${hackToDeploy} to ${server.hostname}!`
-            if (!ns.exec(hackToDeploy, server.hostname, ~~threadsToUse, this.hackTarget.hostname, debug))
-                throw `...can't exec ${hackToDeploy} on ${server.hostname}!`
-            if (!ns.scriptRunning(hackToDeploy, server.hostname))
+            if (!ns.scp(scriptToDeploy, server.hostname))
+                throw `...can't scp ${scriptToDeploy} to ${server.hostname}!`
+            if (!ns.exec(scriptToDeploy, server.hostname, ~~threadsToUse, this.hackTarget.hostname, debug))
+                throw `...can't exec ${scriptToDeploy} on ${server.hostname}!`
+            if (!ns.scriptRunning(scriptToDeploy, server.hostname))
                 throw `...script not running on ${server.hostname}!`;
             else {
                 Logger.info(ns, '...hack deployed on {0} using {1} threads!', server.hostname, ~~threadsToUse);
