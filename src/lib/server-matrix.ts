@@ -166,13 +166,13 @@ export class ServerMatrix {
      * @param ns Netscript namespace; defaults to this.ns
      */
     public async deployScriptonAllServers(scriptToDeploy: string, includeHome = false, killAllFirst = false, debug = false, ns: NS = this.ns): Promise<void> {
-        const serversToUseForHacking = await this.getServersThatCanHack();
-        if (includeHome) serversToUseForHacking.push(ns.getServer('home'));
-        if (this.purchasedServerList.length > 0) serversToUseForHacking.push(...this.purchasedServerList);
+        const serversToUse = await this.getServersThatRunScripts();
+        if (includeHome) serversToUse.push(ns.getServer('home'));
+        if (this.purchasedServerList.length > 0) serversToUse.push(...this.purchasedServerList);
         
-        Logger.info(ns, 'attempting to deploy {0} to {1} servers...', scriptToDeploy, serversToUseForHacking.length);
+        Logger.info(ns, 'attempting to deploy {0} to {1} servers...', scriptToDeploy, serversToUse.length);
         
-        for (const server of serversToUseForHacking) {
+        for (const server of serversToUse) {
             try {
                 if (ns.hasRootAccess(server.hostname)) {
                     if (!await this.deployScriptOnServer(scriptToDeploy, server, killAllFirst, debug))
@@ -239,7 +239,7 @@ export class ServerMatrix {
      * Returns an array of Server objects that can hack other servers, i.e. servers that have more than 0 RAM
      * @returns An array of Server object
      */
-    private async getServersThatCanHack(): Promise<Server[]> {
+    private async getServersThatRunScripts(): Promise<Server[]> {
         return this.fullScannedServerList.filter(server => server.maxRam > 0);
     }
 
