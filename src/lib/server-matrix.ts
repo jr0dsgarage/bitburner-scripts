@@ -26,7 +26,9 @@ export class ServerMatrix {
 
     /**
      * Initializes the server matrix by building a list of scanned servers and a list of purchased servers.
-     * If no servers have been purchased, it will purchase servers before building the list.
+     * If no servers have been purchased, it will purchase servers before building the list if requested.
+     * If servers exist already, it will upgrade them to the maximum amount of RAM that can be afforded if requested.
+     * @param purchaseServers Whether to purchase servers if none are found; defaults to false
      * @param ns Netscript namespace; defaults to this.ns
      */
     public async initialize(ns: NS = this.ns, purchaseServers = false): Promise<void> {
@@ -145,7 +147,7 @@ export class ServerMatrix {
             if (!ns.scriptRunning(scriptToDeploy, server.hostname))
                 throw `...script not running on ${server.hostname}!`;
             else {
-                Logger.info(ns, '...hack deployed on {0} using {1} threads!', server.hostname, ~~threadsToUse);
+                Logger.info(ns, '...script deployed on {0} using {1} threads!', server.hostname, ~~threadsToUse);
                 return true;
             }
         }
