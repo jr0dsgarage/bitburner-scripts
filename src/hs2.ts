@@ -55,7 +55,7 @@ export async function main(ns: NS) {
             
             await matrix.nukeAllServers();
             
-            await matrix.deployHackOnAllServers(hackToDeploy, includeHome, killAllFirst, debugFlag);
+            await matrix.deployScriptonAllServers(hackToDeploy, includeHome, killAllFirst, debugFlag);
             ns.toast('hacks deployed!');
             
             if (doFetch) {

@@ -20,5 +20,5 @@ export async function main(ns: NS) {
     const shareScript = './deployables/share.js';
     if (!ns.fileExists(shareScript, 'home')) throw new Error(`${shareScript} does not exist!!`);
     
-    await matrix.deployHackOnAllServers(shareScript, true, true, true);
+    await matrix.deployScriptonAllServers(shareScript, true, true, true);
 }

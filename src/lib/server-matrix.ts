@@ -134,7 +134,7 @@ export class ServerMatrix {
      * @param threadsToUse The number of threads to use for the hack; defaults to the maximum number of threads available on the server
      * @param ns Netscript namespace; defaults to this.ns
      */
-    public async deployHackOnServer(hackToDeploy: string, server: Server, killAllFirst = false, debug = false, threadsToUse?: number, ns: NS = this.ns): Promise<boolean> {
+    public async deployScriptOnServer(hackToDeploy: string, server: Server, killAllFirst = false, debug = false, threadsToUse?: number, ns: NS = this.ns): Promise<boolean> {
         if (killAllFirst) ns.killall(server.hostname);
         if (!threadsToUse) threadsToUse = Math.max(1, (ns.getServerMaxRam(server.hostname) - ns.getServerUsedRam(server.hostname)) / ns.getScriptRam(hackToDeploy));
         try {
@@ -157,23 +157,23 @@ export class ServerMatrix {
 
     /**
      * Deploys a hack on all servers in the matrix' serverList
-     * @param hackToDeploy The hack script to deploy; needs to be a .js or .script file
+     * @param scriptToDeploy The hack script to deploy; needs to be a .js or .script file
      * @param includeHome Whether to include the home server in the deployment
      * @param killAllFirst Whether to kill all currently running scripts before deploying the hack
      * @param debug Whether to log debug information
      * @param ns Netscript namespace; defaults to this.ns
      */
-    public async deployHackOnAllServers(hackToDeploy: string, includeHome = false, killAllFirst = false, debug = false, ns: NS = this.ns): Promise<void> {
+    public async deployScriptonAllServers(scriptToDeploy: string, includeHome = false, killAllFirst = false, debug = false, ns: NS = this.ns): Promise<void> {
         const serversToUseForHacking = await this.getServersThatCanHack();
         if (includeHome) serversToUseForHacking.push(ns.getServer('home'));
         if (this.purchasedServerList.length > 0) serversToUseForHacking.push(...this.purchasedServerList);
         
-        Logger.info(ns, 'attempting to deploy {0} to {1} servers...', hackToDeploy, serversToUseForHacking.length);
+        Logger.info(ns, 'attempting to deploy {0} to {1} servers...', scriptToDeploy, serversToUseForHacking.length);
         
         for (const server of serversToUseForHacking) {
             try {
                 if (ns.hasRootAccess(server.hostname)) {
-                    if (!await this.deployHackOnServer(hackToDeploy, server, killAllFirst, debug))
+                    if (!await this.deployScriptOnServer(scriptToDeploy, server, killAllFirst, debug))
                         throw `...hack deployment failed on ${server.hostname}!`;
                 }
             }
