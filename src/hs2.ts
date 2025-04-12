@@ -63,11 +63,10 @@ export async function main(ns: NS) {
             }
         }
         else {
-            Logger.info(ns, 'command to start script: run hs2.js <hack-script> [<target-server>] [-h] [-f] [-k] [-d]');
+            Logger.info(ns, 'command to start script: run hs2.js <hack-script> [<target-server>] [-h:help] [-f:fetch] [-k:killAll] [-d:debug] [-p:purchase]');
             ns.toast('no hacks deployed!', 'error');
             throw new Error('no hack script designated! Please provide a hack script to deploy.');
         }
-
     }
     catch (err) {
         Logger.error(ns, `${err}`);
