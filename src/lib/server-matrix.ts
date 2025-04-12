@@ -440,6 +440,8 @@ export class ServerMatrix {
                 } catch (err) {
                     Logger.error(ns, '...failed to upgrade server {0}: {1}', server.hostname, err);
                 }
+            } else if (currentRAM === maxPossibleRAM) {
+                Logger.info(ns, '...{0} already has maximum RAM!', server.hostname);
             } else {
                 Logger.info(ns, '...not enough monies to upgrade {0}', server.hostname);
             }
