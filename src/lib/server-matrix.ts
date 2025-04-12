@@ -438,7 +438,7 @@ export class ServerMatrix {
                     ns.upgradePurchasedServer(server.hostname, maxPurchaseableRAM); // Upgrade the server
                     Logger.info(ns, '...upgraded {0} to {1}GB RAM', server.hostname, maxPurchaseableRAM);
                 } catch (err) {
-                    Logger.error(ns, 'Failed to upgrade server {0}: {1}', server.hostname, err);
+                    Logger.error(ns, '...failed to upgrade server {0}: {1}', server.hostname, err);
                 }
             } else {
                 Logger.info(ns, '...not enough monies to upgrade {0}', server.hostname);
