@@ -297,12 +297,12 @@ export class ServerMatrix {
     }
 
     /**
-    * calculates the maximum amount of RAM that can be purchased for a server
+    * calculates the maximum amount of RAM that can be purchased for all servers at the same time
     * @remarks based on the amount of money currently available on the home server; aka the Player's current available money
     * @param ns Netscript namespace
-    * @returns the maximum amount of RAM that can be purchased for a server, as a 2^n number (8, 16, 32, 64, etc.)
+    * @returns the maximum amount of RAM that can be purchased for each server, as a 2^n number (8, 16, 32, 64, etc.)
     */
-    private maxPurchaseableRAM(ns: NS = this.ns) {
+    private getMaxAffordableRAMforServers(ns: NS = this.ns) {
         const moneyPerServer = ns.getServerMoneyAvailable(`home`) / ns.getPurchasedServerLimit();
         const maxPossibleRAM = ns.getPurchasedServerMaxRam();
         let maxRAM = 8;
@@ -382,12 +382,12 @@ export class ServerMatrix {
      */
     public async purchaseServers(ns: NS = this.ns): Promise<void> {
         Logger.info(ns, '...no purchased servers found. checking for available monies...');
-        if (ns.getServerMoneyAvailable('home') > (ns.getPurchasedServerCost(this.maxPurchaseableRAM()) * ns.getPurchasedServerLimit())) {
+        if (ns.getServerMoneyAvailable('home') > (ns.getPurchasedServerCost(this.getMaxAffordableRAMforServers()) * ns.getPurchasedServerLimit())) {
             Logger.info(ns, 'enough monies secured; attempting to purchase servers...');
             let i = 1;
             while (i < ns.getPurchasedServerLimit() + 1) {
-                const hostname: string = ns.purchaseServer('pserv-' + i, this.maxPurchaseableRAM());
-                Logger.info(ns, 'purchased server {0} with {1}GB RAM', hostname, this.maxPurchaseableRAM());
+                const hostname: string = ns.purchaseServer('pserv-' + i, this.getMaxAffordableRAMforServers());
+                Logger.info(ns, 'purchased server {0} with {1}GB RAM', hostname, this.getMaxAffordableRAMforServers());
                 ++i;
                 await ns.sleep(100);
             }
@@ -422,20 +422,27 @@ export class ServerMatrix {
      */
     public async upgradePurchasedServers(ns: NS = this.ns): Promise<void> {
         Logger.info(ns, 'attempting to upgrade purchased servers...');
-        this.purchasedServerList.forEach(async server => {
-            const maxRAM = this.maxPurchaseableRAM();
+        for (const server of this.purchasedServerList) {
             const currentRAM = server.maxRam;
-            if (currentRAM < maxRAM) {
-                const cost = ns.getPurchasedServerCost(maxRAM);
-                if (ns.getServerMoneyAvailable('home') > cost) {
-                    ns.killall(server.hostname);
-                    ns.deleteServer(server.hostname);
-                    ns.purchaseServer(server.hostname, maxRAM);
-                    Logger.info(ns, 'upgraded server {0} from {1}GB to {2}GB RAM', server.hostname, currentRAM, maxRAM);
-                } else {
-                    Logger.warn(ns, 'not enough money to upgrade purchased servers!');
-                }
+            let maxPurchaseableRAM = currentRAM;
+            const maxPossibleRAM = ns.getPurchasedServerMaxRam();
+            const availableMoney = ns.getServerMoneyAvailable('home');
+
+            // Calculate the maximum RAM that can be afforded for this server
+            while (maxPurchaseableRAM * 2 <= maxPossibleRAM && ns.getPurchasedServerCost(maxPurchaseableRAM * 2) <= availableMoney) {
+                maxPurchaseableRAM *= 2;
             }
-        });
+
+            if (maxPurchaseableRAM > currentRAM) {
+                try {
+                    ns.upgradePurchasedServer(server.hostname, maxPurchaseableRAM); // Upgrade the server
+                    Logger.info(ns, 'Upgraded server {0} to {1}GB RAM', server.hostname, maxPurchaseableRAM);
+                } catch (err) {
+                    Logger.error(ns, 'Failed to upgrade server {0}: {1}', server.hostname, err);
+                }
+            } else {
+                Logger.info(ns, 'Server {0} cannot be upgraded further.', server.hostname);
+            }
+        }
     }
 }
