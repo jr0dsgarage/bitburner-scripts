@@ -312,6 +312,27 @@ export class ServerMatrix {
         return maxRAM;
     }
 
+    /**
+     * Gets the server path from the target server to home
+     * @param ns Netscript namespace
+     * @param target The target server to get the path for
+     * @returns A Promise that resolves to an array of strings representing the server path
+     */
+    public getServerPath(ns: NS, target: string): Promise<string[]> {
+        const serverPath: string[] = [target];
+        let currentServer: string = target;
+        while (currentServer !== `home`) {
+            const parentServer: string | null = ns.scan(currentServer).find(server => server !== currentServer && server !== serverPath[serverPath.length - 1]) || null;
+            if (parentServer) {
+                serverPath.push(parentServer);
+                currentServer = parentServer;
+            } else {
+                break;
+            }
+        }
+        return Promise.resolve(serverPath.reverse());
+    }
+
     /*
     * This function nukes all servers in the serverList array
     * @param ns Netscript namespace
