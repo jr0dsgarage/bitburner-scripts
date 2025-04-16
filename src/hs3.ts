@@ -78,7 +78,6 @@ export async function main(ns: NS) {
                         ns.kill(hackScripts[0], server.hostname, hackTarget.hostname);
                         ns.kill(hackScripts[1], server.hostname, hackTarget.hostname);
                         let weakenThreadsAvailable = Math.floor(ns.getServerMaxRam(server.hostname) / ns.getScriptRam(hackScripts[2]));
-                        Logger.debug(ns, '{0} has {1} threads available for {2}', debugFlag, server.hostname, weakenThreadsAvailable, hackScripts[2]);
                         while (weakenThreadsAvailable > 0) {
                             if (ns.exec(hackScripts[2], server.hostname, 1, hackTarget.hostname)) {
                                 Logger.debug(ns, 'executed {0} on {1} with {2} threads', debugFlag, hackScripts[2], server.hostname, weakenThreadsAvailable);
@@ -96,7 +95,6 @@ export async function main(ns: NS) {
                         ns.kill(hackScripts[0], server.hostname, hackTarget.hostname);
                         ns.kill(hackScripts[2], server.hostname, hackTarget.hostname);
                         let growThreadsAvailable = Math.floor(ns.getServerMaxRam(server.hostname) / ns.getScriptRam(hackScripts[1]));
-                        Logger.debug(ns, '{0} has {1} threads available for {2}', debugFlag, server.hostname, growThreadsAvailable, hackScripts[1]);
                         while (growThreadsAvailable > 0) {
                             if (ns.exec(hackScripts[1], server.hostname, 1, hackTarget.hostname)) {
                                 Logger.debug(ns, 'executed {0} on {1} with {2} threads', debugFlag, hackScripts[1], server.hostname, growThreadsAvailable);
@@ -114,7 +112,6 @@ export async function main(ns: NS) {
                         ns.kill(hackScripts[1], server.hostname, hackTarget.hostname);
                         ns.kill(hackScripts[2], server.hostname, hackTarget.hostname);
                         let hackThreadsAvailable = Math.floor(ns.getServerMaxRam(server.hostname) / ns.getScriptRam(hackScripts[0]));
-                        Logger.debug(ns, '{0} has {1} threads available for {2}', debugFlag, server.hostname, hackThreadsAvailable, hackScripts[0]);
                         while (hackThreadsAvailable > 0) {
                             if (ns.exec(hackScripts[0], server.hostname, 1, hackTarget.hostname)) {
                                 Logger.debug(ns, 'executed {0} on {1} with {2} threads', debugFlag, hackScripts[0], server.hostname, hackThreadsAvailable);
