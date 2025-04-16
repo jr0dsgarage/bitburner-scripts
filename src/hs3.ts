@@ -1,5 +1,5 @@
 /** 
- * hack script 2
+ * hack script 3
  * originally created by j__r0d 2025-04-14
  * 
  * command to start script: 
@@ -8,7 +8,10 @@
  * TODO: properly calculate hack target -- from Documentation/beginner's guide: 
  *      `your hacking target should be the server with highest max money that's required hacking level is under 1/2 of your hacking level.`
  *      `Keep security level low. Security level affects everything when hacking. Two important Netscript functions for this are getServerSecurityLevel() and getServerMinSecurityLevel()`x
- */
+ *
+ * purchase programs script:  (buy TOR router first)
+ *  buy AutoLink.exe; buy DeepscanV1.exe; buy ServerProfiler.exe; buy FTPCrack.exe; buy relaySMTP.exe; buy DeepscanV2.exe; buy HTTPWorm.exe; buy SQLInject.exe; buy Formulas.exe; buy BruteSSH.exe
+*/
 
 import { NS } from '@ns';
 import { ServerMatrix } from './lib/server-matrix';
@@ -66,70 +69,55 @@ export async function main(ns: NS) {
                 await matrix.fetchFilesFromServers();
             }
 
-            // Defines how much money a server should have before we hack it
-            // In this case, it is set to the maximum amount of money.
-            const moneyThresh = ns.getServerMaxMoney(hackTarget.hostname);
-
-            // Defines the maximum security level the target server can
-            // have. If the target's security level is higher than this,
-            // we'll weaken it before doing anything else
-            const securityThresh = ns.getServerMinSecurityLevel(hackTarget.hostname);
-
-            // decide whether the current target is the best hacktarget
-            // if not, find the best hack target and set it as the target
-
-
-
             // Infinite loop that continously hacks/grows/weakens the target server
             for (; ;) {
-                //Logger.info(ns, `looping...moneyThreshold: ${moneyThresh}, securityThreshold: ${securityThresh}`);
-                for (const server of matrix.serversToUse) {
-                    // get the number of threads available from the server
-                    const hackThreadsAvailable = await matrix.getThreadsAvailableForScript(hackScripts[0], server);
-                    const growThreadsAvailable = await matrix.getThreadsAvailableForScript(hackScripts[1], server);
-                    const weakenThreadsAvailable = await matrix.getThreadsAvailableForScript(hackScripts[2], server);
-                    //Logger.info(ns, `available threads: ${hackThreadsAvailable}, ${growThreadsAvailable}, ${weakenThreadsAvailable}`);
-
-
-                    //const totalThreadsAvailable = hackThreadsAvailable + growThreadsAvailable + weakenThreadsAvailable;
-
-                    // get the number of threads needed for each script
-                    const hackThreads = Math.floor(hackThreadsAvailable * 0.1);
-                    const growThreads = Math.floor(growThreadsAvailable * 0.7);
-                    const weakenThreads = Math.floor(weakenThreadsAvailable * 0.2);
-
-                    //Logger.info(ns, `threads needed: ${hackThreads}, ${growThreads}, ${weakenThreads}`);
-
-                    if (hackThreads > 0 && growThreads > 0 && weakenThreads > 0) {
-                        
-                        const serverSecurityLevel = ns.getServerSecurityLevel(server.hostname);
-                        const serverMoneyAvailable = ns.getServerMoneyAvailable(server.hostname);
-                        //Logger.info(ns, `attempting to hack ${hackTarget.hostname} on ${server.hostname.padEnd(20,`.`)}security level is now ` + serverSecurityLevel.toFixed(2).padEnd(10, `.`) + `money available is $` + serverMoneyAvailable.toFixed(2));
-                        if (ns.getServerSecurityLevel(hackTarget.hostname) > securityThresh) {
-                            // If the server's security level is above our threshold, weaken it
-                            ns.killall(server.hostname);
-                            if (ns.exec(hackScripts[2], server.hostname, hackThreads, hackTarget.hostname)) {
-                                Logger.info(ns, `executed ${hackScripts[2]} on ${server.hostname} with ${weakenThreads} threads`);
+                if (ns.getServerSecurityLevel(hackTarget.hostname) > ns.getServerMinSecurityLevel(hackTarget.hostname)) { //weaken it
+                    Logger.info(ns, '{0} has {1} security level, weakening...', hackTarget.hostname, ns.getServerSecurityLevel(hackTarget.hostname));
+                    let totalWeakenThreads = 0;
+                    for (const server of matrix.serversToUse) {
+                        ns.kill(hackScripts[0], server.hostname, hackTarget.hostname);
+                        ns.kill(hackScripts[1], server.hostname, hackTarget.hostname);
+                        const weakenThreadsAvailable = await matrix.getThreadsAvailableForScript(hackScripts[2], server);
+                        if (weakenThreadsAvailable > 0) {
+                            if (ns.exec(hackScripts[2], server.hostname, weakenThreadsAvailable, hackTarget.hostname)) {
+                                Logger.info(ns, 'executed {0} on {1} with {2} threads', hackScripts[2], server.hostname, weakenThreadsAvailable);
+                                totalWeakenThreads += weakenThreadsAvailable;
                             }
-                            await ns.sleep(10);
-                        } else if (ns.getServerMoneyAvailable(hackTarget.hostname) < moneyThresh) {
-                            // If the server's money is less than our threshold, grow it
-                            ns.killall(server.hostname);
-                            if (ns.exec(hackScripts[1], server.hostname, growThreads, hackTarget.hostname)) {
-                                Logger.info(ns, `executed ${hackScripts[1]} on ${server.hostname} with ${growThreads} threads`);
-                            }
-                            await ns.sleep(10);
-                        } else {
-                            // Otherwise, hack it
-                            
-                            ns.killall(server.hostname);
-                            if (ns.exec(hackScripts[0], server.hostname, weakenThreads, hackTarget.hostname)) {
-                                Logger.info(ns, `executed ${hackScripts[0]} on ${server.hostname} with ${hackThreads} threads`);
-                            }
-                            await ns.sleep(10);
-
                         }
                     }
+                    await ns.sleep(ns.getWeakenTime(hackTarget.hostname)/totalWeakenThreads);
+                }
+                else if (ns.getServerMoneyAvailable(hackTarget.hostname) < ns.getServerMaxMoney(hackTarget.hostname)) { //grow it
+                    Logger.info(ns, '{0} has ${1} available out of ${2}, growing...', hackTarget.hostname, ns.getServerMoneyAvailable(hackTarget.hostname), ns.getServerMaxMoney(hackTarget.hostname));
+                    let totalGrowThreads = 0;
+                    for (const server of matrix.serversToUse) {
+                        ns.kill(hackScripts[0], server.hostname, hackTarget.hostname);
+                        ns.kill(hackScripts[2], server.hostname, hackTarget.hostname);
+                        const growThreadsAvailable = await matrix.getThreadsAvailableForScript(hackScripts[1], server);
+                        if (growThreadsAvailable > 0) {
+                            if (ns.exec(hackScripts[1], server.hostname, growThreadsAvailable, hackTarget.hostname)) {
+                                Logger.info(ns, 'executed {0} on {1} with {2} threads', hackScripts[1], server.hostname, growThreadsAvailable);
+                                totalGrowThreads += growThreadsAvailable;
+                            }
+                        }
+                    }
+                    await ns.sleep(ns.getGrowTime(hackTarget.hostname)/totalGrowThreads);
+                }
+                else { //hack it
+                    Logger.info(ns, '{0} has ${1} money available, hacking...', hackTarget.hostname, ns.getServerMoneyAvailable(hackTarget.hostname));
+                    let totalHackThreads = 0;
+                    for (const server of matrix.serversToUse) {
+                        ns.kill(hackScripts[1], server.hostname, hackTarget.hostname);
+                        ns.kill(hackScripts[2], server.hostname, hackTarget.hostname);
+                        const hackThreadsAvailable = await matrix.getThreadsAvailableForScript(hackScripts[0], server);
+                        if (hackThreadsAvailable > 0) {
+                            if (ns.exec(hackScripts[0], server.hostname, hackThreadsAvailable, hackTarget.hostname)) {
+                                Logger.info(ns, 'executed {0} on {1} with {2} threads', hackScripts[0], server.hostname, hackThreadsAvailable);
+                                totalHackThreads += hackThreadsAvailable;
+                            }
+                        }
+                    }
+                    await ns.sleep(ns.getHackTime(hackTarget.hostname)/totalHackThreads);
                 }
             }
         }
