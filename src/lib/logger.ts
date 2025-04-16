@@ -16,6 +16,7 @@ const logLevelColors: { [key in LogLevel]: string } = {
 class Logger {
     // ...used Copilot for this.  I never would have come up with this myself.
     private static formatMessage(level: LogLevel, message: string, ...variables: any[]): string {
+        const timestamp = new Date().toLocaleTimeString('en-US', { hour12: false }); // Generate a timestamp in HH:mm:ss format
         // Split the message into parts and apply the log level color to the entire message
         const formattedMessage = message.split(/{(\d+)}/g).map((part, index) => {
             // If the part is a placeholder, replace it with the corresponding variable
@@ -36,7 +37,7 @@ class Logger {
             return colorize(part, logLevelColors[level]);
         }).join('');
 
-        return `${colorize(`[${level}]`, logLevelColors[level])} ${formattedMessage}`;
+        return `${colorize(`[${level}: ${timestamp}]`, logLevelColors[level])} ${formattedMessage}`;
     }
 
     static debug(ns: any, message: string, DEBUG: boolean, ...variables: any[]): void {
