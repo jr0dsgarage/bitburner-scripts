@@ -38,7 +38,6 @@ export async function main(ns: NS) {
     const hackScripts = ['./deployables/hack.js', './deployables/grow.js', './deployables/weaken.js'];
     const { includeHome, doFetch, killAllFirst, debug: debugFlag, purchaseServers: purchaseServerFlag } = parseFlags(ns.args);
 
-
     try {
         if (hackScripts !== undefined && hackScripts.length > 0) {
             hackScripts.forEach((script: string) => {
@@ -83,38 +82,53 @@ export async function main(ns: NS) {
 
             // Infinite loop that continously hacks/grows/weakens the target server
             for (; ;) {
-                Logger.info(ns, `looping...`);
+                //Logger.info(ns, `looping...moneyThreshold: ${moneyThresh}, securityThreshold: ${securityThresh}`);
                 for (const server of matrix.serversToUse) {
                     // get the number of threads available from the server
                     const hackThreadsAvailable = await matrix.getThreadsAvailableForScript(hackScripts[0], server);
                     const growThreadsAvailable = await matrix.getThreadsAvailableForScript(hackScripts[1], server);
                     const weakenThreadsAvailable = await matrix.getThreadsAvailableForScript(hackScripts[2], server);
+                    //Logger.info(ns, `available threads: ${hackThreadsAvailable}, ${growThreadsAvailable}, ${weakenThreadsAvailable}`);
 
-                    const totalThreadsAvailable = hackThreadsAvailable + growThreadsAvailable + weakenThreadsAvailable;
+
+                    //const totalThreadsAvailable = hackThreadsAvailable + growThreadsAvailable + weakenThreadsAvailable;
 
                     // get the number of threads needed for each script
-                    const hackThreads = Math.floor(totalThreadsAvailable * 0.1);
-                    const growThreads = Math.floor(totalThreadsAvailable * 0.7);
-                    const weakenThreads = Math.floor(totalThreadsAvailable * 0.2);
+                    const hackThreads = Math.floor(hackThreadsAvailable * 0.1);
+                    const growThreads = Math.floor(growThreadsAvailable * 0.7);
+                    const weakenThreads = Math.floor(weakenThreadsAvailable * 0.2);
+
+                    //Logger.info(ns, `threads needed: ${hackThreads}, ${growThreads}, ${weakenThreads}`);
 
                     if (hackThreads > 0 && growThreads > 0 && weakenThreads > 0) {
+                        
+                        const serverSecurityLevel = ns.getServerSecurityLevel(server.hostname);
+                        const serverMoneyAvailable = ns.getServerMoneyAvailable(server.hostname);
+                        //Logger.info(ns, `attempting to hack ${hackTarget.hostname} on ${server.hostname.padEnd(20,`.`)}security level is now ` + serverSecurityLevel.toFixed(2).padEnd(10, `.`) + `money available is $` + serverMoneyAvailable.toFixed(2));
                         if (ns.getServerSecurityLevel(hackTarget.hostname) > securityThresh) {
                             // If the server's security level is above our threshold, weaken it
+                            ns.killall(server.hostname);
                             if (ns.exec(hackScripts[2], server.hostname, hackThreads, hackTarget.hostname)) {
-                                Logger.info(ns, `executing ${hackScripts[0]} on ${server.hostname} with ${hackThreads} threads`);
+                                Logger.info(ns, `executed ${hackScripts[2]} on ${server.hostname} with ${weakenThreads} threads`);
                             }
+                            await ns.sleep(10);
                         } else if (ns.getServerMoneyAvailable(hackTarget.hostname) < moneyThresh) {
                             // If the server's money is less than our threshold, grow it
+                            ns.killall(server.hostname);
                             if (ns.exec(hackScripts[1], server.hostname, growThreads, hackTarget.hostname)) {
-                                Logger.info(ns, `executing ${hackScripts[1]} on ${server.hostname} with ${growThreads} threads`);
+                                Logger.info(ns, `executed ${hackScripts[1]} on ${server.hostname} with ${growThreads} threads`);
                             }
+                            await ns.sleep(10);
                         } else {
                             // Otherwise, hack it
+                            
+                            ns.killall(server.hostname);
                             if (ns.exec(hackScripts[0], server.hostname, weakenThreads, hackTarget.hostname)) {
-                                Logger.info(ns, `executing ${hackScripts[0]} on ${server.hostname} with ${hackThreads} threads`);
+                                Logger.info(ns, `executed ${hackScripts[0]} on ${server.hostname} with ${hackThreads} threads`);
                             }
+                            await ns.sleep(10);
+
                         }
-                        await ns.sleep(10);
                     }
                 }
             }
