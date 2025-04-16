@@ -21,6 +21,31 @@ import { Logger } from './lib/logger';
  * @param {NS} ns Netscript namespace
  */
 
+function killScripts(ns: NS, server: { hostname: string }, scripts: string[], target: string) {
+    scripts.forEach(script => ns.kill(script, server.hostname, target));
+}
+
+function calculateAvailableThreads(ns: NS, server: { hostname: string }, script: string): number {
+    return Math.floor(ns.getServerMaxRam(server.hostname) / ns.getScriptRam(script));
+}
+
+async function executeScripts(ns: NS, server: { hostname: string }, script: string, target: string, debugFlag: boolean): Promise<number> {
+    let threadsAvailable = calculateAvailableThreads(ns, server, script);
+    let totalThreads = 0;
+
+    while (threadsAvailable > 0) {
+        if (ns.exec(script, server.hostname, 1, target)) {
+            Logger.debug(ns, 'executed {0} on {1} with {2} threads', debugFlag, script, server.hostname, threadsAvailable);
+            totalThreads += 1;
+            threadsAvailable -= 1;
+        } else {
+            break;
+        }
+    }
+
+    return totalThreads;
+}
+
 export async function main(ns: NS) {
     Logger.info(ns, 'hack initiated...');
 
@@ -69,67 +94,39 @@ export async function main(ns: NS) {
                 await matrix.fetchFilesFromServers();
             }
 
-            // Infinite loop that continously hacks/grows/weakens the target server
-            for (; ;) {
-                if (ns.getServerSecurityLevel(hackTarget.hostname) > ns.getServerMinSecurityLevel(hackTarget.hostname)) { //weaken it
+            // Refactored weaken, grow, and hack logic
+            for (;;) {
+                if (ns.getServerSecurityLevel(hackTarget.hostname) > ns.getServerMinSecurityLevel(hackTarget.hostname)) { // weaken it
                     Logger.debug(ns, '{0} has {1} security level, weakening...', debugFlag, hackTarget.hostname, ns.getServerSecurityLevel(hackTarget.hostname));
                     let totalWeakenThreads = 0;
                     for (const server of matrix.serversToUse) {
-                        ns.kill(hackScripts[0], server.hostname, hackTarget.hostname);
-                        ns.kill(hackScripts[1], server.hostname, hackTarget.hostname);
-                        let weakenThreadsAvailable = Math.floor(ns.getServerMaxRam(server.hostname) / ns.getScriptRam(hackScripts[2]));
-                        while (weakenThreadsAvailable > 0) {
-                            if (ns.exec(hackScripts[2], server.hostname, 1, hackTarget.hostname)) {
-                                Logger.debug(ns, 'executed {0} on {1} with {2} threads', debugFlag, hackScripts[2], server.hostname, weakenThreadsAvailable);
-                                totalWeakenThreads += 1;
-                                weakenThreadsAvailable -= 1;
-                            } else break;
-                        }
+                        killScripts(ns, server, [hackScripts[0], hackScripts[1]], hackTarget.hostname);
+                        totalWeakenThreads += await executeScripts(ns, server, hackScripts[2], hackTarget.hostname, debugFlag);
                     }
-                    await ns.sleep(ns.getWeakenTime(hackTarget.hostname)/totalWeakenThreads);
-                }
-                else if (ns.getServerMoneyAvailable(hackTarget.hostname) < ns.getServerMaxMoney(hackTarget.hostname)) { //grow it
+                    await ns.sleep(ns.getWeakenTime(hackTarget.hostname) / totalWeakenThreads);
+                } else if (ns.getServerMoneyAvailable(hackTarget.hostname) < ns.getServerMaxMoney(hackTarget.hostname)) { // grow it
                     Logger.debug(ns, '{0} has ${1} available out of ${2}, growing...', debugFlag, hackTarget.hostname, ns.getServerMoneyAvailable(hackTarget.hostname), ns.getServerMaxMoney(hackTarget.hostname));
                     let totalGrowThreads = 0;
                     for (const server of matrix.serversToUse) {
-                        ns.kill(hackScripts[0], server.hostname, hackTarget.hostname);
-                        ns.kill(hackScripts[2], server.hostname, hackTarget.hostname);
-                        let growThreadsAvailable = Math.floor(ns.getServerMaxRam(server.hostname) / ns.getScriptRam(hackScripts[1]));
-                        while (growThreadsAvailable > 0) {
-                            if (ns.exec(hackScripts[1], server.hostname, 1, hackTarget.hostname)) {
-                                Logger.debug(ns, 'executed {0} on {1} with {2} threads', debugFlag, hackScripts[1], server.hostname, growThreadsAvailable);
-                                totalGrowThreads += 1;
-                                growThreadsAvailable -= 1;
-                            } else break;
-                        }
+                        killScripts(ns, server, [hackScripts[0], hackScripts[2]], hackTarget.hostname);
+                        totalGrowThreads += await executeScripts(ns, server, hackScripts[1], hackTarget.hostname, debugFlag);
                     }
                     await ns.sleep(ns.getGrowTime(hackTarget.hostname) / totalGrowThreads);
-                }
-                else { //hack it
+                } else { // hack it
                     Logger.debug(ns, '{0} has ${1} money available, hacking...', debugFlag, hackTarget.hostname, ns.getServerMoneyAvailable(hackTarget.hostname));
                     let totalHackThreads = 0;
                     for (const server of matrix.serversToUse) {
-                        ns.kill(hackScripts[1], server.hostname, hackTarget.hostname);
-                        ns.kill(hackScripts[2], server.hostname, hackTarget.hostname);
-                        let hackThreadsAvailable = Math.floor(ns.getServerMaxRam(server.hostname) / ns.getScriptRam(hackScripts[0]));
-                        while (hackThreadsAvailable > 0) {
-                            if (ns.exec(hackScripts[0], server.hostname, 1, hackTarget.hostname)) {
-                                Logger.debug(ns, 'executed {0} on {1} with {2} threads', debugFlag, hackScripts[0], server.hostname, hackThreadsAvailable);
-                                totalHackThreads += 1;
-                                hackThreadsAvailable -= 1;
-                            } else break;
-                        }
+                        killScripts(ns, server, [hackScripts[1], hackScripts[2]], hackTarget.hostname);
+                        totalHackThreads += await executeScripts(ns, server, hackScripts[0], hackTarget.hostname, debugFlag);
                     }
                     await ns.sleep(ns.getHackTime(hackTarget.hostname) / totalHackThreads);
                 }
             }
+        } else {
+            Logger.info(ns, 'command to start script: run hs3.js [<target-server>] [-h:help] [-f:fetch] [-k:killAll] [-d:debug] [-p:purchase]');
+            ns.toast('no hacks deployed!', 'error');
         }
-        else {
-                Logger.info(ns, 'command to start script: run hs3.js [<target-server>] [-h:help] [-f:fetch] [-k:killAll] [-d:debug] [-p:purchase]');
-                ns.toast('no hacks deployed!', 'error');
-            }
-        }
-    catch (err) {
-            Logger.error(ns, `${err}`);
-        }
+    } catch (err) {
+        Logger.error(ns, `${err}`);
     }
+}
