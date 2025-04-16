@@ -13,6 +13,7 @@ export class ServerMatrix {
     private totalThreads = 0;
     public fullScannedServerList: Server[] = [];
     public purchasedServerList: Server[] = [];
+    public serversToUse: Server[] = [];
     public scannedDepth: number;
     public hackTarget!: Server;
 
@@ -129,19 +130,39 @@ export class ServerMatrix {
     }
 
     /**
-     * Deploys a hack on a server
+     * Copies a script to a server
+     * @param scriptToCopy The script to copy; needs to be a .js or .script file
+     * @param server The server to copy the script to
+     * @param ns Netscript namespace; defaults to this.ns
+     */
+    public async copyScriptToServer(scriptToCopy: string, server: Server, ns: NS = this.ns): Promise<boolean> {
+        try {
+            if (!ns.scp(scriptToCopy, server.hostname))
+                throw `...can't scp ${scriptToCopy} to ${server.hostname}!`
+            if (ns.fileExists(scriptToCopy, server.hostname))
+                Logger.info(ns, '...{0} copied to {1}', scriptToCopy, server.hostname);
+            else
+                throw `...${scriptToCopy} not found on ${server.hostname}!`;
+            return true;
+        }
+        catch (err) {
+            Logger.error(ns, `${err}`);
+            return false;
+        }
+    }
+
+    /**
+     * Executes a hack on a server
      * @param scriptToDeploy The hack script to deploy; needs to be a .js or .script file
      * @param server The server to deploy the hack on
      * @param killAllFirst Whether to kill all currently running scripts before deploying the hack
      * @param threadsToUse The number of threads to use for the hack; defaults to the maximum number of threads available on the server
      * @param ns Netscript namespace; defaults to this.ns
      */
-    public async deployScriptOnServer(scriptToDeploy: string, server: Server, killAllFirst = false, debug = false, threadsToUse?: number, ns: NS = this.ns): Promise<boolean> {
+    public async execScriptOnServer(scriptToDeploy: string, server: Server, killAllFirst = false, debug = false, threadsToUse?: number, ns: NS = this.ns): Promise<boolean> {
         if (killAllFirst) ns.killall(server.hostname);
         if (!threadsToUse) threadsToUse = Math.max(1, (ns.getServerMaxRam(server.hostname) - ns.getServerUsedRam(server.hostname)) / ns.getScriptRam(scriptToDeploy));
         try {
-            if (!ns.scp(scriptToDeploy, server.hostname))
-                throw `...can't scp ${scriptToDeploy} to ${server.hostname}!`
             if (!ns.exec(scriptToDeploy, server.hostname, ~~threadsToUse, this.hackTarget.hostname, debug))
                 throw `...can't exec ${scriptToDeploy} on ${server.hostname}!`
             if (!ns.scriptRunning(scriptToDeploy, server.hostname))
@@ -159,24 +180,30 @@ export class ServerMatrix {
 
     /**
      * Deploys a hack on all servers in the matrix' serverList
-     * @param scriptToDeploy The hack script to deploy; needs to be a .js or .script file
+     * @param scriptsToDeploy The hack script to deploy; needs to be a .js or .script file
      * @param includeHome Whether to include the home server in the deployment
      * @param killAllFirst Whether to kill all currently running scripts before deploying the hack
      * @param debug Whether to log debug information
      * @param ns Netscript namespace; defaults to this.ns
      */
-    public async deployScriptonAllServers(scriptToDeploy: string, includeHome = false, killAllFirst = false, debug = false, ns: NS = this.ns): Promise<void> {
-        const serversToUse = await this.getServersThatRunScripts();
-        if (includeHome) serversToUse.push(ns.getServer('home'));
-        if (this.purchasedServerList.length > 0) serversToUse.push(...this.purchasedServerList);
+    public async deployScriptsonAllServers(scriptsToDeploy: string[], includeHome = false, killAllFirst = false, execScripts = false, debug = false, ns: NS = this.ns): Promise<void> {
+        this.serversToUse = await this.getServersThatRunScripts();
+        if (includeHome) this.serversToUse.push(ns.getServer('home'));
+        if (this.purchasedServerList.length > 0) this.serversToUse.push(...this.purchasedServerList);
         
-        Logger.info(ns, 'attempting to deploy {0} to {1} servers...', scriptToDeploy, serversToUse.length);
+        Logger.info(ns, 'attempting to deploy {0} to {1} servers...', scriptsToDeploy, this.serversToUse.length);
         
-        for (const server of serversToUse) {
+        for (const server of this.serversToUse) {
             try {
                 if (ns.hasRootAccess(server.hostname)) {
-                    if (!await this.deployScriptOnServer(scriptToDeploy, server, killAllFirst, debug))
-                        throw `...hack deployment failed on ${server.hostname}!`;
+                    for (const script of scriptsToDeploy) {
+                        if (!await this.copyScriptToServer(script, server))
+                            throw `...${script} copy failed on ${server.hostname}!`;
+                        if (execScripts) { 
+                        if (!await this.execScriptOnServer(script, server, killAllFirst, debug))
+                            throw `...${script} deployment failed on ${server.hostname}!`;
+                    }
+                    }
                 }
             }
             catch (err) {
@@ -272,6 +299,20 @@ export class ServerMatrix {
             }
         }
         return bestTarget ?? ns.getServer(hl.defaultHackTargetHostname);
+    }
+
+    /**
+     * Gets the maximum number of threads available for a script on a server
+     * @param script The script to check
+     * @param server The server to check
+     * @param ns Netscript namespace; defaults to this.ns
+     * @returns The maximum number of threads available for the script on the server
+     */
+    public async getThreadsAvailableForScript(script: string, server: Server, ns: NS = this.ns): Promise<number> {
+        const maxThreads = Math.floor((server.maxRam - server.ramUsed) / ns.getScriptRam(script));
+        const maxThreadsAvailable = Math.floor(ns.getServerMaxRam(server.hostname) / ns.getScriptRam(script));
+        const threadsAvailable = Math.min(maxThreads, maxThreadsAvailable);
+        return threadsAvailable;
     }
 
     /**

@@ -40,7 +40,7 @@ export async function main(ns: NS) {
 
     try {
         if (hackToDeploy !== '') {
-            if (!ns.fileExists(hackToDeploy, 'home')) throw new Error(`${hackToDeploy} does not exist!!`);
+            if (!ns.fileExists(hackToDeploy, 'home')) throw new Error(`${hackToDeploy} does not exist or is not a hack script!!`);
             const matrix = new ServerMatrix(ns);
             await matrix.initialize(ns,purchaseServerFlag);
 
@@ -55,7 +55,7 @@ export async function main(ns: NS) {
             
             await matrix.nukeAllServers();
             
-            await matrix.deployScriptonAllServers(hackToDeploy, includeHome, killAllFirst, debugFlag);
+            await matrix.deployScriptsonAllServers([hackToDeploy], includeHome, killAllFirst, true, debugFlag);
             ns.toast('hacks deployed!');
             
             if (doFetch) {
