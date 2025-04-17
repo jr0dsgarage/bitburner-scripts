@@ -2,13 +2,12 @@
  * hack script 3
  * originally created by j__r0d 2025-04-14
  * 
+ * Unfortunately, this script is not as efficient as I would like it to be.
+ * This is slower than sending the same logic to each server in parallel.
+ * 
  * command to start script: 
  *   home; clear; killall; run hs3.js [<target-server>] [-h] [-f] [-k] [-d] [-p]
  * 
- * TODO: properly calculate hack target -- from Documentation/beginner's guide: 
- *      `your hacking target should be the server with highest max money that's required hacking level is under 1/2 of your hacking level.`
- *      `Keep security level low. Security level affects everything when hacking. Two important Netscript functions for this are getServerSecurityLevel() and getServerMinSecurityLevel()`x
- *
  * purchase programs script:  (buy TOR router first)
  *  buy AutoLink.exe; buy DeepscanV1.exe; buy ServerProfiler.exe; buy FTPCrack.exe; buy relaySMTP.exe; buy DeepscanV2.exe; buy HTTPWorm.exe; buy SQLInject.exe; buy Formulas.exe; buy BruteSSH.exe
 */
@@ -94,7 +93,6 @@ export async function main(ns: NS) {
                 await matrix.fetchFilesFromServers();
             }
 
-            // Refactored weaken, grow, and hack logic
             for (;;) {
                 if (ns.getServerSecurityLevel(hackTarget.hostname) > ns.getServerMinSecurityLevel(hackTarget.hostname)) { // weaken it
                     Logger.debug(ns, '{0} has {1} security level, weakening...', debugFlag, hackTarget.hostname, ns.getServerSecurityLevel(hackTarget.hostname));
