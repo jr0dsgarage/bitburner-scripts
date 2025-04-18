@@ -5,6 +5,8 @@
  * command to start script: 
  *   home; clear; killall; run hs4.js [<target-server>] [-h] [-f] [-k] [-d] [-p]
  * 
+ * This idea is solid but I'm not sure I'm getting the ratios right.
+ * 
  * purchase programs script:  (buy TOR router first)
  *  buy AutoLink.exe; buy DeepscanV1.exe; buy ServerProfiler.exe; buy FTPCrack.exe; buy relaySMTP.exe; buy DeepscanV2.exe; buy HTTPWorm.exe; buy SQLInject.exe; buy Formulas.exe; buy BruteSSH.exe
 */
@@ -65,13 +67,9 @@ export async function main(ns: NS) {
                 await matrix.fetchFilesFromServers();
             }
 
-            const hackScriptRam = ns.getScriptRam(scriptsToDeploy[0]);
-            const growScriptRam = ns.getScriptRam(scriptsToDeploy[1]);
-            const weakenScriptRam = ns.getScriptRam(scriptsToDeploy[2]);
-
             // Monitor the amount of money and security on the target server
             let previousHackRatio = 0.07;
-            let previousGrowRatio = 0.76;
+            let previousGrowRatio = .76;
             let previousWeakenRatio = 0.15;
 
             while (true) {
@@ -80,20 +78,33 @@ export async function main(ns: NS) {
                 const currentSecurity = ns.getServerSecurityLevel(hackTarget.hostname);
                 const minSecurity = ns.getServerMinSecurityLevel(hackTarget.hostname);
 
-                let hackRatio = 0.07; // Default ratios
-                let growRatio = 0.76;
-                let weakenRatio = 0.15;
+                const moneyStolenBySingleThread = ns.hackAnalyze(hackTarget.hostname);
+                const growThreadsNeededToMultiply = ns.growthAnalyze(hackTarget.hostname, maxMoney / Math.max(currentMoney, 1));
+                const securityDecreasePerWeakenThread = ns.weakenAnalyze(1);
 
-                if (currentMoney < maxMoney * 0.9) {
-                    //Logger.info(ns, `${hackTarget.hostname} money is below 90% of max. Adjusting grow ratio.`);
-                    growRatio += 0.05; // Increase grow ratio
-                    hackRatio -= 0.02; // Decrease hack ratio
+                //Logger.info(ns, `Money stolen by single thread: ${moneyStolenBySingleThread}; grow threads needed to multiply: ${growThreadsNeededToMultiply}; security decrease per weaken thread: ${securityDecreasePerWeakenThread}`, 'info');
+
+                // Adjust ratios based on analysis
+                let hackRatio = previousHackRatio;
+                let growRatio = previousGrowRatio;
+                let weakenRatio = previousWeakenRatio;
+
+                if (moneyStolenBySingleThread < 0.1) {
+                    hackRatio = Math.min(0.1, hackRatio + 0.01); // Increase hack ratio slightly if stealing less
+                } else {
+                    hackRatio = Math.max(0.05, hackRatio - 0.01); // Decrease hack ratio slightly if stealing more
                 }
 
-                if (currentSecurity > minSecurity * 1.1) {
-                    //Logger.info(ns, `${hackTarget.hostname} security is above 110% of min. Adjusting weaken ratio.`);
-                    weakenRatio += 0.05; // Increase weaken ratio
-                    growRatio -= 0.02; // Decrease grow ratio
+                if (growThreadsNeededToMultiply > 1) {
+                    growRatio = Math.min(1, growRatio + 0.05); // Increase grow ratio if more threads are needed
+                } else {
+                    growRatio = Math.max(0.5, growRatio - 0.05); // Decrease grow ratio if fewer threads are needed
+                }
+
+                if (currentSecurity > minSecurity + 5) {
+                    weakenRatio = Math.min(0.2, weakenRatio + 0.02); // Increase weaken ratio if security is high
+                } else {
+                    weakenRatio = Math.max(0.1, weakenRatio - 0.02); // Decrease weaken ratio if security is low
                 }
 
                 if (
@@ -101,7 +112,7 @@ export async function main(ns: NS) {
                     growRatio !== previousGrowRatio ||
                     weakenRatio !== previousWeakenRatio
                 ) {
-                    Logger.info(ns,`Ratios changed. Hack Ratio: ${hackRatio}, Grow Ratio: ${growRatio}, Weaken Ratio: ${weakenRatio}`, 'info');
+                    Logger.info(ns, `Ratios changed. Hack Ratio: ${hackRatio}, Grow Ratio: ${growRatio}, Weaken Ratio: ${weakenRatio}`, 'info');
 
                     for (const server of matrix.serversToUse) {
                         ns.killall(server.hostname);
