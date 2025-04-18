@@ -450,6 +450,8 @@ export class ServerMatrix {
             while (i < ns.getPurchasedServerLimit() + 1) {
                 const hostname: string = ns.purchaseServer('pserv-' + i, this.getMaxAffordableRAMforServers());
                 Logger.info(ns, 'purchased server {0} with {1}GB RAM', hostname, this.getMaxAffordableRAMforServers());
+                this.purchasedServerList.push(ns.getServer(hostname));
+                
                 ++i;
                 await ns.sleep(100);
             }
