@@ -165,20 +165,19 @@ export class ServerMatrix {
         if (!threadsToUse) threadsToUse = Math.max(1, (ns.getServerMaxRam(server.hostname) - ns.getServerUsedRam(server.hostname)) / ns.getScriptRam(scriptToDeploy));
         try {
             if (!ns.exec(scriptToDeploy, server.hostname, ~~threadsToUse, this.hackTarget.hostname, debug))
-                throw `...can't exec ${scriptToDeploy} on ${server.hostname}!`;
+                throw `...can't exec {0}!`;
             if (!ns.scriptRunning(scriptToDeploy, server.hostname))
-                throw `...script not running on ${server.hostname}!`;
+                throw `...{0} died`;
             else {
                 Logger.info(ns, '...script deployed on {0} using {1} threads!', server.hostname, ~~threadsToUse);
-                return ~~threadsToUse; // Return the number of threads used
+                return ~~threadsToUse;
             }
         }
         catch (err) {
-            Logger.error(ns, `${err}`);
-            return 0; // Return 0 threads if execution fails
+            Logger.error(ns, `${err} on {1}`, scriptToDeploy, server.hostname);
+            return 0; 
         }
     }
-
 
     /**
      * Deploys a hack on all servers in the matrix' serverList
@@ -202,7 +201,7 @@ export class ServerMatrix {
                 if (ns.hasRootAccess(server.hostname)) {
                     for (const script of scriptsToDeploy) {
                         if (!await this.copyScriptToServer(script, server))
-                            throw `...${script} copy failed on ${server.hostname}!`;
+                            throw `...${script} copy failed`;
                         if (execScripts) {
                             const threadsUsed = await this.execScriptOnServer(script, server, killAllFirst, debug);
                             totalThreadsUsed += threadsUsed; // Add threads used for this script
@@ -211,11 +210,11 @@ export class ServerMatrix {
                 }
             }
             catch (err) {
-                Logger.error(ns, `${err}`);
+                Logger.error(ns, `${err} on {0}`, server.hostname);
             }
         }
 
-        Logger.info(ns, '...scripts executed on {0} threads', totalThreadsUsed);
+        Logger.info(ns, '...scripts executed using {0} total threads', totalThreadsUsed);
     }
 
     /**
