@@ -72,39 +72,41 @@ export async function main(ns: NS) {
             let previousGrowRatio = .76;
             let previousWeakenRatio = 0.15;
 
+            const maxMoney = ns.getServerMaxMoney(hackTarget.hostname);
+            const minSecurity = ns.getServerMinSecurityLevel(hackTarget.hostname);
+
             while (true) {
                 const currentMoney = ns.getServerMoneyAvailable(hackTarget.hostname);
-                const maxMoney = ns.getServerMaxMoney(hackTarget.hostname);
                 const currentSecurity = ns.getServerSecurityLevel(hackTarget.hostname);
-                const minSecurity = ns.getServerMinSecurityLevel(hackTarget.hostname);
 
                 const moneyStolenBySingleThread = ns.hackAnalyze(hackTarget.hostname);
                 const growThreadsNeededToMultiply = ns.growthAnalyze(hackTarget.hostname, maxMoney / Math.max(currentMoney, 1));
                 const securityDecreasePerWeakenThread = ns.weakenAnalyze(1);
-
-                //Logger.info(ns, `Money stolen by single thread: ${moneyStolenBySingleThread}; grow threads needed to multiply: ${growThreadsNeededToMultiply}; security decrease per weaken thread: ${securityDecreasePerWeakenThread}`, 'info');
 
                 // Adjust ratios based on analysis
                 let hackRatio = previousHackRatio;
                 let growRatio = previousGrowRatio;
                 let weakenRatio = previousWeakenRatio;
 
-                if (moneyStolenBySingleThread < 0.1) {
-                    hackRatio = Math.min(0.1, hackRatio + 0.01); // Increase hack ratio slightly if stealing less
-                } else {
-                    hackRatio = Math.max(0.05, hackRatio - 0.01); // Decrease hack ratio slightly if stealing more
+                // Hack ratio adjustment: prioritize hacking if money stolen is low
+                if (moneyStolenBySingleThread < 0.08) {
+                    hackRatio = Math.min(0.12, hackRatio + 0.02); // Increase hack ratio more aggressively
+                } else if (moneyStolenBySingleThread > 0.12) {
+                    hackRatio = Math.max(0.05, hackRatio - 0.01); // Decrease hack ratio slightly
                 }
 
-                if (growThreadsNeededToMultiply > 1) {
-                    growRatio = Math.min(1, growRatio + 0.05); // Increase grow ratio if more threads are needed
-                } else {
-                    growRatio = Math.max(0.5, growRatio - 0.05); // Decrease grow ratio if fewer threads are needed
+                // Grow ratio adjustment: ensure server money is replenished efficiently
+                if (growThreadsNeededToMultiply > 1.5) {
+                    growRatio = Math.min(1, growRatio + 0.07); // Increase grow ratio more aggressively
+                } else if (growThreadsNeededToMultiply < 1) {
+                    growRatio = Math.max(0.6, growRatio - 0.05); // Decrease grow ratio slightly
                 }
 
-                if (currentSecurity > minSecurity + 5) {
-                    weakenRatio = Math.min(0.2, weakenRatio + 0.02); // Increase weaken ratio if security is high
-                } else {
-                    weakenRatio = Math.max(0.1, weakenRatio - 0.02); // Decrease weaken ratio if security is low
+                // Weaken ratio adjustment: prioritize weakening if security is high
+                if (currentSecurity > minSecurity + 10) {
+                    weakenRatio = Math.min(0.25, weakenRatio + 0.03); // Increase weaken ratio more aggressively
+                } else if (currentSecurity <= minSecurity + 5) {
+                    weakenRatio = Math.max(0.1, weakenRatio - 0.02); // Decrease weaken ratio slightly
                 }
 
                 if (
