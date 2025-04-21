@@ -158,25 +158,27 @@ export class ServerMatrix {
      * @param killAllFirst Whether to kill all currently running scripts before deploying the hack
      * @param threadsToUse The number of threads to use for the hack; defaults to the maximum number of threads available on the server
      * @param ns Netscript namespace; defaults to this.ns
+     * @returns The number of threads used for the script execution
      */
-    public async execScriptOnServer(scriptToDeploy: string, server: Server, killAllFirst = false, debug = false, threadsToUse?: number, ns: NS = this.ns): Promise<boolean> {
+    public async execScriptOnServer(scriptToDeploy: string, server: Server, killAllFirst = false, debug = false, threadsToUse?: number, ns: NS = this.ns): Promise<number> {
         if (killAllFirst) ns.killall(server.hostname);
         if (!threadsToUse) threadsToUse = Math.max(1, (ns.getServerMaxRam(server.hostname) - ns.getServerUsedRam(server.hostname)) / ns.getScriptRam(scriptToDeploy));
         try {
             if (!ns.exec(scriptToDeploy, server.hostname, ~~threadsToUse, this.hackTarget.hostname, debug))
-                throw `...can't exec ${scriptToDeploy} on ${server.hostname}!`
+                throw `...can't exec ${scriptToDeploy} on ${server.hostname}!`;
             if (!ns.scriptRunning(scriptToDeploy, server.hostname))
                 throw `...script not running on ${server.hostname}!`;
             else {
                 Logger.info(ns, '...script deployed on {0} using {1} threads!', server.hostname, ~~threadsToUse);
-                return true;
+                return ~~threadsToUse; // Return the number of threads used
             }
         }
         catch (err) {
             Logger.error(ns, `${err}`);
-            return false;
+            return 0; // Return 0 threads if execution fails
         }
     }
+
 
     /**
      * Deploys a hack on all servers in the matrix' serverList
@@ -190,19 +192,21 @@ export class ServerMatrix {
         this.serversToUse = await this.getServersThatRunScripts();
         if (includeHome) this.serversToUse.push(ns.getServer('home'));
         if (this.purchasedServerList.length > 0) this.serversToUse.push(...this.purchasedServerList);
-        
+
         Logger.info(ns, 'attempting to deploy {0} to {1} servers...', scriptsToDeploy, this.serversToUse.length);
-        
+
+        let totalThreadsUsed = 0; // Track total threads used
+
         for (const server of this.serversToUse) {
             try {
                 if (ns.hasRootAccess(server.hostname)) {
                     for (const script of scriptsToDeploy) {
                         if (!await this.copyScriptToServer(script, server))
                             throw `...${script} copy failed on ${server.hostname}!`;
-                        if (execScripts) { 
-                        if (!await this.execScriptOnServer(script, server, killAllFirst, debug))
-                            throw `...${script} deployment failed on ${server.hostname}!`;
-                    }
+                        if (execScripts) {
+                            const threadsUsed = await this.execScriptOnServer(script, server, killAllFirst, debug);
+                            totalThreadsUsed += threadsUsed; // Add threads used for this script
+                        }
                     }
                 }
             }
@@ -210,6 +214,8 @@ export class ServerMatrix {
                 Logger.error(ns, `${err}`);
             }
         }
+
+        Logger.info(ns, '...scripts executed on {0} threads', totalThreadsUsed);
     }
 
     /**
