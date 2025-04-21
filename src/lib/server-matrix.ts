@@ -10,7 +10,6 @@ import { portOpeningPrograms as programs } from './helperLib';
  */
 export class ServerMatrix {
     private ns: NS;
-    private totalThreads = 0;
     public fullScannedServerList: Server[] = [];
     public purchasedServerList: Server[] = [];
     public serversToUse: Server[] = [];
