@@ -447,7 +447,8 @@ export class ServerMatrix {
      */
     public async purchaseServers(ns: NS = this.ns): Promise<void> {
         Logger.info(ns, '...no purchased servers found. checking for available monies...');
-        if (ns.getServerMoneyAvailable('home') > (ns.getPurchasedServerCost(this.getMaxAffordableRAMforServers()) * ns.getPurchasedServerLimit())) {
+        const moneyRequiredForPurchase = (ns.getPurchasedServerCost(this.getMaxAffordableRAMforServers()) * ns.getPurchasedServerLimit());
+        if (ns.getServerMoneyAvailable('home') > moneyRequiredForPurchase) {
             Logger.info(ns, 'enough monies secured; attempting to purchase servers...');
             let i = 1;
             while (i < ns.getPurchasedServerLimit() + 1) {
@@ -460,7 +461,7 @@ export class ServerMatrix {
             }
         }
         else {
-            Logger.warn(ns, 'not enough monies to purchase servers! keep hacking...');
+            Logger.warn(ns, 'not enough monies to purchase servers! {0} required! keep hacking...', `$` + ns.formatNumber(moneyRequiredForPurchase, 3));
         }
     }
 
