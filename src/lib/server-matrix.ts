@@ -515,11 +515,11 @@ export class ServerMatrix {
         }
 
         if (totalCost > playerMoney || targetRam <= currentMinRam) {
-            Logger.warn(ns, 'Not enough money to upgrade all servers. Need {0}.', ns.formatNumber(totalCost, '0.0a'));
+            Logger.warn(ns, 'Not enough money to upgrade all servers. Need {0}.', `$` + ns.formatNumber(totalCost, 3));
             return;
         }
 
-        Logger.info(ns, 'Upgrading all purchased servers to {0}GB RAM. Total cost: {1}', targetRam, ns.formatNumber(totalCost, 3));
+        Logger.info(ns, 'Upgrading all purchased servers to {0}GB RAM. Total cost: {1}', targetRam,`$` +  ns.formatNumber(totalCost, 3));
 
         for (const server of this.purchasedServerList) {
             if (server.maxRam < targetRam) {
