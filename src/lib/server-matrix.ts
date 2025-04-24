@@ -174,7 +174,7 @@ export class ServerMatrix {
         }
         catch (err) {
             Logger.error(ns, `${err} on {1}`, scriptToDeploy, server.hostname);
-            return 0; 
+            return 0;
         }
     }
 
@@ -239,7 +239,7 @@ export class ServerMatrix {
         ns.ls(server.hostname).forEach((file: string) => {
             if (!homefilelist.includes(file))
                 try {
-                    if (!file.endsWith('.cct')){
+                    if (!file.endsWith('.cct')) {
                         ns.scp(file, `home`, server.hostname);
                         Logger.info(ns, `...{0} fetched from {1}`, file, server.hostname);
                     }
@@ -292,8 +292,7 @@ export class ServerMatrix {
             if (
                 (playerHackingLevel / requiredHackingLevel) > 0.5 &&
                 ns.hackAnalyzeThreads(server.hostname, maxMoneyonServer) > 0
-            )
-            {
+            ) {
                 const score = this.scoreServer(server);
                 if (score > maxScore) {
                     ns.tprint(`new best target: ${server.hostname} with score: ${score}`);
@@ -387,7 +386,7 @@ export class ServerMatrix {
         let nukedServerCount = 0;
         let failednukeCount = 0;
         Logger.info(ns, 'attempting to nuke all servers...');
-        
+
         for (const server of this.fullScannedServerList) {
             if (!ns.hasRootAccess(server.hostname)) {
                 if (await this.attemptToNukeServer(server)) {
@@ -400,7 +399,7 @@ export class ServerMatrix {
                 ++nukedServerCount;
             }
         }
-        
+
         Logger.info(ns, '...{0} servers nuked!  {1} servers failed.', nukedServerCount, failednukeCount);
     }
 
@@ -431,7 +430,7 @@ export class ServerMatrix {
                         case 4:
                             ns.sqlinject(server.hostname);
                             break;
-                    } 
+                    }
                 } else {
                     throw (`{0} unavailable, cannot open port {1}`);
                 }
@@ -455,7 +454,7 @@ export class ServerMatrix {
                 const hostname: string = ns.purchaseServer('pserv-' + i, this.getMaxAffordableRAMforServers());
                 Logger.info(ns, 'purchased server {0} with {1}GB RAM', hostname, this.getMaxAffordableRAMforServers());
                 this.purchasedServerList.push(ns.getServer(hostname));
-                
+
                 ++i;
                 await ns.sleep(100);
             }
@@ -472,46 +471,63 @@ export class ServerMatrix {
      * @param ns - Netscript namespace; defaults to this.ns
      * @returns The score of the server as a number
      */
-        public scoreServer = (server: Server, ns: NS = this.ns): number => {
-            const maxMoneyonServer: number = ns.getServerMoneyAvailable(server.hostname);
-            const hackAnalyzeValue: number = ns.hackAnalyze(server.hostname);
-            const weakenEffect: number = ns.weakenAnalyze(1); // Effect of a single thread of weaken
-            const weakenTime: number = ns.getWeakenTime(server.hostname); // Time required to weaken the server
-    
-            // Incorporate weaken effect and weaken time into the score
-            const score = (maxMoneyonServer * hackAnalyzeValue) / (weakenEffect * weakenTime);  
-            return score;
-            
-        }
+    public scoreServer = (server: Server, ns: NS = this.ns): number => {
+        const maxMoneyonServer: number = ns.getServerMoneyAvailable(server.hostname);
+        const hackAnalyzeValue: number = ns.hackAnalyze(server.hostname);
+        const weakenEffect: number = ns.weakenAnalyze(1); // Effect of a single thread of weaken
+        const weakenTime: number = ns.getWeakenTime(server.hostname); // Time required to weaken the server
+
+        // Incorporate weaken effect and weaken time into the score
+        const score = (maxMoneyonServer * hackAnalyzeValue) / (weakenEffect * weakenTime);
+        return score;
+
+    }
 
     /**
      * Upgrades the purchased servers to the maximum amount of RAM that can be afforded.
      * @param ns - Netscript namespace; defaults to this.ns
      */
     public async upgradePurchasedServers(ns: NS = this.ns): Promise<void> {
-        Logger.info(ns, 'attempting to upgrade purchased servers...');
-        for (const server of this.purchasedServerList) {
-            const currentRAM = server.maxRam;
-            let maxPurchaseableRAM = currentRAM;
-            const maxPossibleRAM = ns.getPurchasedServerMaxRam();
-            const availableMoney = ns.getServerMoneyAvailable('home');
+        Logger.info(ns, 'Attempting to upgrade purchased servers...');
 
-            // Calculate the maximum RAM that can be afforded for this server
-            while (maxPurchaseableRAM * 2 <= maxPossibleRAM && ns.getPurchasedServerCost(maxPurchaseableRAM * 2) <= availableMoney) {
-                maxPurchaseableRAM *= 2;
+        if (this.purchasedServerList.length === 0) {
+            Logger.warn(ns, 'No purchased servers to upgrade.');
+            return;
+        }
+
+        const maxPossibleRam = ns.getPurchasedServerMaxRam();
+        const playerMoney = ns.getServerMoneyAvailable('home');
+        const currentMinRam = Math.min(...this.purchasedServerList.map(s => s.maxRam));
+        let targetRam = currentMinRam * 2;
+        let totalCost = 0;
+
+        // Determine the maximum affordable RAM upgrade for all servers
+        while (targetRam <= maxPossibleRam) {
+            totalCost = this.purchasedServerList.reduce((cost, server) => {
+                return server.maxRam < targetRam ? cost + ns.getPurchasedServerUpgradeCost(server.hostname, targetRam) : cost;
+            }, 0);
+
+            if (totalCost > playerMoney) {
+                targetRam /= 2;
+                break;
             }
+            targetRam *= 2;
+        }
 
-            if (maxPurchaseableRAM > currentRAM) {
-                try {
-                    ns.upgradePurchasedServer(server.hostname, maxPurchaseableRAM); // Upgrade the server
-                    Logger.info(ns, '...upgraded {0} to {1}GB RAM', server.hostname, maxPurchaseableRAM);
-                } catch (err) {
-                    Logger.error(ns, '...failed to upgrade server {0}: {1}', server.hostname, err);
+        if (totalCost > playerMoney || targetRam <= currentMinRam) {
+            Logger.warn(ns, 'Not enough money to upgrade all servers. Need {0}.', ns.formatNumber(totalCost, '0.0a'));
+            return;
+        }
+
+        Logger.info(ns, 'Upgrading all purchased servers to {0}GB RAM. Total cost: {1}', targetRam, ns.formatNumber(totalCost, 3));
+
+        for (const server of this.purchasedServerList) {
+            if (server.maxRam < targetRam) {
+                if (ns.upgradePurchasedServer(server.hostname, targetRam)) {
+                    Logger.info(ns, 'Upgraded {0} to {1}GB RAM.', server.hostname, targetRam);
+                } else {
+                    Logger.error(ns, 'Failed to upgrade {0} to {1}GB RAM.', server.hostname, targetRam);
                 }
-            } else if (currentRAM === maxPossibleRAM) {
-                Logger.info(ns, '...{0} already has maximum RAM!', server.hostname);
-            } else {
-                Logger.info(ns, '...not enough monies to upgrade {0}', server.hostname);
             }
         }
     }
