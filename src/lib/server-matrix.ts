@@ -28,17 +28,17 @@ export class ServerMatrix {
      * Initializes the server matrix by building a list of scanned servers and a list of purchased servers.
      * If no servers have been purchased, it will purchase servers before building the list if requested.
      * If servers exist already, it will upgrade them to the maximum amount of RAM that can be afforded if requested.
-     * @param purchaseServers Whether to purchase servers if none are found; defaults to false
+     * @param purchaseOrUpgradeServers Whether to purchase servers if none are found; defaults to false
      * @param ns Netscript namespace; defaults to this.ns
      */
-    public async initialize(ns: NS = this.ns, purchaseServers = false): Promise<void> {
+    public async initialize(ns: NS = this.ns, purchaseOrUpgradeServers = false): Promise<void> {
         Logger.info(ns, 'serverMatrix initializing...');
         Logger.info(ns, '➡️📃 building list of scanned servers to depth of {0}...', this.scannedDepth);
         await this.buildScannedServerList();
         Logger.info(ns, '...found {0} servers.', this.fullScannedServerList.length);
         Logger.info(ns, '➡️📃 building list of purchased servers...');
         Logger.info(ns, '...found {0} purchased servers.', this.purchasedServerList.length);
-        if (purchaseServers) {
+        if (purchaseOrUpgradeServers) {
             if (this.purchasedServerList.length != ns.getPurchasedServerLimit()) {
                 await this.purchaseServers();
             }
@@ -451,9 +451,10 @@ export class ServerMatrix {
         if (ns.getServerMoneyAvailable('home') > moneyRequiredForPurchase) {
             Logger.info(ns, 'enough monies secured; attempting to purchase servers...');
             let i = 1;
+            const maxAffordableRAMforServers = this.getMaxAffordableRAMforServers(ns);
             while (i < ns.getPurchasedServerLimit() + 1) {
-                const hostname: string = ns.purchaseServer('pserv-' + i, this.getMaxAffordableRAMforServers());
-                Logger.info(ns, 'purchased server {0} with {1}GB RAM', hostname, this.getMaxAffordableRAMforServers());
+                const hostname: string = ns.purchaseServer('pserv-' + i, maxAffordableRAMforServers);
+                Logger.info(ns, 'purchased server {0} with {1}GB RAM', hostname, maxAffordableRAMforServers);
                 this.purchasedServerList.push(ns.getServer(hostname));
 
                 ++i;
@@ -513,14 +514,15 @@ export class ServerMatrix {
                 break;
             }
             targetRam *= 2;
+        
         }
 
-        if (totalCost > playerMoney || targetRam <= currentMinRam) {
+        if (targetRam <= currentMinRam) {
             Logger.warn(ns, 'Not enough money to upgrade all servers. Need {0}.', `$` + ns.formatNumber(totalCost, 3));
             return;
         }
 
-        Logger.info(ns, 'Upgrading all purchased servers to {0}GB RAM. Total cost: {1}', targetRam,`$` +  ns.formatNumber(totalCost, 3));
+        Logger.info(ns, 'Upgrading all purchased servers to {0}GB RAM', targetRam);
 
         for (const server of this.purchasedServerList) {
             if (server.maxRam < targetRam) {
