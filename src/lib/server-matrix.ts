@@ -163,7 +163,7 @@ export class ServerMatrix {
         if (killAllFirst) ns.killall(server.hostname);
         if (!threadsToUse) threadsToUse = Math.max(1, (ns.getServerMaxRam(server.hostname) - ns.getServerUsedRam(server.hostname)) / ns.getScriptRam(scriptToDeploy));
         try {
-            if (!ns.exec(scriptToDeploy, server.hostname, ~~threadsToUse, this.hackTarget.hostname, debug))
+            if (!ns.exec(scriptToDeploy, server.hostname, ~~threadsToUse, this.hackTarget.hostname, threadsToUse, debug))
                 throw `...can't exec {0}!`;
             if (!ns.scriptRunning(scriptToDeploy, server.hostname))
                 throw `...{0} died`;
