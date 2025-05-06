@@ -34,7 +34,7 @@ export async function main(ns: NS) {
     const startingMoneyAvailable = ns.formatNumber(ns.getServerMoneyAvailable(target),2);
 
 
-    if (ns.getServerSecurityLevel(target) > securityThresh && ns.getServerMoneyAvailable(target) < moneyThresh) {
+    if (ns.getServerSecurityLevel(target) > securityThresh) {
       // If the server's security level is above our threshold, weaken it
       if (reporting) ns.tprint(`${ns.getHostname().padStart(20)} 👇 weakening ${target}... Starting Security Level: ${startingSecurityLevel}`);
       const start = performance.now();
@@ -55,7 +55,7 @@ export async function main(ns: NS) {
       const start = performance.now();
       await ns.hack(target);
       const end = performance.now();
-      if (reporting) ns.tprint(`${ns.getHostname().padStart(20)} 👉 hacked ${target} from ${startingMoneyAvailable} to $${ns.formatNumber(ns.getServerMoneyAvailable(target), 2)} (Elapsed Time: ${(end - start).toFixed(2)}ms)`);
+      if (reporting) ns.tprint(`${ns.getHostname().padStart(20)} 👉 hacked ${target} from $${startingMoneyAvailable} to $${ns.formatNumber(ns.getServerMoneyAvailable(target), 2)} (Elapsed Time: ${(end - start).toFixed(2)}ms)`);
     }
   }
 }
