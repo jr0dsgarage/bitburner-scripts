@@ -26,7 +26,7 @@ export async function main(ns: NS) {
   const moneyOffset = ns.getServerMaxMoney(target) * 0.25;
   const moneyThresh = ns.getServerMaxMoney(target) - moneyOffset;
   
-  ns.tprint(`${ns.getHostname().padStart(20)}: weakenOffset: ${weakenOffset.toFixed(2)}, securityThresh: ${securityThresh.toFixed(2)}, moneyOffset: ${ns.formatNumber(moneyOffset,2)}, moneyThresh: ${ns.formatNumber(moneyThresh,2)}`);
+  if (reporting) ns.tprint(`${ns.getHostname().padStart(20)}: weakenOffset: ${weakenOffset.toFixed(2)}, securityThresh: ${securityThresh.toFixed(2)}, moneyOffset: ${ns.formatNumber(moneyOffset,2)}, moneyThresh: ${ns.formatNumber(moneyThresh,2)}`);
   
   // Infinite loop that continously hacks/grows/weakens the target server
   for (; ;) {
